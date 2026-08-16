@@ -1,0 +1,648 @@
+using System.Diagnostics;
+using CmlLib.Core;
+using CmlLib.Core.Auth;
+using CmlLib.Core.Auth.Microsoft;
+using CmlLib.Core.Installer.Forge;
+using CmlLib.Core.Installer.NeoForge;
+using CmlLib.Core.Installer.NeoForge.Installers;
+using CmlLib.Core.ModLoaders.FabricMC;
+using CmlLib.Core.ModLoaders.LiteLoader;
+using CmlLib.Core.ModLoaders.QuiltMC;
+using CmlLib.Core.ProcessBuilder;
+using DiscordRPC;
+using System.Net.Http;
+
+namespace Misty
+{
+
+    public partial class Form1 : Form
+    {
+        string chemin = @"C:\TEXT\";
+        public static string data = @"C:\TEXT\data.txt";
+        string selectedVersion = "";
+        string Nomversion;
+        string installedVersionName;
+
+        MinecraftLauncher launcher;
+        JELoginHandler loginHandler;
+        MSession? session;
+        ForgeInstaller forgee;
+        NeoForgeInstaller neoForgee;
+        MinecraftPath mcPath; // ajoute ce champ en haut, à côté de tes autres champs
+
+        public Form1()
+        {
+            InitializeComponent();
+
+            InitialiserDiscordPresence();
+
+            label2.Text = "0.2.3.2";
+
+            MaximumSize = Size;
+            MinimumSize = Size;
+
+            if (!Directory.Exists(chemin))
+                Directory.CreateDirectory(chemin);
+
+            mcPath = new MinecraftPath(chemin);
+            launcher = new MinecraftLauncher(mcPath);
+            forgee = new ForgeInstaller(launcher);
+            neoForgee = new NeoForgeInstaller(launcher);
+
+            system_register();
+            ChargerPseudos();
+            ChargerPseudoEtDerniereVersion();
+
+            // Progression du téléchargement (remplace tes anciens compteurs "tache")
+            launcher.FileProgressChanged += (sender, args) =>
+            {
+                //textBox2.Text = $"{args.Name} ({args.EventType})";
+                //textBox1.Text = $"{args.ProgressedTasks}/{args.TotalTasks}";
+
+                int maxbar = Convert.ToInt32(args.TotalTasks);
+                progressBar1.Maximum = maxbar;
+                progressBar1.Value = Convert.ToInt32(args.ProgressedTasks);
+
+                int pourcentage = (int)((double)args.ProgressedTasks / args.TotalTasks * 100);
+                label3.Text = $"{pourcentage}%";
+            };
+            launcher.ByteProgressChanged += (sender, args) =>
+            {
+                textBox1.Text = $"{args.ProgressedBytes}/{args.TotalBytes} octets";
+            };
+
+
+            _ = ChargerVersionsAsync(); // async fire-and-forget dans le constructeur
+
+
+            comboBox1.MouseWheel += comboBox1_MouseWheel;
+            comboBoxMode.MouseWheel += comboBox1_MouseWheel;
+            comboBox_compte.MouseWheel += comboBox1_MouseWheel;   // <- réutilise la même méthode
+
+            comboBox1.DropDownStyle = ComboBoxStyle.DropDownList;
+            comboBoxMode.DropDownStyle = ComboBoxStyle.DropDownList;
+            comboBox_compte.DropDownStyle = ComboBoxStyle.DropDownList;   // <- ligne ajoutée, tu l'avais oubliée
+
+
+        }
+
+        private void comboBox1_MouseWheel(object sender, MouseEventArgs e)
+        {
+            ((HandledMouseEventArgs)e).Handled = true;
+        }
+
+        // ── Chargement des versions disponibles (remplace List_release) ──
+        private async Task ChargerVersionsAsync()
+        {
+            try
+            {
+                var versions = await launcher.GetAllVersionsAsync();
+
+                comboBox1.Items.Clear();
+                foreach (var v in versions)
+                {
+                    if (v.Type != null && v.Type.ToString().Equals("Release", StringComparison.OrdinalIgnoreCase))
+                    {
+                        comboBox1.Items.Add(v.Name);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Erreur au chargement des versions : " + ex.Message);
+            }
+        }
+
+        private void ChargerPseudoEtDerniereVersion()
+        {
+            if (File.Exists(data))
+            {
+                var lignes = File.ReadAllLines(data);
+
+                foreach (var ligne in lignes)
+                {
+                    if (ligne.StartsWith("lastpseudo="))
+                        comboBox_compte.Text = ligne.Split('=')[1];
+
+                    if (ligne.StartsWith("lastversion="))
+                        comboBox1.Text = ligne.Split('=')[1];
+                    /*
+                    if (ligne.StartsWith("ram="))
+                        comboBox_ram.Text = ligne.Split('=')[1];*/
+                }
+            }
+            else
+                comboBox_compte.Text = "PseudoTest";
+        }
+
+        private void Form1_Load(object sender, EventArgs e) { }
+
+        // ── Téléchargement / installation de la version choisie ──
+        private async void button1_Click(object sender, EventArgs e)
+        {
+            await redownloadMC();
+        }
+
+
+        // ── Lancement du jeu ──
+        private async void button2_Click(object sender, EventArgs e)
+        {
+            await downloadMC();
+            Programlaunch();
+        }
+        protected override void OnFormClosing(FormClosingEventArgs e)
+        {
+            discordClient?.Dispose();
+            base.OnFormClosing(e);
+        }
+        private List<string> LireListePseudos()
+        {
+            var resultat = new List<string>();
+
+            if (!File.Exists(data)) return resultat;
+
+            var lignes = File.ReadAllLines(data);
+            foreach (var ligne in lignes)
+            {
+                if (ligne.StartsWith("listpseudo="))
+                {
+                    string valeur = ligne.Substring("listpseudo=".Length);
+                    if (!string.IsNullOrEmpty(valeur))
+                    {
+                        resultat.AddRange(valeur.Split(','));
+                    }
+                }
+            }
+            return resultat;
+        }
+        private void ChargerPseudos()
+        {
+            List<string> pseudos = LireListePseudos();
+
+            comboBox_compte.Items.Clear(); // adapte le nom si ta comboBox s'appelle autrement
+            foreach (var pseudo in pseudos)
+            {
+                comboBox_compte.Items.Add(pseudo);
+            }
+        }
+        private void textBox1_TextChanged(object sender, EventArgs e) { }
+        private void label1_Click(object sender, EventArgs e) { }
+
+
+        private void label2_Click(object sender, EventArgs e)
+        {
+            Form2 form = new Form2();
+            form.ShowDialog();
+        }
+        private void system_register()
+        {
+            if (!File.Exists(data))
+            {
+                using (StreamWriter sw = File.CreateText(data))
+                {
+                    sw.WriteLine("lastpseudo=PseudoTest");
+                    sw.WriteLine("lastversion=");
+                    sw.WriteLine("listpseudo=PseudoTest");
+                }
+            }
+        }
+        private void textBox3_TextChanged(object sender, EventArgs e)
+        {
+            //system_register();
+        }
+
+        private async void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            button2.Enabled = false;
+
+            selectedVersion = comboBox1.Text;
+
+            if (!File.Exists(data)) return;
+
+            var lignes = File.ReadAllLines(data);
+            for (int i = 0; i < lignes.Length; i++)
+            {
+                if (lignes[i].StartsWith("lastversion="))
+                    lignes[i] = "lastversion=" + comboBox1.Text;
+            }
+            File.WriteAllLines(data, lignes);
+
+            comboBoxMode.Enabled = false;
+            comboBoxMode.Items.Clear();
+
+            await ChargerModesDisponiblesAsync(selectedVersion);
+        }
+
+        private async Task ChargerModesDisponiblesAsync(string versionMinecraft)
+        {
+            comboBoxMode.Items.Add("Vanilla");
+
+            if (VersionPeutAvoirForge(versionMinecraft))
+            {
+                try
+                {
+                    var forgeInstaller = new ForgeInstaller(launcher);
+                    var versionsForge = await forgeInstaller.GetForgeVersions(versionMinecraft);
+                    if (versionsForge.Any())
+                        comboBoxMode.Items.Add("Forge");
+                }
+                catch { }
+            }
+
+            if (VersionPeutAvoirNeoForge(versionMinecraft))
+            {
+                try
+                {
+                    var neoforgeInstaller = new NeoForgeInstaller(launcher);
+                    var versionsNeoForge = await neoforgeInstaller.GetForgeVersions(versionMinecraft);
+                    if (versionsNeoForge.Any())
+                        comboBoxMode.Items.Add("NeoForge");
+                }
+                catch { }
+            }
+
+            if (VersionPeutAvoirFabric(versionMinecraft))
+            {
+                try
+                {
+                    var fabricInstaller = new FabricInstaller(new HttpClient());
+                    var versionsFabric = await fabricInstaller.GetLoaders(versionMinecraft);
+                    if (versionsFabric.Any())
+                        comboBoxMode.Items.Add("Fabric");
+                }
+                catch { }
+            }
+
+            if (VersionPeutAvoirQuilt(versionMinecraft))
+            {
+                try
+                {
+                    var quiltInstaller = new QuiltInstaller(new HttpClient());
+                    var versionsQuilt = await quiltInstaller.GetLoaders(versionMinecraft);
+                    if (versionsQuilt.Any())
+                        comboBoxMode.Items.Add("Quilt");
+                }
+                catch { }
+            }
+
+            if (VersionPeutAvoirLiteLoader(versionMinecraft))
+            {
+                try
+                {
+                    var liteLoaderInstaller = new LiteLoaderInstaller(new HttpClient());
+                    var loaders = await liteLoaderInstaller.GetAllLiteLoaders();
+                    if (loaders.Any(l => l.BaseVersion == versionMinecraft))
+                        comboBoxMode.Items.Add("LiteLoader");
+                }
+                catch { }
+            }
+
+            comboBoxMode.SelectedIndex = 0;
+            comboBoxMode.Enabled = true;
+
+            button2.Enabled = true; // Réactive le bouton de lancement après avoir chargé les modes
+        }
+        private bool VersionPeutAvoirForge(string version)
+        {
+            if (!System.Version.TryParse(NettoyerVersion(version), out var v))
+                return false;
+
+            var min = new Version(1, 7, 10);
+            var max = new Version(26, 3);
+
+            return v >= min && v <= max;
+        }
+        private bool VersionPeutAvoirFabric(string version)
+        {
+            if (!System.Version.TryParse(NettoyerVersion(version), out var v))
+                return false;
+
+            var min = new Version(1, 14, 0); // Fabric a été introduit vers cette période
+            var max = new Version(26, 3);
+
+            return v >= min && v <= max;
+        }
+
+        private bool VersionPeutAvoirQuilt(string version)
+        {
+            if (!System.Version.TryParse(NettoyerVersion(version), out var v))
+                return false;
+
+            var min = new Version(1, 14, 0); // Quilt est un fork de Fabric, plage similaire
+            var max = new Version(26, 3);
+
+            return v >= min && v <= max;
+        }
+
+        private bool VersionPeutAvoirLiteLoader(string version)
+        {
+            if (!System.Version.TryParse(NettoyerVersion(version), out var v))
+                return false;
+
+            var min = new Version(1, 0, 0);
+            var max = new Version(1, 12, 2); // LiteLoader n'a jamais suivi les versions récentes
+
+            return v >= min && v <= max;
+        }
+        private bool VersionPeutAvoirNeoForge(string version)
+        {
+            if (!System.Version.TryParse(NettoyerVersion(version), out var v))
+                return false;
+
+            var min = new Version(1, 20, 1);
+            var max = new Version(26, 3);
+
+            return v >= min && v <= max;
+        }
+        private string NettoyerVersion(string version)
+        {
+            var parts = version.Split('.');
+            return parts.Length == 2 ? version + ".0" : version;
+        }
+
+        // ── Connexion / déconnexion Microsoft (inchangé) ──
+
+        private async void button3_Click(object sender, EventArgs e) { }
+        private void button4_Click(object sender, EventArgs e) { }
+        private async void button5_Click(object sender, EventArgs e) { }
+
+        private async void button3_Click_1(object sender, EventArgs e)
+        {
+            try
+            {
+                button3.Enabled = false;
+                button3.Text = "Connexion en cours...";
+
+                loginHandler = JELoginHandlerBuilder.BuildDefault();
+                session = await loginHandler.Authenticate();
+
+                button3.Text = session.Username;
+                comboBox_compte.Enabled = false;
+
+                button4.Enabled = true;
+                button5.Enabled = true;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Erreur de connexion : " + ex.Message);
+                button3.Text = "Se connecter";
+                button3.Enabled = true;
+            }
+        }
+
+        private void button4_Click_1(object sender, EventArgs e)
+        {
+            button3.Enabled = true;
+            comboBox_compte.Enabled = true;
+            button3.Text = "Se connecter";
+            session = null;
+
+            button4.Enabled = false;
+            button5.Enabled = false;
+        }
+
+        private async void button5_Click_1(object sender, EventArgs e)
+        {
+            try
+            {
+                if (loginHandler != null)
+                    await loginHandler.Signout();
+
+                session = null;
+                button3.Enabled = true;
+                button3.Text = "Se connecter";
+                comboBox_compte.Enabled = true;
+
+                button4.Enabled = false;
+                button5.Enabled = false;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Erreur de déconnexion : " + ex.Message);
+            }
+        }
+
+        private void label3_Click(object sender, EventArgs e)
+        {
+
+        }
+        private async Task downloadMC()
+        {
+            button1.Enabled = false;
+
+            try
+            {
+                switch (comboBoxMode.Text)
+                {
+                    case "Vanilla":
+                        await launcher.InstallAsync(selectedVersion);
+                        break;
+
+                    case "Forge":
+                        installedVersionName = await forgee.Install(selectedVersion, new ForgeInstallOptions());
+                        await launcher.InstallAsync(installedVersionName);
+                        Nomversion = installedVersionName;
+                        break;
+
+                    case "NeoForge":
+                        installedVersionName = await neoForgee.Install(selectedVersion, new NeoForgeInstallOptions());
+                        await launcher.InstallAsync(installedVersionName);
+                        Nomversion = installedVersionName;
+                        break;
+
+                    case "Fabric":
+                        var fabricInstaller = new FabricInstaller(new HttpClient());
+                        installedVersionName = await fabricInstaller.Install(selectedVersion, mcPath);
+                        await launcher.InstallAsync(installedVersionName);
+                        Nomversion = installedVersionName;
+                        textBox1.Text = "Installation Fabric terminée.";
+                        break;
+
+                    case "Quilt":
+                        var quiltInstaller = new QuiltInstaller(new HttpClient());
+                        installedVersionName = await quiltInstaller.Install(selectedVersion, mcPath);
+                        await launcher.InstallAsync(installedVersionName);
+                        Nomversion = installedVersionName;
+                        textBox1.Text = "Installation Quilt terminée.";
+                        break;
+
+                    case "LiteLoader":
+                        var liteLoaderInstaller = new LiteLoaderInstaller(new HttpClient());
+                        var loaders = await liteLoaderInstaller.GetAllLiteLoaders();
+                        var loaderChoisi = loaders.First(l => l.BaseVersion == selectedVersion);
+
+                        installedVersionName = await liteLoaderInstaller.Install(
+                            loaderChoisi,
+                            await launcher.GetVersionAsync(selectedVersion),
+                            mcPath);
+
+                        await launcher.InstallAsync(installedVersionName);
+                        Nomversion = installedVersionName;
+                        textBox1.Text = "Installation LiteLoader terminée.";
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Erreur pendant le téléchargement : " + ex.Message);
+            }
+            finally
+            {
+                button1.Enabled = true;
+            }
+        }
+        private async Task redownloadMC()
+        {
+            if (string.IsNullOrEmpty(selectedVersion))
+            {
+                MessageBox.Show("Sélectionne une version d'abord.");
+                return;
+            }
+
+            button1.Enabled = false;
+
+            try
+            {
+                if (comboBoxMode.Text == "Vanilla")
+                {
+                    await launcher.InstallAsync(selectedVersion);
+                    textBox1.Text = "Installation terminée.";
+                }
+                else // Forge
+                {
+                    var installedVersionName = await forgee.Install(selectedVersion, new ForgeInstallOptions());
+                    await launcher.InstallAsync(installedVersionName);
+                    textBox1.Text = "Installation Forge terminée.";
+                    Nomversion = installedVersionName; // Stocke le nom de la version Forge installée
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Erreur pendant le téléchargement : " + ex.Message);
+            }
+            finally
+            {
+                button1.Enabled = true;
+            }
+        }
+        private async Task Programlaunch()
+        {
+            selectedVersion = comboBox1.Text;
+
+
+            string pseudo = string.IsNullOrWhiteSpace(comboBox_compte.Text) ? "Misty" : comboBox_compte.Text;
+
+            try
+            {
+                MSession sessionAUtiliser = session ?? MSession.CreateOfflineSession(pseudo);
+                System.Diagnostics.Process process;
+
+
+                if (comboBoxMode.Text == "Vanilla")
+                {
+                    var launchOption = new MLaunchOption
+                    {
+                        Session = sessionAUtiliser,
+                        MaximumRamMb = Convert.ToInt32(Form3.Ram_choisi)
+                    };
+                    process = await launcher.BuildProcessAsync(selectedVersion, launchOption);
+                }
+                else
+                {
+                    process = await launcher.BuildProcessAsync(Nomversion, new MLaunchOption
+                    {
+                        Session = sessionAUtiliser,
+                        MaximumRamMb = Convert.ToInt32(Form3.Ram_choisi),
+                    });
+                }
+
+                // ===== Statut Discord "en train de jouer" =====
+                discordClient.SetPresence(new RichPresence()
+                {
+                    Details = "Joue à Minecraft",
+                    State = selectedVersion + " " + comboBoxMode.Text,
+                    Timestamps = Timestamps.Now
+                });
+
+                process.EnableRaisingEvents = true;
+                process.Exited += (s, args) =>
+                {
+                    this.Invoke(() =>
+                    {
+                        discordClient.SetPresence(new RichPresence()
+                        {
+                            Details = "Dans le launcher",
+                            Timestamps = Timestamps.Now
+                        });
+                    });
+                };
+
+                process.Start();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Impossible de lancer le jeu : " + ex.Message);
+            }
+        }
+
+        private void comboBox_ram_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void progressBar1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+
+        DiscordRpcClient discordClient;
+
+        private void InitialiserDiscordPresence()
+        {
+            discordClient = new DiscordRpcClient("1536551827640680528");
+
+            discordClient.Initialize();
+
+            discordClient.SetPresence(new RichPresence()
+            {
+                //Details = "Prépare son lancement",
+                State = "Dans le launcher",
+                Timestamps = Timestamps.Now,
+                Assets = new Assets()
+                {
+                    LargeImageKey = "logo",  // nom d'une image que tu upload plus tard dans le portail Discord
+                    LargeImageText = "Misty"
+                }
+            });
+        }
+
+        private void button6_Click(object sender, EventArgs e)
+        {
+            Form3 form = new Form3();
+            form.FormClosed += Form3_FormClosed;
+            form.ShowDialog();
+        }
+        private void Form3_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            ChargerPseudos();
+            ChargerPseudoEtDerniereVersion();
+        }
+
+        private void comboBox_compte_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            var lignes = File.ReadAllLines(data);
+            for (int i = 0; i < lignes.Length; i++)
+            {
+                if (lignes[i].StartsWith("lastpseudo="))
+                    lignes[i] = "lastpseudo=" + comboBox_compte.Text;
+            }
+            File.WriteAllLines(data, lignes);
+        }
+
+        private void comboBoxMode_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+        }
+    }
+}

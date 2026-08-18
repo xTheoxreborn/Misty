@@ -36,7 +36,7 @@ namespace Misty
 
             InitialiserDiscordPresence();
 
-            label2.Text = "0.2.3.2";
+            label2.Text = "0.2.3.3";
 
             MaximumSize = Size;
             MinimumSize = Size;
@@ -561,7 +561,15 @@ namespace Misty
                 {
                     Details = "Joue à Minecraft",
                     State = selectedVersion + " " + comboBoxMode.Text,
-                    Timestamps = Timestamps.Now
+                    Timestamps = Timestamps.Now,
+                    Buttons = new DiscordRPC.Button[]
+                    {
+                        new DiscordRPC.Button()
+                        {
+                            Label = "Télécharger Misty",
+                            Url = "https://github.com/xTheoxreborn/Misty/releases/tag/0.2.3.2"
+                        }
+                    }
                 });
 
                 process.EnableRaisingEvents = true;
@@ -572,7 +580,15 @@ namespace Misty
                         discordClient.SetPresence(new RichPresence()
                         {
                             Details = "Dans le launcher",
-                            Timestamps = Timestamps.Now
+                            Timestamps = Timestamps.Now,
+                            Buttons = new DiscordRPC.Button[]
+                            {
+                                new DiscordRPC.Button()
+                                {
+                                    Label = "Télécharger Misty",
+                                    Url = "https://github.com/xTheoxreborn/Misty/releases/tag/0.2.3.2"
+                                }
+                            }
                         });
                     });
                 };
@@ -609,11 +625,22 @@ namespace Misty
                 //Details = "Prépare son lancement",
                 State = "Dans le launcher",
                 Timestamps = Timestamps.Now,
+
+                Buttons = new DiscordRPC.Button[]
+                {
+                    new DiscordRPC.Button()
+                    {
+                        Label = "Télécharger Misty",
+                        Url = "https://github.com/xTheoxreborn/Misty/releases/tag/0.2.3.2"
+                    }
+                }
+                /*
                 Assets = new Assets()
                 {
                     LargeImageKey = "logo",  // nom d'une image que tu upload plus tard dans le portail Discord
                     LargeImageText = "Misty"
-                }
+                }*/
+
             });
         }
 
@@ -643,6 +670,11 @@ namespace Misty
         private void comboBoxMode_SelectedIndexChanged(object sender, EventArgs e)
         {
 
+        }
+
+        private void pictureBox1_Click(object sender, EventArgs e)
+        {
+            Process.Start("explorer.exe", chemin);
         }
     }
 }

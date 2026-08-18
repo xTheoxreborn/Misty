@@ -18,8 +18,23 @@
 
   <ItemGroup>
     <Reference Include="CmlLib.Core.Installer.Forge">
-      <HintPath>..\..\CmlLib.Core.Installer.Forge\CmlLib.Core.Installer.Forge\bin\Debug\netstandard2.0\CmlLib.Core.Installer.Forge.dll</HintPath>
+      <HintPath>..\..\..\CmlLib.Core.Installer.Forge\CmlLib.Core.Installer.Forge\bin\Debug\netstandard2.0\CmlLib.Core.Installer.Forge.dll</HintPath>
     </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
 
 </Project>

@@ -37,7 +37,8 @@
                 "0.2.3v1 - Ajout d'un nouveau menu option, possibilité de créer ou de supprimer des profils, déplacement de la modification de la ram allouée\n" +
                 "0.2.3v2 - Correction de bugs lié à l'interface et à sa logique\n" +
                 "0.2.3.1 - Changement des logos et des titres de fenêtre, modification du rich presence. +" +
-                "0.2.3.2 - Ajout de Fabric, Quilt, LiteLoader";
+                "0.2.3.2 - Ajout de Fabric, Quilt, LiteLoader" +
+                "0.2.3.3 - Permmettre à l'utilisateur d'ouvrir le dossier minecraft";
         }
         private void textBox1_TextChanged(object sender, EventArgs e)
         {

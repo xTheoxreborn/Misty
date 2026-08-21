@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using CmlLib.Core;
 using CmlLib.Core.Auth;
 using CmlLib.Core.Auth.Microsoft;
@@ -10,7 +9,10 @@ using CmlLib.Core.ModLoaders.LiteLoader;
 using CmlLib.Core.ModLoaders.QuiltMC;
 using CmlLib.Core.ProcessBuilder;
 using DiscordRPC;
+using Optifine.Installer;
+using System.Diagnostics;
 using System.Net.Http;
+using Optifine.Installer;
 
 namespace Misty
 {
@@ -28,7 +30,8 @@ namespace Misty
         MSession? session;
         ForgeInstaller forgee;
         NeoForgeInstaller neoForgee;
-        MinecraftPath mcPath; // ajoute ce champ en haut, à côté de tes autres champs
+        MinecraftPath mcPath;
+        OptifineInstaller optifineInstaller;
 
         public Form1()
         {
@@ -36,7 +39,7 @@ namespace Misty
 
             InitialiserDiscordPresence();
 
-            label2.Text = "0.2.3.3";
+            label2.Text = "0.2.3.4";
 
             MaximumSize = Size;
             MinimumSize = Size;
@@ -48,6 +51,7 @@ namespace Misty
             launcher = new MinecraftLauncher(mcPath);
             forgee = new ForgeInstaller(launcher);
             neoForgee = new NeoForgeInstaller(launcher);
+            optifineInstaller = new OptifineInstaller(new HttpClient());
 
             system_register();
             ChargerPseudos();
@@ -248,6 +252,18 @@ namespace Misty
                 }
                 catch { }
             }
+            if (VersionPeutAvoirOptifine(versionMinecraft))
+            {
+                try
+                {
+                    var versionsOptifine = await optifineInstaller.GetOptifineVersionsAsync();
+                    if (versionsOptifine.Any(v => v.MinecraftVersion == versionMinecraft))
+                    {
+                        comboBoxMode.Items.Add("OptiFine");
+                    }
+                }
+                catch { }
+            }
 
             if (VersionPeutAvoirNeoForge(versionMinecraft))
             {
@@ -272,7 +288,7 @@ namespace Misty
                 }
                 catch { }
             }
-
+            /*
             if (VersionPeutAvoirQuilt(versionMinecraft))
             {
                 try
@@ -283,7 +299,7 @@ namespace Misty
                         comboBoxMode.Items.Add("Quilt");
                 }
                 catch { }
-            }
+            }*/
 
             if (VersionPeutAvoirLiteLoader(versionMinecraft))
             {
@@ -308,6 +324,16 @@ namespace Misty
                 return false;
 
             var min = new Version(1, 7, 10);
+            var max = new Version(26, 3);
+
+            return v >= min && v <= max;
+        }
+        private bool VersionPeutAvoirOptifine(string version)
+        {
+            if (!System.Version.TryParse(NettoyerVersion(version), out var v))
+                return false;
+
+            var min = new Version(1, 7, 2);
             var max = new Version(26, 3);
 
             return v >= min && v <= max;
@@ -437,6 +463,14 @@ namespace Misty
                     case "Vanilla":
                         await launcher.InstallAsync(selectedVersion);
                         break;
+                    case "OptiFine":
+                        var versionsOptifine = await optifineInstaller.GetOptifineVersionsAsync();
+                        var optifineChoisi = versionsOptifine.FirstOrDefault(v => v.MinecraftVersion == selectedVersion);
+
+                        installedVersionName = await optifineInstaller.InstallOptifineAsync(mcPath.BasePath, optifineChoisi);
+                        await launcher.InstallAsync(installedVersionName);
+                        Nomversion = installedVersionName;
+                        break;
 
                     case "Forge":
                         installedVersionName = await forgee.Install(selectedVersion, new ForgeInstallOptions());
@@ -455,7 +489,6 @@ namespace Misty
                         installedVersionName = await fabricInstaller.Install(selectedVersion, mcPath);
                         await launcher.InstallAsync(installedVersionName);
                         Nomversion = installedVersionName;
-                        textBox1.Text = "Installation Fabric terminée.";
                         break;
 
                     case "Quilt":
@@ -463,7 +496,6 @@ namespace Misty
                         installedVersionName = await quiltInstaller.Install(selectedVersion, mcPath);
                         await launcher.InstallAsync(installedVersionName);
                         Nomversion = installedVersionName;
-                        textBox1.Text = "Installation Quilt terminée.";
                         break;
 
                     case "LiteLoader":
@@ -478,7 +510,6 @@ namespace Misty
 
                         await launcher.InstallAsync(installedVersionName);
                         Nomversion = installedVersionName;
-                        textBox1.Text = "Installation LiteLoader terminée.";
                         break;
                 }
             }
@@ -567,7 +598,7 @@ namespace Misty
                         new DiscordRPC.Button()
                         {
                             Label = "Télécharger Misty",
-                            Url = "https://github.com/xTheoxreborn/Misty/releases/tag/0.2.3.2"
+                            Url = "https://github.com/xTheoxreborn/Misty/releases/latest"
                         }
                     }
                 });
@@ -586,7 +617,7 @@ namespace Misty
                                 new DiscordRPC.Button()
                                 {
                                     Label = "Télécharger Misty",
-                                    Url = "https://github.com/xTheoxreborn/Misty/releases/tag/0.2.3.2"
+                                    Url = "https://github.com/xTheoxreborn/Misty/releases/latest"
                                 }
                             }
                         });
@@ -631,7 +662,7 @@ namespace Misty
                     new DiscordRPC.Button()
                     {
                         Label = "Télécharger Misty",
-                        Url = "https://github.com/xTheoxreborn/Misty/releases/tag/0.2.3.2"
+                        Url = "https://github.com/xTheoxreborn/Misty/releases/latest"
                     }
                 }
                 /*

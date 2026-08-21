@@ -14,6 +14,7 @@
     <PackageReference Include="CmlLib.Core.Auth.Microsoft" Version="3.3.1" />
     <PackageReference Include="CmlLib.Core.Installer.NeoForge" Version="4.0.1" />
     <PackageReference Include="DiscordRichPresence" Version="1.6.1.70" />
+    <PackageReference Include="Optifine.Installer" Version="1.0.1" />
   </ItemGroup>
 
   <ItemGroup>

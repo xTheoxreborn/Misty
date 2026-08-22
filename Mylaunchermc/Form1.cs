@@ -24,6 +24,7 @@ namespace Misty
         string selectedVersion = "";
         string Nomversion;
         string installedVersionName;
+        string Ram_choisie;
 
         MinecraftLauncher launcher;
         JELoginHandler loginHandler;
@@ -39,7 +40,7 @@ namespace Misty
 
             InitialiserDiscordPresence();
 
-            label2.Text = "0.2.3.4";
+            label2.Text = "0.2.3.5";
 
             MaximumSize = Size;
             MinimumSize = Size;
@@ -88,6 +89,8 @@ namespace Misty
             comboBox_compte.DropDownStyle = ComboBoxStyle.DropDownList;   // <- ligne ajoutée, tu l'avais oubliée
 
 
+            
+            
         }
 
         private void comboBox1_MouseWheel(object sender, MouseEventArgs e)
@@ -138,7 +141,22 @@ namespace Misty
             else
                 comboBox_compte.Text = "PseudoTest";
         }
+        private void affect_ram()
+        {
+            if (File.Exists(Form1.data))
+            {
+                var lignes = File.ReadAllLines(Form1.data);
 
+                foreach (var ligne in lignes)
+                {
+                    if (ligne.StartsWith("ram="))
+                        Ram_choisie = ligne.Split('=')[1];
+                }
+            }
+            else
+                Ram_choisie = "4096";
+
+        }
         private void Form1_Load(object sender, EventArgs e) { }
 
         // ── Téléchargement / installation de la version choisie ──
@@ -151,6 +169,7 @@ namespace Misty
         // ── Lancement du jeu ──
         private async void button2_Click(object sender, EventArgs e)
         {
+            affect_ram();
             await downloadMC();
             Programlaunch();
         }
@@ -206,6 +225,7 @@ namespace Misty
                 {
                     sw.WriteLine("lastpseudo=PseudoTest");
                     sw.WriteLine("lastversion=");
+                    sw.WriteLine("ram=");
                     sw.WriteLine("listpseudo=PseudoTest");
                 }
             }
@@ -574,7 +594,7 @@ namespace Misty
                     var launchOption = new MLaunchOption
                     {
                         Session = sessionAUtiliser,
-                        MaximumRamMb = Convert.ToInt32(Form3.Ram_choisi)
+                        MaximumRamMb = Convert.ToInt32(Ram_choisie)
                     };
                     process = await launcher.BuildProcessAsync(selectedVersion, launchOption);
                 }
@@ -583,7 +603,7 @@ namespace Misty
                     process = await launcher.BuildProcessAsync(Nomversion, new MLaunchOption
                     {
                         Session = sessionAUtiliser,
-                        MaximumRamMb = Convert.ToInt32(Form3.Ram_choisi),
+                        MaximumRamMb = Convert.ToInt32(Ram_choisie),
                     });
                 }
 

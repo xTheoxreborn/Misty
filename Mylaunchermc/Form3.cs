@@ -1,21 +1,41 @@
-﻿using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+﻿using CmlLib.Core.ProcessBuilder;
+using Microsoft.VisualBasic.Devices;
+using System.Diagnostics;
+using static System.Runtime.InteropServices.JavaScript.JSType;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace Misty
 {
     public partial class Form3 : Form
     {
-        public static string Ram_choisi = "5000";
-
+        //public static string Ram_choisi = "";
+        float RamTotale = 0;
+        int TRamTotale = 0;
+        string arguments = "(Get-ComputerInfo).OsTotalVisibleMemorySize";
         public Form3()
         {
             InitializeComponent();
-            comboBox_ram.Text = "5000";
             ChargerPseudos(); // on charge la liste dès l'ouverture du Form3
 
             //comboBox_compte.MouseWheel += comboBox_compte_MouseWheel;
 
             comboBox_compte.DropDownStyle = ComboBoxStyle.DropDownList;
+
+            if (File.Exists(Form1.data))
+            {
+                var lignes = File.ReadAllLines(Form1.data);
+
+                foreach (var ligne in lignes)
+                {
+                    if (ligne.StartsWith("ram="))
+                        comboBox_ram.Text = ligne.Split('=')[1];
+                }
+            }
+            else
+                comboBox_ram.Text = "4096";
         }
+
+
 
         // ===== Ajoute un nouveau pseudo à la liste existante =====
         private void AjouterPseudo(string nouveauPseudo)
@@ -119,7 +139,7 @@ namespace Misty
             }
             File.WriteAllLines(Form1.data, lignes);
 
-            Ram_choisi = comboBox_ram.Text;
+            //Ram_choisi = comboBox_ram.Text;
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -164,6 +184,39 @@ namespace Misty
                 comboBox_compte.Visible = false;
                 comboBox_compte.Text = ""; // on vide le champ pour la prochaine saisie
             }
+        }
+
+        private void button_scan_ram_Click(object sender, EventArgs e)
+        {
+            ProcessStartInfo startInfo = new ProcessStartInfo()
+            {
+                FileName = "powershell.exe",
+                Arguments = $"/C {arguments}",
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true
+            };
+            using Process process = Process.Start(startInfo);
+
+            string output = process.StandardOutput.ReadToEnd();
+            string error = process.StandardError.ReadToEnd();
+
+            process.WaitForExit();
+
+            string result = output;
+
+            RamTotale = Convert.ToSingle(output);
+            RamTotale = RamTotale / 1024 / 1024;
+
+            TRamTotale = (int)Math.Ceiling(RamTotale);
+
+            for (int i = 1; i < TRamTotale; i++)
+            {
+                int ram_possible = i * 1024;
+                comboBox_ram.Items.Add(ram_possible);
+            }
+
+            //MessageBox.Show(RamTotale.ToString());
         }
     }
 }

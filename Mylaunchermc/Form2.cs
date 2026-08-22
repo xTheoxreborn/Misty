@@ -39,7 +39,8 @@
                 "0.2.3.1 - Changement des logos et des titres de fenêtre, modification du rich presence. +" +
                 "0.2.3.2 - Ajout de Fabric, Quilt, LiteLoader" +
                 "0.2.3.3 - Permmettre à l'utilisateur d'ouvrir le dossier minecraft" +
-                "0.2.3.4 - Suppression de Quilt du à certains problème et ajout de optifine";
+                "0.2.3.4 - Suppression de Quilt du à certains problème et ajout de optifine" +
+                "0.2.3.5 - Ajout de la possibilité de modifier la ram allouée";
         }
         private void textBox1_TextChanged(object sender, EventArgs e)
         {

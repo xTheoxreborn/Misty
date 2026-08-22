@@ -37,13 +37,15 @@
             button_supprcompte = new Button();
             label1 = new Label();
             label3 = new Label();
+            button_scan_ram = new Button();
             SuspendLayout();
             // 
             // button1
             // 
-            button1.Location = new Point(21, 41);
+            button1.Location = new Point(18, 31);
+            button1.Margin = new Padding(3, 2, 3, 2);
             button1.Name = "button1";
-            button1.Size = new Size(102, 29);
+            button1.Size = new Size(89, 22);
             button1.TabIndex = 0;
             button1.Text = "Créer";
             button1.UseVisualStyleBackColor = true;
@@ -51,46 +53,48 @@
             // 
             // comboBox_ram
             // 
-            comboBox_ram.Enabled = false;
             comboBox_ram.FormattingEnabled = true;
-            comboBox_ram.Items.AddRange(new object[] { "5000" });
-            comboBox_ram.Location = new Point(91, 149);
+            comboBox_ram.Location = new Point(80, 112);
+            comboBox_ram.Margin = new Padding(3, 2, 3, 2);
             comboBox_ram.Name = "comboBox_ram";
-            comboBox_ram.Size = new Size(151, 28);
+            comboBox_ram.Size = new Size(133, 23);
             comboBox_ram.TabIndex = 1;
             comboBox_ram.SelectedIndexChanged += comboBox1_SelectedIndexChanged;
             // 
             // label2
             // 
             label2.AutoSize = true;
-            label2.Location = new Point(21, 152);
+            label2.Location = new Point(18, 114);
             label2.Name = "label2";
-            label2.Size = new Size(46, 20);
+            label2.Size = new Size(37, 15);
             label2.TabIndex = 3;
             label2.Text = "Ram :";
             // 
             // comboBox_compte
             // 
             comboBox_compte.FormattingEnabled = true;
-            comboBox_compte.Location = new Point(254, 42);
+            comboBox_compte.Location = new Point(222, 32);
+            comboBox_compte.Margin = new Padding(3, 2, 3, 2);
             comboBox_compte.Name = "comboBox_compte";
-            comboBox_compte.Size = new Size(207, 28);
+            comboBox_compte.Size = new Size(182, 23);
             comboBox_compte.TabIndex = 4;
             comboBox_compte.Visible = false;
             // 
             // textBox_compte
             // 
-            textBox_compte.Location = new Point(254, 43);
+            textBox_compte.Location = new Point(222, 32);
+            textBox_compte.Margin = new Padding(3, 2, 3, 2);
             textBox_compte.Name = "textBox_compte";
-            textBox_compte.Size = new Size(207, 27);
+            textBox_compte.Size = new Size(182, 23);
             textBox_compte.TabIndex = 5;
             textBox_compte.Visible = false;
             // 
             // button_supprcompte
             // 
-            button_supprcompte.Location = new Point(129, 41);
+            button_supprcompte.Location = new Point(113, 31);
+            button_supprcompte.Margin = new Padding(3, 2, 3, 2);
             button_supprcompte.Name = "button_supprcompte";
-            button_supprcompte.Size = new Size(102, 29);
+            button_supprcompte.Size = new Size(89, 22);
             button_supprcompte.TabIndex = 6;
             button_supprcompte.Text = "Supprimer";
             button_supprcompte.UseVisualStyleBackColor = true;
@@ -99,26 +103,37 @@
             // label1
             // 
             label1.AutoSize = true;
-            label1.Location = new Point(21, 18);
+            label1.Location = new Point(18, 14);
             label1.Name = "label1";
-            label1.Size = new Size(69, 20);
+            label1.Size = new Size(56, 15);
             label1.TabIndex = 7;
             label1.Text = "Compte :";
             // 
             // label3
             // 
             label3.AutoSize = true;
-            label3.Location = new Point(12, 95);
+            label3.Location = new Point(10, 71);
             label3.Name = "label3";
-            label3.Size = new Size(459, 20);
+            label3.Size = new Size(382, 15);
             label3.TabIndex = 8;
             label3.Text = "___________________________________________________________________________";
             // 
+            // button_scan_ram
+            // 
+            button_scan_ram.Location = new Point(233, 112);
+            button_scan_ram.Name = "button_scan_ram";
+            button_scan_ram.Size = new Size(75, 23);
+            button_scan_ram.TabIndex = 9;
+            button_scan_ram.Text = "Scan";
+            button_scan_ram.UseVisualStyleBackColor = true;
+            button_scan_ram.Click += button_scan_ram_Click;
+            // 
             // Form3
             // 
-            AutoScaleDimensions = new SizeF(8F, 20F);
+            AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(485, 215);
+            ClientSize = new Size(424, 161);
+            Controls.Add(button_scan_ram);
             Controls.Add(label3);
             Controls.Add(label1);
             Controls.Add(button_supprcompte);
@@ -128,7 +143,6 @@
             Controls.Add(comboBox_ram);
             Controls.Add(button1);
             Icon = (Icon)resources.GetObject("$this.Icon");
-            Margin = new Padding(3, 4, 3, 4);
             Name = "Form3";
             Text = "Options";
             ResumeLayout(false);
@@ -145,5 +159,6 @@
         private Button button_supprcompte;
         private Label label1;
         private Label label3;
+        private Button button_scan_ram;
     }
 }

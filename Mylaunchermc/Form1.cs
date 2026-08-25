@@ -10,9 +10,11 @@ using CmlLib.Core.ModLoaders.QuiltMC;
 using CmlLib.Core.ProcessBuilder;
 using DiscordRPC;
 using Optifine.Installer;
+using Optifine.Installer;
 using System.Diagnostics;
 using System.Net.Http;
-using Optifine.Installer;
+using System.Text.Json;
+using System.Windows.Forms;
 
 namespace Misty
 {
@@ -25,6 +27,7 @@ namespace Misty
         string Nomversion;
         string installedVersionName;
         string Ram_choisie;
+        string app_version;
 
         MinecraftLauncher launcher;
         JELoginHandler loginHandler;
@@ -40,7 +43,9 @@ namespace Misty
 
             InitialiserDiscordPresence();
 
-            label2.Text = "0.2.3.5";
+            app_version = "0.2.3.6";
+
+            label2.Text = app_version;
 
             MaximumSize = Size;
             MinimumSize = Size;
@@ -57,6 +62,7 @@ namespace Misty
             system_register();
             ChargerPseudos();
             ChargerPseudoEtDerniereVersion();
+            VerifierMiseAJour();
 
             // Progression du téléchargement (remplace tes anciens compteurs "tache")
             launcher.FileProgressChanged += (sender, args) =>
@@ -235,6 +241,55 @@ namespace Misty
             //system_register();
         }
 
+        private async void VerifierMiseAJour()
+        {
+            try
+            {
+                using var client = new HttpClient();
+                client.DefaultRequestHeaders.Add("User-Agent", "Misty"); // obligatoire, GitHub refuse sans ça
+
+                string json = await client.GetStringAsync("https://api.github.com/repos/xTheoxreborn/Misty/releases/latest");
+
+                using var doc = JsonDocument.Parse(json);
+                string versionDistante = doc.RootElement.GetProperty("tag_name").GetString(); // ex: "v0.1.3"
+                string urlTelechargement = doc.RootElement
+                    .GetProperty("assets")[0]
+                    .GetProperty("browser_download_url")
+                    .GetString();
+
+                string versionDistanteNettoyee = versionDistante.TrimStart('v'); // enlève le "v" devant si présent
+
+                if (versionDistanteNettoyee != app_version)
+                {
+
+                    var resultat = MessageBox.Show(
+                        $"Une nouvelle version est disponible : {versionDistanteNettoyee} (actuelle : {app_version}).\nTélécharger maintenant ?",
+                        "Mise à jour disponible",
+                        MessageBoxButtons.YesNo,
+                        MessageBoxIcon.Information);
+
+                    if (resultat == DialogResult.Yes)
+                    {
+                        Process.Start(new ProcessStartInfo(urlTelechargement) { UseShellExecute = true });
+                    }
+                    /*
+                    else if (resultat == MessageBoxResult.No)
+                    {
+                        label_maj.Visibility = Visibility.Visible;
+                        //button_maj.Visibility = Visibility.Visible;
+                    }*/
+                }
+                /*
+                else
+                {
+                    label_maj.Visibility = Visibility.Hidden;
+                }*/
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Erreur vérification MAJ : " + ex.Message);
+            }
+        }
         private async void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
             button2.Enabled = false;
@@ -613,6 +668,7 @@ namespace Misty
                     Details = "Joue à Minecraft",
                     State = selectedVersion + " " + comboBoxMode.Text,
                     Timestamps = Timestamps.Now,
+                    /*
                     Buttons = new DiscordRPC.Button[]
                     {
                         new DiscordRPC.Button()
@@ -620,7 +676,7 @@ namespace Misty
                             Label = "Télécharger Misty",
                             Url = "https://github.com/xTheoxreborn/Misty/releases/latest"
                         }
-                    }
+                    }*/
                 });
 
                 process.EnableRaisingEvents = true;
@@ -632,6 +688,8 @@ namespace Misty
                         {
                             Details = "Dans le launcher",
                             Timestamps = Timestamps.Now,
+
+                            /*
                             Buttons = new DiscordRPC.Button[]
                             {
                                 new DiscordRPC.Button()
@@ -639,7 +697,7 @@ namespace Misty
                                     Label = "Télécharger Misty",
                                     Url = "https://github.com/xTheoxreborn/Misty/releases/latest"
                                 }
-                            }
+                            }*/
                         });
                     });
                 };
@@ -676,7 +734,7 @@ namespace Misty
                 //Details = "Prépare son lancement",
                 State = "Dans le launcher",
                 Timestamps = Timestamps.Now,
-
+                /*
                 Buttons = new DiscordRPC.Button[]
                 {
                     new DiscordRPC.Button()
@@ -685,7 +743,7 @@ namespace Misty
                         Url = "https://github.com/xTheoxreborn/Misty/releases/latest"
                     }
                 }
-                /*
+                
                 Assets = new Assets()
                 {
                     LargeImageKey = "logo",  // nom d'une image que tu upload plus tard dans le portail Discord

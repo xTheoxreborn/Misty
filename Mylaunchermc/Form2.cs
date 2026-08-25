@@ -36,11 +36,12 @@
                 "0.2.2.9 - Amélioration du rich presence v2 + ajout d'un nv form\n" +
                 "0.2.3v1 - Ajout d'un nouveau menu option, possibilité de créer ou de supprimer des profils, déplacement de la modification de la ram allouée\n" +
                 "0.2.3v2 - Correction de bugs lié à l'interface et à sa logique\n" +
-                "0.2.3.1 - Changement des logos et des titres de fenêtre, modification du rich presence. +" +
-                "0.2.3.2 - Ajout de Fabric, Quilt, LiteLoader" +
-                "0.2.3.3 - Permmettre à l'utilisateur d'ouvrir le dossier minecraft" +
-                "0.2.3.4 - Suppression de Quilt du à certains problème et ajout de optifine" +
-                "0.2.3.5 - Ajout de la possibilité de modifier la ram allouée";
+                "0.2.3.1 - Changement des logos et des titres de fenêtre, modification du rich presence\n" +
+                "0.2.3.2 - Ajout de Fabric, Quilt, LiteLoader\n" +
+                "0.2.3.3 - Permmettre à l'utilisateur d'ouvrir le dossier minecraft\n" +
+                "0.2.3.4 - Suppression de Quilt du à certains problème et ajout de optifine\n" +
+                "0.2.3.5 - Ajout de la possibilité de modifier la ram allouée\n" +
+                "0.2.3.6 - Détection de nouvelles mises à jour\n";
         }
         private void textBox1_TextChanged(object sender, EventArgs e)
         {

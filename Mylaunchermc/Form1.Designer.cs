@@ -111,7 +111,7 @@
             // label2
             // 
             label2.AutoSize = true;
-            label2.Location = new Point(1317, 589);
+            label2.Location = new Point(1319, 591);
             label2.Name = "label2";
             label2.Size = new Size(38, 15);
             label2.TabIndex = 6;

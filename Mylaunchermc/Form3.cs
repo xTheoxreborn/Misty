@@ -69,9 +69,9 @@ namespace Misty
         {
             var resultat = new List<string>();
 
-            if (!File.Exists(Form1.data)) return resultat;
+            if (!File.Exists(Form1.listpseudo)) return resultat;
 
-            var lignes = File.ReadAllLines(Form1.data);
+            var lignes = File.ReadAllLines(Form1.listpseudo);
             foreach (var ligne in lignes)
             {
                 if (ligne.StartsWith("listpseudo="))
@@ -89,11 +89,11 @@ namespace Misty
         // ===== Réécrit la liste complète dans le fichier =====
         private void EcrireListePseudos(List<string> pseudos)
         {
-            if (!File.Exists(Form1.data)) return;
+            if (!File.Exists(Form1.listpseudo)) return;
 
             string nouvelleValeur = "listpseudo=" + string.Join(",", pseudos);
 
-            var lignes = File.ReadAllLines(Form1.data);
+            var lignes = File.ReadAllLines(Form1.listpseudo);
             bool ligneExiste = false;
 
             for (int i = 0; i < lignes.Length; i++)
@@ -107,11 +107,11 @@ namespace Misty
 
             if (ligneExiste)
             {
-                File.WriteAllLines(Form1.data, lignes);
+                File.WriteAllLines(Form1.listpseudo, lignes);
             }
             else
             {
-                File.AppendAllLines(Form1.data, new[] { nouvelleValeur });
+                File.AppendAllLines(Form1.listpseudo, new[] { nouvelleValeur });
             }
         }
 

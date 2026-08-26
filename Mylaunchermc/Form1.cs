@@ -10,12 +10,10 @@ using CmlLib.Core.ModLoaders.QuiltMC;
 using CmlLib.Core.ProcessBuilder;
 using DiscordRPC;
 using Optifine.Installer;
-using Optifine.Installer;
 using System.Diagnostics;
 using System.Net.Http;
 using System.Text.Json;
-using System.Windows.Forms;
-
+using System.IO.Compression;
 namespace Misty
 {
 
@@ -23,11 +21,19 @@ namespace Misty
     {
         string chemin = @"C:\TEXT\";
         public static string data = @"C:\TEXT\data.txt";
+        public static string listpseudo = @"C:\TEXT\listpseudo.txt";
+        string version_data;
         string selectedVersion = "";
         string Nomversion;
         string installedVersionName;
         string Ram_choisie;
         string app_version;
+        string cheminDossier = AppContext.BaseDirectory;
+        string Path_APP;
+        int first,second;
+        int nbre_chaine;
+        string new_appversion;
+        string Suppr;
 
         MinecraftLauncher launcher;
         JELoginHandler loginHandler;
@@ -43,16 +49,21 @@ namespace Misty
 
             InitialiserDiscordPresence();
 
-            app_version = "0.2.3.6";
+            app_version = "0.2.3.7";
+
+            version_data = "1.0";
+
+            first = 1319;
+            second = 591;
+
+            Position_label_version();
 
             label2.Text = app_version;
+            label2.Location = new Point(first, second);
 
             MaximumSize = Size;
             MinimumSize = Size;
-
-            if (!Directory.Exists(chemin))
-                Directory.CreateDirectory(chemin);
-
+            
             mcPath = new MinecraftPath(chemin);
             launcher = new MinecraftLauncher(mcPath);
             forgee = new ForgeInstaller(launcher);
@@ -82,7 +93,6 @@ namespace Misty
                 textBox1.Text = $"{args.ProgressedBytes}/{args.TotalBytes} octets";
             };
 
-
             _ = ChargerVersionsAsync(); // async fire-and-forget dans le constructeur
 
 
@@ -92,18 +102,55 @@ namespace Misty
 
             comboBox1.DropDownStyle = ComboBoxStyle.DropDownList;
             comboBoxMode.DropDownStyle = ComboBoxStyle.DropDownList;
-            comboBox_compte.DropDownStyle = ComboBoxStyle.DropDownList;   // <- ligne ajoutée, tu l'avais oubliée
-
-
-            
-            
+            comboBox_compte.DropDownStyle = ComboBoxStyle.DropDownList;   // <- ligne ajoutée, tu l'avais oubliée         
         }
-
         private void comboBox1_MouseWheel(object sender, MouseEventArgs e)
         {
             ((HandledMouseEventArgs)e).Handled = true;
         }
+        private async Task Initiale_Path(string urlTelechargement)
+        {
+            Path_APP = $"Misty-{app_version}";
+            cheminDossier = cheminDossier.Split(Path_APP)[0];
 
+            await download_newversion_app(urlTelechargement);
+        }
+        private async Task download_newversion_app(string url)
+        {
+            string cheminDossierZip = cheminDossier + "Misty-" + new_appversion + ".zip";
+
+            using (HttpClient client = new HttpClient())
+            using (HttpResponseMessage response = await client.GetAsync(url))
+            {
+                response.EnsureSuccessStatusCode();
+
+                using (FileStream fs = new FileStream(cheminDossierZip, FileMode.Create))
+                {
+                    await response.Content.CopyToAsync(fs);
+                }
+            }
+
+            await ZipFile.ExtractToDirectoryAsync(cheminDossierZip, cheminDossier);
+            File.Delete(cheminDossierZip);
+
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = Path.Combine(cheminDossier, $"Misty-{new_appversion}", "Misty.exe"),
+                UseShellExecute = true
+            });
+
+            if (!File.Exists(data)) return;
+
+            var lignes = File.ReadAllLines(data);
+            for (int i = 0; i < lignes.Length; i++)
+            {
+                if (lignes[i].StartsWith("Suppr="))
+                    lignes[i] = "Suppr=" + cheminDossier + Path_APP;
+            }
+            File.WriteAllLines(data, lignes);
+            
+            Form1.ActiveForm.Close();
+        }
         // ── Chargement des versions disponibles (remplace List_release) ──
         private async Task ChargerVersionsAsync()
         {
@@ -125,9 +172,23 @@ namespace Misty
                 MessageBox.Show("Erreur au chargement des versions : " + ex.Message);
             }
         }
-
+        private void Position_label_version()
+        {
+            nbre_chaine = app_version.Length;
+            if (nbre_chaine < 8)
+            {
+                nbre_chaine = 8 - nbre_chaine;
+                first += nbre_chaine * 5;
+            }
+            else
+            {
+                nbre_chaine -= 8;
+                first -= nbre_chaine * 6;
+            }
+        }
         private void ChargerPseudoEtDerniereVersion()
         {
+
             if (File.Exists(data))
             {
                 var lignes = File.ReadAllLines(data);
@@ -139,6 +200,49 @@ namespace Misty
 
                     if (ligne.StartsWith("lastversion="))
                         comboBox1.Text = ligne.Split('=')[1];
+                    
+                    if (ligne.StartsWith("Suppr="))
+                    {
+                        Suppr = ligne.Split('=')[1];
+                        if (Suppr.Length > 10)
+                        {
+                            Directory.Delete(Suppr, true);
+
+                            MessageBox.Show("Mise à jour réussie avec succès !", "Succès", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                            for (int i = 0; i < lignes.Length; i++)
+                            {
+                                if (lignes[i].StartsWith("Suppr="))
+                                    lignes[i] = "Suppr=";
+                            }
+                            File.WriteAllLines(data, lignes);
+                        }
+                    }
+                        
+
+                    
+
+                    /*
+                    if (ligne.StartsWith("Suppr="))
+                    {
+                        Suppr = bool.Parse(ligne.Split('=')[1]);
+                        if (Suppr)
+                        {
+                            MessageBox.Show("Mise à jour réussie avec succès !", "Succès", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                            if (!File.Exists(data)) return;
+
+                            for (int i = 0; i < lignes.Length; i++)
+                            {
+                                if (lignes[i].StartsWith("Suppr="))
+                                    lignes[i] = "Suppr=" + "False";
+                            }
+                            File.WriteAllLines(data, lignes);
+                        }
+                    }*/
+                        
+                        
+
                     /*
                     if (ligne.StartsWith("ram="))
                         comboBox_ram.Text = ligne.Split('=')[1];*/
@@ -225,13 +329,25 @@ namespace Misty
         }
         private void system_register()
         {
+            if (!Directory.Exists(chemin))
+                Directory.CreateDirectory(chemin);
+
             if (!File.Exists(data))
             {
                 using (StreamWriter sw = File.CreateText(data))
                 {
+                    sw.WriteLine($"versiondatatxt={version_data}");
                     sw.WriteLine("lastpseudo=PseudoTest");
                     sw.WriteLine("lastversion=");
                     sw.WriteLine("ram=");
+                    sw.WriteLine("Suppr=False");
+                    //sw.WriteLine("listpseudo=PseudoTest");
+                }
+            }
+            if (!File.Exists(listpseudo))
+            {
+                using (StreamWriter sw = File.CreateText(listpseudo))
+                {
                     sw.WriteLine("listpseudo=PseudoTest");
                 }
             }
@@ -258,7 +374,8 @@ namespace Misty
                     .GetString();
 
                 string versionDistanteNettoyee = versionDistante.TrimStart('v'); // enlève le "v" devant si présent
-
+                new_appversion = versionDistanteNettoyee;
+                
                 if (versionDistanteNettoyee != app_version)
                 {
 
@@ -270,7 +387,8 @@ namespace Misty
 
                     if (resultat == DialogResult.Yes)
                     {
-                        Process.Start(new ProcessStartInfo(urlTelechargement) { UseShellExecute = true });
+                        //Process.Start(new ProcessStartInfo(urlTelechargement) { UseShellExecute = true });
+                        Initiale_Path(urlTelechargement);
                     }
                     /*
                     else if (resultat == MessageBoxResult.No)

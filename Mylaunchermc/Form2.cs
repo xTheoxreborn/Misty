@@ -41,7 +41,8 @@
                 "0.2.3.3 - Permmettre à l'utilisateur d'ouvrir le dossier minecraft\n" +
                 "0.2.3.4 - Suppression de Quilt du à certains problème et ajout de optifine\n" +
                 "0.2.3.5 - Ajout de la possibilité de modifier la ram allouée\n" +
-                "0.2.3.6 - Détection de nouvelles mises à jour\n";
+                "0.2.3.6 - Détection de nouvelles mises à jour\n" +
+                "0.2.3.7 - Modification de la détection des mises à jour avec une méthode automatique, changement de fichier data\n";
         }
         private void textBox1_TextChanged(object sender, EventArgs e)
         {

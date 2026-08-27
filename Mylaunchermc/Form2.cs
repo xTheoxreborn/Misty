@@ -42,7 +42,11 @@
                 "0.2.3.4 - Suppression de Quilt du à certains problème et ajout de optifine\n" +
                 "0.2.3.5 - Ajout de la possibilité de modifier la ram allouée\n" +
                 "0.2.3.6 - Détection de nouvelles mises à jour\n" +
-                "0.2.3.7 - Modification de la détection des mises à jour avec une méthode automatique, changement de fichier data\n";
+                "0.2.3.7 - Modification de la détection des mises à jour avec une méthode automatique, changement de fichier data\n" +
+                "0.2.3.7.1 - Résolution de bugs liés à la détection des mises à jour\n" +
+                "0.2.3.7.2 - Fix mise à jour\n" +
+                "0.2.3.8v1 - Fix taille fenêtre paramètre + Gros fix concernant la gestion d'OptiFine + Patch sur un bug lié à la ram allouée au 1er lancement\n" +
+                "0.2.3.8v2 - Correction bug lié au pseudo ne s'affichant pas\n";
         }
         private void textBox1_TextChanged(object sender, EventArgs e)
         {

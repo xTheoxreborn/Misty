@@ -9,11 +9,12 @@ using CmlLib.Core.ModLoaders.LiteLoader;
 using CmlLib.Core.ModLoaders.QuiltMC;
 using CmlLib.Core.ProcessBuilder;
 using DiscordRPC;
+using Microsoft.VisualBasic;
 using Optifine.Installer;
 using System.Diagnostics;
+using System.IO.Compression;
 using System.Net.Http;
 using System.Text.Json;
-using System.IO.Compression;
 namespace Misty
 {
 
@@ -49,9 +50,9 @@ namespace Misty
 
             InitialiserDiscordPresence();
 
-            app_version = "0.2.3.7";
+            app_version = "0.2.3.8";
 
-            version_data = "1.0";
+            version_data = "1.1";
 
             first = 1319;
             second = 591;
@@ -70,10 +71,7 @@ namespace Misty
             neoForgee = new NeoForgeInstaller(launcher);
             optifineInstaller = new OptifineInstaller(new HttpClient());
 
-            system_register();
-            ChargerPseudos();
-            ChargerPseudoEtDerniereVersion();
-            VerifierMiseAJour();
+            system_register();           
 
             // Progression du téléchargement (remplace tes anciens compteurs "tache")
             launcher.FileProgressChanged += (sender, args) =>
@@ -133,11 +131,7 @@ namespace Misty
             await ZipFile.ExtractToDirectoryAsync(cheminDossierZip, cheminDossier);
             File.Delete(cheminDossierZip);
 
-            Process.Start(new ProcessStartInfo
-            {
-                FileName = Path.Combine(cheminDossier, $"Misty-{new_appversion}", "Misty.exe"),
-                UseShellExecute = true
-            });
+            
 
             if (!File.Exists(data)) return;
 
@@ -148,8 +142,14 @@ namespace Misty
                     lignes[i] = "Suppr=" + cheminDossier + Path_APP;
             }
             File.WriteAllLines(data, lignes);
-            
-            Form1.ActiveForm.Close();
+
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = Path.Combine(cheminDossier, $"Misty-{new_appversion}", "Misty.exe"),
+                UseShellExecute = true
+            });
+
+            Application.Exit();
         }
         // ── Chargement des versions disponibles (remplace List_release) ──
         private async Task ChargerVersionsAsync()
@@ -186,7 +186,7 @@ namespace Misty
                 first -= nbre_chaine * 6;
             }
         }
-        private void ChargerPseudoEtDerniereVersion()
+        private async Task ChargerPseudoEtDerniereVersion()
         {
 
             if (File.Exists(data))
@@ -204,9 +204,23 @@ namespace Misty
                     if (ligne.StartsWith("Suppr="))
                     {
                         Suppr = ligne.Split('=')[1];
-                        if (Suppr.Length > 10)
+                        
+                        if (Suppr.StartsWith("C:"))
                         {
-                            Directory.Delete(Suppr, true);
+                            //MessageBox.Show(Suppr.Length.ToString());
+                            Thread.Sleep(500);
+                            try
+                            {
+                                Directory.Move(Suppr, cheminDossier + "OldPath");
+                            }
+                            catch(Exception ex)
+                            { 
+                                MessageBox.Show("Impossible de déplacer le dossier : " + ex.Message, "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            }
+                            
+
+                            if (Directory.Exists(cheminDossier + "OldPath"))
+                                Directory.Delete(cheminDossier + "OldPath", true);
 
                             MessageBox.Show("Mise à jour réussie avec succès !", "Succès", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
@@ -218,34 +232,6 @@ namespace Misty
                             File.WriteAllLines(data, lignes);
                         }
                     }
-                        
-
-                    
-
-                    /*
-                    if (ligne.StartsWith("Suppr="))
-                    {
-                        Suppr = bool.Parse(ligne.Split('=')[1]);
-                        if (Suppr)
-                        {
-                            MessageBox.Show("Mise à jour réussie avec succès !", "Succès", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-                            if (!File.Exists(data)) return;
-
-                            for (int i = 0; i < lignes.Length; i++)
-                            {
-                                if (lignes[i].StartsWith("Suppr="))
-                                    lignes[i] = "Suppr=" + "False";
-                            }
-                            File.WriteAllLines(data, lignes);
-                        }
-                    }*/
-                        
-                        
-
-                    /*
-                    if (ligne.StartsWith("ram="))
-                        comboBox_ram.Text = ligne.Split('=')[1];*/
                 }
             }
             else
@@ -260,7 +246,12 @@ namespace Misty
                 foreach (var ligne in lignes)
                 {
                     if (ligne.StartsWith("ram="))
+                    {
                         Ram_choisie = ligne.Split('=')[1];
+
+                        if (string.IsNullOrEmpty(Ram_choisie))
+                            Ram_choisie = "4096";
+                    }
                 }
             }
             else
@@ -292,9 +283,9 @@ namespace Misty
         {
             var resultat = new List<string>();
 
-            if (!File.Exists(data)) return resultat;
+            if (!File.Exists(listpseudo)) return resultat;
 
-            var lignes = File.ReadAllLines(data);
+            var lignes = File.ReadAllLines(listpseudo);
             foreach (var ligne in lignes)
             {
                 if (ligne.StartsWith("listpseudo="))
@@ -327,7 +318,7 @@ namespace Misty
             Form2 form = new Form2();
             form.ShowDialog();
         }
-        private void system_register()
+        private async Task system_register()
         {
             if (!Directory.Exists(chemin))
                 Directory.CreateDirectory(chemin);
@@ -340,7 +331,8 @@ namespace Misty
                     sw.WriteLine("lastpseudo=PseudoTest");
                     sw.WriteLine("lastversion=");
                     sw.WriteLine("ram=");
-                    sw.WriteLine("Suppr=False");
+                    sw.WriteLine("Suppr=");
+                    sw.WriteLine();
                     //sw.WriteLine("listpseudo=PseudoTest");
                 }
             }
@@ -351,13 +343,16 @@ namespace Misty
                     sw.WriteLine("listpseudo=PseudoTest");
                 }
             }
+            await VerifierMiseAJour();
+            ChargerPseudos();
+            ChargerPseudoEtDerniereVersion();
         }
         private void textBox3_TextChanged(object sender, EventArgs e)
         {
             //system_register();
         }
 
-        private async void VerifierMiseAJour()
+        private async Task VerifierMiseAJour()
         {
             try
             {
@@ -656,12 +651,32 @@ namespace Misty
                     case "Vanilla":
                         await launcher.InstallAsync(selectedVersion);
                         break;
+
                     case "OptiFine":
+                        await launcher.InstallAsync(selectedVersion);
+
                         var versionsOptifine = await optifineInstaller.GetOptifineVersionsAsync();
                         var optifineChoisi = versionsOptifine.FirstOrDefault(v => v.MinecraftVersion == selectedVersion);
 
-                        installedVersionName = await optifineInstaller.InstallOptifineAsync(mcPath.BasePath, optifineChoisi);
-                        await launcher.InstallAsync(installedVersionName);
+                        try
+                        {
+                            installedVersionName = await optifineInstaller.InstallOptifineAsync(mcPath.BasePath, optifineChoisi);
+                            await launcher.InstallAsync(installedVersionName);
+                        }
+                        catch(Exception ex)
+                        {
+                            string Message = ex.ToString();
+
+                            int debut = Message.IndexOf("versions\\");
+
+                            if (debut != -1)
+                            {
+                                string chemin = Message.Substring(debut);
+
+                                installedVersionName = chemin.Split('\\')[1];
+                            }
+                        }
+
                         Nomversion = installedVersionName;
                         break;
 
@@ -683,14 +698,14 @@ namespace Misty
                         await launcher.InstallAsync(installedVersionName);
                         Nomversion = installedVersionName;
                         break;
-
+                        /*
                     case "Quilt":
                         var quiltInstaller = new QuiltInstaller(new HttpClient());
                         installedVersionName = await quiltInstaller.Install(selectedVersion, mcPath);
                         await launcher.InstallAsync(installedVersionName);
                         Nomversion = installedVersionName;
                         break;
-
+                        */
                     case "LiteLoader":
                         var liteLoaderInstaller = new LiteLoaderInstaller(new HttpClient());
                         var loaders = await liteLoaderInstaller.GetAllLiteLoaders();
@@ -770,6 +785,14 @@ namespace Misty
                         MaximumRamMb = Convert.ToInt32(Ram_choisie)
                     };
                     process = await launcher.BuildProcessAsync(selectedVersion, launchOption);
+                }
+                else if (comboBoxMode.Text == "OptiFine")
+                {
+                    process = await launcher.InstallAndBuildProcessAsync(Nomversion,new MLaunchOption
+                    {
+                        Session = MSession.CreateOfflineSession("test123"),
+                        MaximumRamMb = Convert.ToInt32(Ram_choisie)
+                    });
                 }
                 else
                 {

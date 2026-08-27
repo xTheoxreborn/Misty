@@ -21,6 +21,9 @@ namespace Misty
 
             comboBox_compte.DropDownStyle = ComboBoxStyle.DropDownList;
 
+            MaximumSize = Size;
+            MinimumSize = Size;
+
             if (File.Exists(Form1.data))
             {
                 var lignes = File.ReadAllLines(Form1.data);

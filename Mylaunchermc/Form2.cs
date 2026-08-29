@@ -46,7 +46,9 @@
                 "0.2.3.7.1 - Résolution de bugs liés à la détection des mises à jour\n" +
                 "0.2.3.7.2 - Fix mise à jour\n" +
                 "0.2.3.8v1 - Fix taille fenêtre paramètre + Gros fix concernant la gestion d'OptiFine + Patch sur un bug lié à la ram allouée au 1er lancement\n" +
-                "0.2.3.8v2 - Correction bug lié au pseudo ne s'affichant pas\n";
+                "0.2.3.8v2 - Correction bug lié au pseudo ne s'affichant pas\n" +
+                "0.2.3.8.1 - Bug pseudo Optifine\n" +
+                "0.2.3.8.2 - Mise à jour du data.txt sans perte de données + reconnecte les comptes premium\n";
         }
         private void textBox1_TextChanged(object sender, EventArgs e)
         {

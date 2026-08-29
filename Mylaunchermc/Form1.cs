@@ -8,6 +8,7 @@ using CmlLib.Core.ModLoaders.FabricMC;
 using CmlLib.Core.ModLoaders.LiteLoader;
 using CmlLib.Core.ModLoaders.QuiltMC;
 using CmlLib.Core.ProcessBuilder;
+using CmlLib.Core.VersionMetadata;
 using DiscordRPC;
 using Microsoft.VisualBasic;
 using Optifine.Installer;
@@ -50,9 +51,9 @@ namespace Misty
 
             InitialiserDiscordPresence();
 
-            app_version = "0.2.3.8";
+            app_version = "0.2.3.8.2";
 
-            version_data = "1.1";
+            version_data = "1.2";
 
             first = 1319;
             second = 591;
@@ -71,7 +72,8 @@ namespace Misty
             neoForgee = new NeoForgeInstaller(launcher);
             optifineInstaller = new OptifineInstaller(new HttpClient());
 
-            system_register();           
+            system_register();
+            //verif_datafile();
 
             // Progression du téléchargement (remplace tes anciens compteurs "tache")
             launcher.FileProgressChanged += (sender, args) =>
@@ -188,6 +190,7 @@ namespace Misty
         }
         private async Task ChargerPseudoEtDerniereVersion()
         {
+            string premium = string.Empty;
 
             if (File.Exists(data))
             {
@@ -200,7 +203,36 @@ namespace Misty
 
                     if (ligne.StartsWith("lastversion="))
                         comboBox1.Text = ligne.Split('=')[1];
-                    
+
+                    if (ligne.StartsWith("premium="))
+                    {
+                        premium = ligne.Split('=')[1];
+
+                        if (premium == "True")
+                        {
+                            try
+                            {
+                                button3.Enabled = false;
+                                button3.Text = "Connexion en cours...";
+
+                                loginHandler = JELoginHandlerBuilder.BuildDefault();
+                                session = await loginHandler.Authenticate();
+
+                                button3.Text = session.Username;
+                                comboBox_compte.Enabled = false;
+
+                                button4.Enabled = true;
+                                button5.Enabled = true;
+                            }
+                            catch (Exception ex)
+                            {
+                                MessageBox.Show("Erreur de connexion : " + ex.Message);
+                                button3.Text = "Se connecter";
+                                button3.Enabled = true;
+                            }
+                        }
+                    }
+
                     if (ligne.StartsWith("Suppr="))
                     {
                         Suppr = ligne.Split('=')[1];
@@ -320,6 +352,8 @@ namespace Misty
         }
         private async Task system_register()
         {
+            await verif_datafile();
+
             if (!Directory.Exists(chemin))
                 Directory.CreateDirectory(chemin);
 
@@ -330,10 +364,9 @@ namespace Misty
                     sw.WriteLine($"versiondatatxt={version_data}");
                     sw.WriteLine("lastpseudo=PseudoTest");
                     sw.WriteLine("lastversion=");
+                    sw.WriteLine("premium=");
                     sw.WriteLine("ram=");
                     sw.WriteLine("Suppr=");
-                    sw.WriteLine();
-                    //sw.WriteLine("listpseudo=PseudoTest");
                 }
             }
             if (!File.Exists(listpseudo))
@@ -343,10 +376,65 @@ namespace Misty
                     sw.WriteLine("listpseudo=PseudoTest");
                 }
             }
+
             await VerifierMiseAJour();
             ChargerPseudos();
             ChargerPseudoEtDerniereVersion();
         }
+        private async Task verif_datafile()
+        {
+            string version_data2 = string.Empty;
+            string lastPseudo = string.Empty;
+            string lastVersion = string.Empty;
+            string dossierasuppr = string.Empty;
+            string ramassocie = string.Empty;
+            string premium = string.Empty;
+
+            if (File.Exists(data))
+            {
+                var lignes = File.ReadAllLines(data);
+
+                foreach (var ligne in lignes)
+                {
+                    if (ligne.StartsWith("versiondatatxt="))
+                        version_data2 = ligne.Split('=')[1];
+                    
+                    if (ligne.StartsWith("lastpseudo="))
+                        lastPseudo = ligne.Split('=')[1];
+
+                    if (ligne.StartsWith("lastversion="))
+                        lastVersion = ligne.Split('=')[1];
+
+                    if (ligne.StartsWith("Suppr="))
+                        dossierasuppr = ligne.Split('=')[1];
+
+                    if (ligne.StartsWith("ram="))
+                        ramassocie = ligne.Split('=')[1];
+
+                    if (ligne.StartsWith("premium="))
+                        premium = ligne.Split('=')[1];
+                }
+                if (version_data != version_data2)
+                {
+                    File.Move(data, chemin + "data_old.txt");
+
+                    using (StreamWriter sw = File.CreateText(data))
+                    {
+                        sw.WriteLine($"versiondatatxt={version_data}");
+                        sw.WriteLine($"lastpseudo={lastPseudo}");
+                        sw.WriteLine($"lastversion={lastVersion}");
+                        sw.WriteLine($"ram={ramassocie}");
+                        sw.WriteLine($"premium={premium}");
+                        sw.WriteLine($"Suppr={dossierasuppr}");
+                    }
+
+                    File.Delete(chemin + "data_old.txt");
+                }
+            }
+        }
+
+
+
         private void textBox3_TextChanged(object sender, EventArgs e)
         {
             //system_register();
@@ -595,6 +683,16 @@ namespace Misty
 
                 button4.Enabled = true;
                 button5.Enabled = true;
+
+                if (!File.Exists(data)) return;
+
+                var lignes = File.ReadAllLines(data);
+                for (int i = 0; i < lignes.Length; i++)
+                {
+                    if (lignes[i].StartsWith("premium="))
+                        lignes[i] = "premium=" + "True";
+                }
+                File.WriteAllLines(data, lignes);
             }
             catch (Exception ex)
             {
@@ -613,6 +711,16 @@ namespace Misty
 
             button4.Enabled = false;
             button5.Enabled = false;
+
+            if (!File.Exists(data)) return;
+
+            var lignes = File.ReadAllLines(data);
+            for (int i = 0; i < lignes.Length; i++)
+            {
+                if (lignes[i].StartsWith("premium="))
+                    lignes[i] = "premium=" + "False";
+            }
+            File.WriteAllLines(data, lignes);
         }
 
         private async void button5_Click_1(object sender, EventArgs e)
@@ -629,6 +737,16 @@ namespace Misty
 
                 button4.Enabled = false;
                 button5.Enabled = false;
+
+                if (!File.Exists(data)) return;
+
+                var lignes = File.ReadAllLines(data);
+                for (int i = 0; i < lignes.Length; i++)
+                {
+                    if (lignes[i].StartsWith("premium="))
+                        lignes[i] = "premium=" + "False";
+                }
+                File.WriteAllLines(data, lignes);
             }
             catch (Exception ex)
             {
@@ -790,7 +908,7 @@ namespace Misty
                 {
                     process = await launcher.InstallAndBuildProcessAsync(Nomversion,new MLaunchOption
                     {
-                        Session = MSession.CreateOfflineSession("test123"),
+                        Session = sessionAUtiliser,
                         MaximumRamMb = Convert.ToInt32(Ram_choisie)
                     });
                 }

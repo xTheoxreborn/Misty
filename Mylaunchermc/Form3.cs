@@ -11,7 +11,8 @@ namespace Misty
         //public static string Ram_choisi = "";
         float RamTotale = 0;
         int TRamTotale = 0;
-        string arguments = "(Get-ComputerInfo).OsTotalVisibleMemorySize";
+        string ram_in_data = "";
+        readonly string arguments = "(Get-ComputerInfo).OsTotalVisibleMemorySize";
         public Form3()
         {
             InitializeComponent();
@@ -23,6 +24,7 @@ namespace Misty
 
             MaximumSize = Size;
             MinimumSize = Size;
+            
 
             if (File.Exists(Form1.data))
             {
@@ -31,14 +33,27 @@ namespace Misty
                 foreach (var ligne in lignes)
                 {
                     if (ligne.StartsWith("ram="))
-                        comboBox_ram.Text = ligne.Split('=')[1];
+                    {
+                        //comboBox_ram.Text = ligne.Split('=')[1];
+                        ram_in_data = ligne.Split('=')[1];
+                        comboBox_ram.Items.Add(ram_in_data);
+                        comboBox_ram.SelectedItem = ram_in_data;
+                         
+                    }
                 }
             }
             else
-                comboBox_ram.Text = "4096";
+            {
+                comboBox_ram.Enabled = false;
+                comboBox_ram.SelectedItem = "4096";
+            }
+
+            comboBox_ram.MouseWheel += comboBox2_MouseWheel;
+            comboBox_ram.DropDownStyle = ComboBoxStyle.DropDownList;
         }
 
 
+        private void comboBox2_MouseWheel(object sender, MouseEventArgs e) { ((HandledMouseEventArgs)e).Handled = true; }
 
         // ===== Ajoute un nouveau pseudo à la liste existante =====
         private void AjouterPseudo(string nouveauPseudo)
@@ -213,11 +228,17 @@ namespace Misty
 
             TRamTotale = (int)Math.Ceiling(RamTotale);
 
+            comboBox_ram.Items.Clear();
+
             for (int i = 1; i < TRamTotale; i++)
             {
                 int ram_possible = i * 1024;
                 comboBox_ram.Items.Add(ram_possible);
             }
+
+            comboBox_ram.Enabled = true;
+            //Thread.Sleep(500);
+            comboBox_ram.Text = ram_in_data;
 
             //MessageBox.Show(RamTotale.ToString());
         }

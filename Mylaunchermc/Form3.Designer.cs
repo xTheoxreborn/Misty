@@ -53,6 +53,7 @@
             // 
             // comboBox_ram
             // 
+            comboBox_ram.Enabled = false;
             comboBox_ram.FormattingEnabled = true;
             comboBox_ram.Location = new Point(80, 112);
             comboBox_ram.Margin = new Padding(3, 2, 3, 2);

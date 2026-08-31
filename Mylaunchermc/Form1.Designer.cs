@@ -33,7 +33,6 @@
             textBox1 = new TextBox();
             textBox2 = new TextBox();
             button2 = new Button();
-            textBox3 = new TextBox();
             label1 = new Label();
             label2 = new Label();
             comboBox1 = new ComboBox();
@@ -46,12 +45,13 @@
             button6 = new Button();
             comboBox_compte = new ComboBox();
             pictureBox1 = new PictureBox();
+            flowLayoutPanel1 = new FlowLayoutPanel();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             SuspendLayout();
             // 
             // button1
             // 
-            button1.Location = new Point(554, 130);
+            button1.Location = new Point(190, 43);
             button1.Name = "button1";
             button1.Size = new Size(235, 23);
             button1.TabIndex = 0;
@@ -62,7 +62,7 @@
             // 
             // textBox1
             // 
-            textBox1.Location = new Point(506, 178);
+            textBox1.Location = new Point(142, 91);
             textBox1.Multiline = true;
             textBox1.Name = "textBox1";
             textBox1.Size = new Size(323, 40);
@@ -72,7 +72,7 @@
             // 
             // textBox2
             // 
-            textBox2.Location = new Point(506, 224);
+            textBox2.Location = new Point(142, 137);
             textBox2.Name = "textBox2";
             textBox2.Size = new Size(323, 23);
             textBox2.TabIndex = 2;
@@ -88,15 +88,6 @@
             button2.Text = "Lancer";
             button2.UseVisualStyleBackColor = true;
             button2.Click += button2_Click;
-            // 
-            // textBox3
-            // 
-            textBox3.Location = new Point(74, 487);
-            textBox3.Name = "textBox3";
-            textBox3.Size = new Size(174, 23);
-            textBox3.TabIndex = 4;
-            textBox3.Visible = false;
-            textBox3.TextChanged += textBox3_TextChanged;
             // 
             // label1
             // 
@@ -218,12 +209,22 @@
             pictureBox1.TabStop = false;
             pictureBox1.Click += pictureBox1_Click;
             // 
+            // flowLayoutPanel1
+            // 
+            flowLayoutPanel1.AutoScroll = true;
+            flowLayoutPanel1.Location = new Point(976, 328);
+            flowLayoutPanel1.Name = "flowLayoutPanel1";
+            flowLayoutPanel1.Size = new Size(298, 109);
+            flowLayoutPanel1.TabIndex = 23;
+            flowLayoutPanel1.Visible = false;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = SystemColors.Control;
             ClientSize = new Size(1366, 613);
+            Controls.Add(flowLayoutPanel1);
             Controls.Add(pictureBox1);
             Controls.Add(comboBox_compte);
             Controls.Add(button6);
@@ -236,7 +237,6 @@
             Controls.Add(comboBox1);
             Controls.Add(label2);
             Controls.Add(label1);
-            Controls.Add(textBox3);
             Controls.Add(button2);
             Controls.Add(textBox2);
             Controls.Add(textBox1);
@@ -256,7 +256,6 @@
         private TextBox textBox1;
         private TextBox textBox2;
         private Button button2;
-        private TextBox textBox3;
         private Label label1;
         private Label label2;
         private ComboBox comboBox1;
@@ -269,5 +268,6 @@
         private Button button6;
         private ComboBox comboBox_compte;
         private PictureBox pictureBox1;
+        private FlowLayoutPanel flowLayoutPanel1;
     }
 }

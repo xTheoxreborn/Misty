@@ -51,7 +51,7 @@ namespace Misty
 
             InitialiserDiscordPresence();
 
-            app_version = "0.2.3.8.2";
+            app_version = "0.2.3.8.3";
 
             version_data = "1.2";
 
@@ -102,12 +102,32 @@ namespace Misty
 
             comboBox1.DropDownStyle = ComboBoxStyle.DropDownList;
             comboBoxMode.DropDownStyle = ComboBoxStyle.DropDownList;
-            comboBox_compte.DropDownStyle = ComboBoxStyle.DropDownList;   // <- ligne ajoutée, tu l'avais oubliée         
+            comboBox_compte.DropDownStyle = ComboBoxStyle.DropDownList;   
+                                                                           
+
+
+
+            string dossierMods = Path.Combine(chemin, "mods");
+
+            flowLayoutPanel1.Controls.Clear();
+
+            if (Directory.Exists(dossierMods))
+            {
+                string[] mods = Directory.GetFiles(dossierMods, "*.jar");
+
+                foreach (string mod in mods)
+                {
+                    Label label = new Label();
+
+                    label.Text = Path.GetFileName(mod);
+                    label.AutoSize = true;
+                    label.Margin = new Padding(5);
+
+                    flowLayoutPanel1.Controls.Add(label);
+                }
+            }
         }
-        private void comboBox1_MouseWheel(object sender, MouseEventArgs e)
-        {
-            ((HandledMouseEventArgs)e).Handled = true;
-        }
+        private void comboBox1_MouseWheel(object sender, MouseEventArgs e) { ((HandledMouseEventArgs)e).Handled = true; }
         private async Task Initiale_Path(string urlTelechargement)
         {
             Path_APP = $"Misty-{app_version}";
@@ -432,14 +452,6 @@ namespace Misty
                 }
             }
         }
-
-
-
-        private void textBox3_TextChanged(object sender, EventArgs e)
-        {
-            //system_register();
-        }
-
         private async Task VerifierMiseAJour()
         {
             try

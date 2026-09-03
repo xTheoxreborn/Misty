@@ -1,3 +1,5 @@
 <Solution>
-  <Project Path="Mylaunchermc/Misty.csproj" />
+  <Project Path="Mylaunchermc/Misty.csproj">
+    <BuildType Project="Release" />
+  </Project>
 </Solution>

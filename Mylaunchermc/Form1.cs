@@ -11,11 +11,14 @@ using CmlLib.Core.ProcessBuilder;
 using CmlLib.Core.VersionMetadata;
 using DiscordRPC;
 using Microsoft.VisualBasic;
+using Misty.Service;
 using Optifine.Installer;
 using System.Diagnostics;
 using System.IO.Compression;
 using System.Net.Http;
 using System.Text.Json;
+using static System.Net.Mime.MediaTypeNames;
+
 namespace Misty
 {
 
@@ -32,7 +35,7 @@ namespace Misty
         string app_version;
         string cheminDossier = AppContext.BaseDirectory;
         string Path_APP;
-        int first,second;
+        int first, second;
         int nbre_chaine;
         string new_appversion;
         string Suppr;
@@ -51,7 +54,7 @@ namespace Misty
 
             InitialiserDiscordPresence();
 
-            app_version = "0.2.3.8.3";
+            app_version = "0.2.3.9";
 
             version_data = "1.2";
 
@@ -65,7 +68,10 @@ namespace Misty
 
             MaximumSize = Size;
             MinimumSize = Size;
-            
+
+            if (File.Exists(cheminDossier + "icon.ico"))
+                this.Icon = new Icon(cheminDossier + "icon.ico");
+
             mcPath = new MinecraftPath(chemin);
             launcher = new MinecraftLauncher(mcPath);
             forgee = new ForgeInstaller(launcher);
@@ -102,31 +108,12 @@ namespace Misty
 
             comboBox1.DropDownStyle = ComboBoxStyle.DropDownList;
             comboBoxMode.DropDownStyle = ComboBoxStyle.DropDownList;
-            comboBox_compte.DropDownStyle = ComboBoxStyle.DropDownList;   
-                                                                           
+            comboBox_compte.DropDownStyle = ComboBoxStyle.DropDownList;
 
-
-
-            string dossierMods = Path.Combine(chemin, "mods");
-
-            flowLayoutPanel1.Controls.Clear();
-
-            if (Directory.Exists(dossierMods))
-            {
-                string[] mods = Directory.GetFiles(dossierMods, "*.jar");
-
-                foreach (string mod in mods)
-                {
-                    Label label = new Label();
-
-                    label.Text = Path.GetFileName(mod);
-                    label.AutoSize = true;
-                    label.Margin = new Padding(5);
-
-                    flowLayoutPanel1.Controls.Add(label);
-                }
-            }
+            //Fairetest();            
         }
+
+
         private void comboBox1_MouseWheel(object sender, MouseEventArgs e) { ((HandledMouseEventArgs)e).Handled = true; }
         private async Task Initiale_Path(string urlTelechargement)
         {
@@ -153,7 +140,6 @@ namespace Misty
             await ZipFile.ExtractToDirectoryAsync(cheminDossierZip, cheminDossier);
             File.Delete(cheminDossierZip);
 
-            
 
             if (!File.Exists(data)) return;
 
@@ -171,7 +157,7 @@ namespace Misty
                 UseShellExecute = true
             });
 
-            Application.Exit();
+            System.Windows.Forms.Application.Exit();
         }
         // ── Chargement des versions disponibles (remplace List_release) ──
         private async Task ChargerVersionsAsync()
@@ -193,6 +179,22 @@ namespace Misty
             {
                 MessageBox.Show("Erreur au chargement des versions : " + ex.Message);
             }
+        }
+        private async Task download_icone(string url, string nomFichier)
+        {
+            string cheminDossiercache = cheminDossier + "\\cache\\" + nomFichier;
+
+            using (HttpClient client = new HttpClient())
+            using (HttpResponseMessage response = await client.GetAsync(url))
+            {
+                response.EnsureSuccessStatusCode();
+
+                using (FileStream fs = new FileStream(cheminDossiercache, FileMode.Create))
+                {
+                    await response.Content.CopyToAsync(fs);
+                }
+            }
+            // no return value; file is saved to cache
         }
         private void Position_label_version()
         {
@@ -256,23 +258,21 @@ namespace Misty
                     if (ligne.StartsWith("Suppr="))
                     {
                         Suppr = ligne.Split('=')[1];
-                        
+
                         if (Suppr.StartsWith("C:"))
                         {
-                            //MessageBox.Show(Suppr.Length.ToString());
-                            Thread.Sleep(500);
-                            try
-                            {
-                                Directory.Move(Suppr, cheminDossier + "OldPath");
-                            }
-                            catch(Exception ex)
-                            { 
-                                MessageBox.Show("Impossible de déplacer le dossier : " + ex.Message, "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                            }
-                            
+                            Thread.Sleep(1000);
 
-                            if (Directory.Exists(cheminDossier + "OldPath"))
-                                Directory.Delete(cheminDossier + "OldPath", true);
+                            do
+                            {
+                                Directory.Delete(Suppr);
+
+                                if (Directory.Exists(Suppr))
+                                {
+                                    MessageBox.Show("Impossible de supprimer l'ancien dossier. Veuillez fermer votre explorateur de fichiers.", "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                }
+                            }
+                            while (Directory.Exists(Suppr));
 
                             MessageBox.Show("Mise à jour réussie avec succès !", "Succès", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
@@ -289,6 +289,61 @@ namespace Misty
             else
                 comboBox_compte.Text = "PseudoTest";
         }
+        /*
+        private async Task Fairetest()
+        {
+            string dossierMods = Path.Combine(chemin, "mods");
+
+            flowLayoutPanel1.Controls.Clear();
+
+            if (Directory.Exists(dossierMods))
+            {
+                string[] mods = Directory.GetFiles(dossierMods, "*.jar");
+
+                foreach (string mod in mods)
+                {
+
+                    ModrinthService modrinth = new ModrinthService();
+
+                    var resultat = await modrinth.RechercherMod("Jade");
+                    if (resultat != null)
+                    {
+                        await download_icone(resultat.IconUrl ?? "", "jade.png");
+                        MessageBox.Show($"Nom : {resultat.Title}\nDescription : {resultat.Description}\nTéléchargements : {resultat.Downloads}\nImage : {resultat.IconUrl}");
+                    }
+
+                    Thread.Sleep(1000);
+                    Panel panel = new Panel();
+
+                    panel.Width = 400;
+                    panel.Height = 70;
+                    panel.Margin = new Padding(5);
+
+                    PictureBox picture = new PictureBox();
+
+                    picture.Image = System.Drawing.Image.FromFile($"{chemin}\\cache\\{(resultat?.Title ?? "jade")}.png");
+                    picture.Width = 50;
+                    picture.Height = 50;
+                    picture.Left = 5;
+                    picture.Top = 5;
+
+                    picture.SizeMode = PictureBoxSizeMode.Zoom;
+
+                    Label label = new Label();
+
+                    label.Text = Path.GetFileName(mod);
+                    label.AutoSize = true;
+                    label.Left = 65;
+                    label.Top = 20;
+
+                    panel.Controls.Add(picture);
+                    panel.Controls.Add(label);
+                    //label.Controls.Add(label);
+
+                    flowLayoutPanel1.Controls.Add(label);
+                }
+            }
+        }*/
         private void affect_ram()
         {
             if (File.Exists(Form1.data))
@@ -418,7 +473,7 @@ namespace Misty
                 {
                     if (ligne.StartsWith("versiondatatxt="))
                         version_data2 = ligne.Split('=')[1];
-                    
+
                     if (ligne.StartsWith("lastpseudo="))
                         lastPseudo = ligne.Split('=')[1];
 
@@ -445,6 +500,7 @@ namespace Misty
                         sw.WriteLine($"lastversion={lastVersion}");
                         sw.WriteLine($"ram={ramassocie}");
                         sw.WriteLine($"premium={premium}");
+                        //sw.WriteLine($"raccour);
                         sw.WriteLine($"Suppr={dossierasuppr}");
                     }
 
@@ -470,7 +526,7 @@ namespace Misty
 
                 string versionDistanteNettoyee = versionDistante.TrimStart('v'); // enlève le "v" devant si présent
                 new_appversion = versionDistanteNettoyee;
-                
+
                 if (versionDistanteNettoyee != app_version)
                 {
 
@@ -793,7 +849,7 @@ namespace Misty
                             installedVersionName = await optifineInstaller.InstallOptifineAsync(mcPath.BasePath, optifineChoisi);
                             await launcher.InstallAsync(installedVersionName);
                         }
-                        catch(Exception ex)
+                        catch (Exception ex)
                         {
                             string Message = ex.ToString();
 
@@ -828,14 +884,14 @@ namespace Misty
                         await launcher.InstallAsync(installedVersionName);
                         Nomversion = installedVersionName;
                         break;
-                        /*
-                    case "Quilt":
-                        var quiltInstaller = new QuiltInstaller(new HttpClient());
-                        installedVersionName = await quiltInstaller.Install(selectedVersion, mcPath);
-                        await launcher.InstallAsync(installedVersionName);
-                        Nomversion = installedVersionName;
-                        break;
-                        */
+                    /*
+                case "Quilt":
+                    var quiltInstaller = new QuiltInstaller(new HttpClient());
+                    installedVersionName = await quiltInstaller.Install(selectedVersion, mcPath);
+                    await launcher.InstallAsync(installedVersionName);
+                    Nomversion = installedVersionName;
+                    break;
+                    */
                     case "LiteLoader":
                         var liteLoaderInstaller = new LiteLoaderInstaller(new HttpClient());
                         var loaders = await liteLoaderInstaller.GetAllLiteLoaders();
@@ -918,7 +974,7 @@ namespace Misty
                 }
                 else if (comboBoxMode.Text == "OptiFine")
                 {
-                    process = await launcher.InstallAndBuildProcessAsync(Nomversion,new MLaunchOption
+                    process = await launcher.InstallAndBuildProcessAsync(Nomversion, new MLaunchOption
                     {
                         Session = sessionAUtiliser,
                         MaximumRamMb = Convert.ToInt32(Ram_choisie)
@@ -1055,6 +1111,18 @@ namespace Misty
         private void pictureBox1_Click(object sender, EventArgs e)
         {
             Process.Start("explorer.exe", chemin);
+        }
+
+        private async void button7_Click(object sender, EventArgs e)
+        {
+            /*
+            ModrinthService modrinth = new ModrinthService();
+
+            var resultat = await modrinth.RechercherMod("Jade");
+            await download_icone(resultat.IconUrl, "jade");
+            MessageBox.Show($"Nom du mod : {resultat.Title}\nDescription : {resultat.Description}\nVersion : {resultat.LatestVersion}\nok :{resultat.LatestVersion}");
+            */
+            //Fairetest();
         }
     }
 }

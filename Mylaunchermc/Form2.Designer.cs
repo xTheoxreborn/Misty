@@ -43,7 +43,7 @@
             // label1
             // 
             label1.AutoSize = true;
-            label1.Location = new Point(12, 9);
+            label1.Location = new Point(7, 5);
             label1.Name = "label1";
             label1.Size = new Size(38, 15);
             label1.TabIndex = 2;
@@ -54,7 +54,7 @@
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(864, 633);
+            ClientSize = new Size(864, 644);
             Controls.Add(label1);
             Icon = (Icon)resources.GetObject("$this.Icon");
             Name = "Form2";

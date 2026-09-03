@@ -3,6 +3,7 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net10.0-windows</TargetFramework>
+    <ApplicationIcon>icone.ico</ApplicationIcon>
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -14,12 +15,16 @@
     <PackageReference Include="CmlLib.Core.Auth.Microsoft" Version="3.3.1" />
     <PackageReference Include="CmlLib.Core.Installer.NeoForge" Version="4.0.1" />
     <PackageReference Include="DiscordRichPresence" Version="1.6.1.70" />
+    <PackageReference Include="Modrinth.Net" Version="3.8.0" />
     <PackageReference Include="Optifine.Installer" Version="1.0.1" />
   </ItemGroup>
 
   <ItemGroup>
     <Reference Include="CmlLib.Core.Installer.Forge">
       <HintPath>..\..\..\CmlLib.Core.Installer.Forge\CmlLib.Core.Installer.Forge\bin\Debug\netstandard2.0\CmlLib.Core.Installer.Forge.dll</HintPath>
+    </Reference>
+    <Reference Include="Modrinth.Net">
+      <HintPath>..\..\..\Modrinth.Netd\src\Modrinth.Net\bin\Release\net8.0\publish\win-x86\Modrinth.Net.dll</HintPath>
     </Reference>
   </ItemGroup>
 

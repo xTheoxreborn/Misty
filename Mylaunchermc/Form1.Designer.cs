@@ -46,12 +46,13 @@
             comboBox_compte = new ComboBox();
             pictureBox1 = new PictureBox();
             flowLayoutPanel1 = new FlowLayoutPanel();
+            button7 = new Button();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             SuspendLayout();
             // 
             // button1
             // 
-            button1.Location = new Point(190, 43);
+            button1.Location = new Point(188, 52);
             button1.Name = "button1";
             button1.Size = new Size(235, 23);
             button1.TabIndex = 0;
@@ -212,11 +213,21 @@
             // flowLayoutPanel1
             // 
             flowLayoutPanel1.AutoScroll = true;
-            flowLayoutPanel1.Location = new Point(976, 328);
+            flowLayoutPanel1.Location = new Point(985, 210);
             flowLayoutPanel1.Name = "flowLayoutPanel1";
-            flowLayoutPanel1.Size = new Size(298, 109);
+            flowLayoutPanel1.Size = new Size(313, 210);
             flowLayoutPanel1.TabIndex = 23;
-            flowLayoutPanel1.Visible = false;
+            // 
+            // button7
+            // 
+            button7.Location = new Point(784, 136);
+            button7.Name = "button7";
+            button7.Size = new Size(75, 23);
+            button7.TabIndex = 24;
+            button7.Text = "button7";
+            button7.UseVisualStyleBackColor = true;
+            button7.Visible = false;
+            button7.Click += button7_Click;
             // 
             // Form1
             // 
@@ -224,6 +235,7 @@
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = SystemColors.Control;
             ClientSize = new Size(1366, 613);
+            Controls.Add(button7);
             Controls.Add(flowLayoutPanel1);
             Controls.Add(pictureBox1);
             Controls.Add(comboBox_compte);
@@ -269,5 +281,6 @@
         private ComboBox comboBox_compte;
         private PictureBox pictureBox1;
         private FlowLayoutPanel flowLayoutPanel1;
+        private Button button7;
     }
 }

@@ -38,6 +38,7 @@
             label1 = new Label();
             label3 = new Label();
             button_scan_ram = new Button();
+            label4 = new Label();
             SuspendLayout();
             // 
             // button1
@@ -55,7 +56,7 @@
             // 
             comboBox_ram.Enabled = false;
             comboBox_ram.FormattingEnabled = true;
-            comboBox_ram.Location = new Point(80, 112);
+            comboBox_ram.Location = new Point(78, 95);
             comboBox_ram.Margin = new Padding(3, 2, 3, 2);
             comboBox_ram.Name = "comboBox_ram";
             comboBox_ram.Size = new Size(133, 23);
@@ -65,7 +66,7 @@
             // label2
             // 
             label2.AutoSize = true;
-            label2.Location = new Point(18, 114);
+            label2.Location = new Point(16, 97);
             label2.Name = "label2";
             label2.Size = new Size(37, 15);
             label2.TabIndex = 3;
@@ -113,7 +114,7 @@
             // label3
             // 
             label3.AutoSize = true;
-            label3.Location = new Point(10, 71);
+            label3.Location = new Point(12, 63);
             label3.Name = "label3";
             label3.Size = new Size(382, 15);
             label3.TabIndex = 8;
@@ -121,7 +122,7 @@
             // 
             // button_scan_ram
             // 
-            button_scan_ram.Location = new Point(233, 112);
+            button_scan_ram.Location = new Point(231, 95);
             button_scan_ram.Name = "button_scan_ram";
             button_scan_ram.Size = new Size(75, 23);
             button_scan_ram.TabIndex = 9;
@@ -129,11 +130,21 @@
             button_scan_ram.UseVisualStyleBackColor = true;
             button_scan_ram.Click += button_scan_ram_Click;
             // 
+            // label4
+            // 
+            label4.AutoSize = true;
+            label4.Location = new Point(12, 138);
+            label4.Name = "label4";
+            label4.Size = new Size(382, 15);
+            label4.TabIndex = 10;
+            label4.Text = "___________________________________________________________________________";
+            // 
             // Form3
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(424, 161);
+            ClientSize = new Size(424, 145);
+            Controls.Add(label4);
             Controls.Add(button_scan_ram);
             Controls.Add(label3);
             Controls.Add(label1);
@@ -161,5 +172,6 @@
         private Label label1;
         private Label label3;
         private Button button_scan_ram;
+        private Label label4;
     }
 }

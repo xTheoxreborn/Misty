@@ -268,35 +268,32 @@ $lnk.Save();
                                 {
                                     process.WaitForExit(); // Attend que PowerShell ait fini de créer le raccourci
                                 }
-                            }                               
-
-                            do
-                            {
-                                try
-                                {
-                                    Directory.Delete(Suppr, true);
-
-                                }
-                                catch (Exception ex)
-                                {
-                                    MessageBox.Show("Erreur lors de la suppression de l'ancien dossier : " + ex.Message, "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                                }
-                                /*
-                                if (Directory.Exists(Suppr))
-                                {
-                                    MessageBox.Show("Impossible de supprimer l'ancien dossier. Veuillez fermer votre explorateur de fichiers.", "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                                }*/
                             }
-                            while (Directory.Exists(Suppr));
 
-                            MessageBox.Show("Mise à jour réussie avec succès !", "Succès", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            bool dossierSupprime = false;
 
-                            for (int i = 0; i < lignes.Length; i++)
+                            try
                             {
-                                if (lignes[i].StartsWith("Suppr="))
-                                    lignes[i] = "Suppr=";
+                                Directory.Delete(Suppr, true);
+                                dossierSupprime = true;
                             }
-                            File.WriteAllLines(data, lignes);
+                            catch (Exception ex)
+                            {
+                                MessageBox.Show("Le dossier ne peut pas être supprimé. Il se supprimera au prochain redémarrage de l'application.", "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                dossierSupprime = false;
+                            }
+
+                            if (dossierSupprime)
+                            {
+                                MessageBox.Show("Mise à jour réussie avec succès !", "Succès", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                                for (int i = 0; i < lignes.Length; i++)
+                                {
+                                    if (lignes[i].StartsWith("Suppr="))
+                                        lignes[i] = "Suppr=";
+                                }
+                                File.WriteAllLines(data, lignes);
+                            }
                         }
                     }
                 }

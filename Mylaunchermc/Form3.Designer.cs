@@ -39,6 +39,9 @@
             label3 = new Label();
             button_scan_ram = new Button();
             label4 = new Label();
+            label7 = new Label();
+            button_find_raccourci = new Button();
+            checkBox1 = new CheckBox();
             SuspendLayout();
             // 
             // button1
@@ -133,17 +136,51 @@
             // label4
             // 
             label4.AutoSize = true;
-            label4.Location = new Point(12, 138);
+            label4.Location = new Point(12, 130);
             label4.Name = "label4";
             label4.Size = new Size(382, 15);
             label4.TabIndex = 10;
             label4.Text = "___________________________________________________________________________";
             // 
+            // label7
+            // 
+            label7.AutoSize = true;
+            label7.Location = new Point(118, 163);
+            label7.Name = "label7";
+            label7.Size = new Size(0, 15);
+            label7.TabIndex = 13;
+            label7.Visible = false;
+            // 
+            // button_find_raccourci
+            // 
+            button_find_raccourci.Location = new Point(12, 187);
+            button_find_raccourci.Name = "button_find_raccourci";
+            button_find_raccourci.Size = new Size(75, 23);
+            button_find_raccourci.TabIndex = 14;
+            button_find_raccourci.Text = "Chercher";
+            button_find_raccourci.UseVisualStyleBackColor = true;
+            button_find_raccourci.Visible = false;
+            button_find_raccourci.Click += button_find_raccourci_Click;
+            // 
+            // checkBox1
+            // 
+            checkBox1.AutoSize = true;
+            checkBox1.Location = new Point(16, 162);
+            checkBox1.Name = "checkBox1";
+            checkBox1.Size = new Size(84, 19);
+            checkBox1.TabIndex = 15;
+            checkBox1.Text = "Raccourci :";
+            checkBox1.UseVisualStyleBackColor = true;
+            checkBox1.CheckedChanged += checkBox1_CheckedChanged;
+            // 
             // Form3
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(424, 145);
+            ClientSize = new Size(424, 220);
+            Controls.Add(checkBox1);
+            Controls.Add(button_find_raccourci);
+            Controls.Add(label7);
             Controls.Add(label4);
             Controls.Add(button_scan_ram);
             Controls.Add(label3);
@@ -173,5 +210,8 @@
         private Label label3;
         private Button button_scan_ram;
         private Label label4;
+        private Label label7;
+        private Button button_find_raccourci;
+        private CheckBox checkBox1;
     }
 }

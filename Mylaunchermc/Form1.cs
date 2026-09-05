@@ -16,6 +16,7 @@ using Optifine.Installer;
 using System.Diagnostics;
 using System.IO.Compression;
 using System.Net.Http;
+using System.Reflection.Emit;
 using System.Text.Json;
 using static System.Net.Mime.MediaTypeNames;
 
@@ -54,16 +55,14 @@ namespace Misty
 
             InitialiserDiscordPresence();
 
-            app_version = "0.2.3.9";
-
-            version_data = "1.2";
+            app_version = "0.2.3.9.1";
+            version_data = "1.2.1";
 
             label2.Text = app_version;
 
             label2.Location = new Point(
                 this.ClientSize.Width - label2.Width - 4,
-                this.ClientSize.Height - label2.Height - 4
-            );
+                this.ClientSize.Height - label2.Height - 4);
 
             MaximumSize = Size;
             MinimumSize = Size;
@@ -78,7 +77,6 @@ namespace Misty
             optifineInstaller = new OptifineInstaller(new HttpClient());
 
             system_register();
-            //verif_datafile();
 
             // Progression du téléchargement (remplace tes anciens compteurs "tache")
             launcher.FileProgressChanged += (sender, args) =>
@@ -195,20 +193,6 @@ namespace Misty
             }
             // no return value; file is saved to cache
         }
-        private void Position_label_version()
-        {
-            nbre_chaine = app_version.Length;
-            if (nbre_chaine < 8)
-            {
-                nbre_chaine = 8 - nbre_chaine;
-                first += nbre_chaine * 5;
-            }
-            else
-            {
-                nbre_chaine -= 8;
-                first -= nbre_chaine * 6;
-            }
-        }
         private async Task ChargerPseudoEtDerniereVersion()
         {
             string premium = string.Empty;
@@ -262,14 +246,46 @@ namespace Misty
                         {
                             Thread.Sleep(1000);
 
+                            if (ligne.StartsWith("raccourci="))
+                            {
+                                string raccourci = ligne.Split('=')[1];
+                                File.Delete(raccourci + @"\Misty.lnk");
+
+                                string psScript = @$"
+$wshshell = New-Object -ComObject WScript.Shell;
+$lnk = $wshshell.CreateShortcut('{raccourci}\Misty.lnk');
+$lnk.TargetPath = '{AppContext.BaseDirectory}\Misty.exe';
+$lnk.Save();
+";
+                                ProcessStartInfo startInfo = new ProcessStartInfo
+                                {
+                                    FileName = "powershell.exe",
+                                    Arguments = $"-NoProfile -Command \"{psScript}\"",
+                                    UseShellExecute = false,
+                                    CreateNoWindow = true
+                                };
+                                using (Process process = Process.Start(startInfo))
+                                {
+                                    process.WaitForExit(); // Attend que PowerShell ait fini de créer le raccourci
+                                }
+                            }                               
+
                             do
                             {
-                                Directory.Delete(Suppr);
+                                try
+                                {
+                                    Directory.Delete(Suppr, true);
 
+                                }
+                                catch (Exception ex)
+                                {
+                                    MessageBox.Show("Erreur lors de la suppression de l'ancien dossier : " + ex.Message, "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                }
+                                /*
                                 if (Directory.Exists(Suppr))
                                 {
                                     MessageBox.Show("Impossible de supprimer l'ancien dossier. Veuillez fermer votre explorateur de fichiers.", "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                                }
+                                }*/
                             }
                             while (Directory.Exists(Suppr));
 
@@ -439,6 +455,7 @@ namespace Misty
                     sw.WriteLine("lastpseudo=PseudoTest");
                     sw.WriteLine("lastversion=");
                     sw.WriteLine("premium=");
+                    sw.WriteLine($"raccourci=");
                     sw.WriteLine("ram=");
                     sw.WriteLine("Suppr=");
                 }
@@ -463,6 +480,7 @@ namespace Misty
             string dossierasuppr = string.Empty;
             string ramassocie = string.Empty;
             string premium = string.Empty;
+            string raccourci = string.Empty;
 
             if (File.Exists(data))
             {
@@ -487,6 +505,9 @@ namespace Misty
 
                     if (ligne.StartsWith("premium="))
                         premium = ligne.Split('=')[1];
+
+                    if (ligne.StartsWith("raccourci="))
+                        raccourci = ligne.Split('=')[1];
                 }
                 if (version_data != version_data2)
                 {
@@ -499,7 +520,7 @@ namespace Misty
                         sw.WriteLine($"lastversion={lastVersion}");
                         sw.WriteLine($"ram={ramassocie}");
                         sw.WriteLine($"premium={premium}");
-                        //sw.WriteLine($"raccour);
+                        sw.WriteLine($"raccourci={raccourci}");
                         sw.WriteLine($"Suppr={dossierasuppr}");
                     }
 

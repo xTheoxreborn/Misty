@@ -1,7 +1,10 @@
 ﻿using CmlLib.Core.ProcessBuilder;
 using Microsoft.VisualBasic.Devices;
 using System.Diagnostics;
+using System.Drawing.Drawing2D;
+using System.Runtime.InteropServices.Marshalling;
 using static System.Runtime.InteropServices.JavaScript.JSType;
+using static System.Windows.Forms.LinkLabel;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace Misty
@@ -12,6 +15,7 @@ namespace Misty
         float RamTotale = 0;
         int TRamTotale = 0;
         string ram_in_data = "";
+        string raccourci = "";
         readonly string arguments = "(Get-ComputerInfo).OsTotalVisibleMemorySize";
         public Form3()
         {
@@ -24,7 +28,7 @@ namespace Misty
 
             MaximumSize = Size;
             MinimumSize = Size;
-            
+
 
             if (File.Exists(Form1.data))
             {
@@ -38,7 +42,6 @@ namespace Misty
                         ram_in_data = ligne.Split('=')[1];
                         comboBox_ram.Items.Add(ram_in_data);
                         comboBox_ram.SelectedItem = ram_in_data;
-                         
                     }
                 }
             }
@@ -46,6 +49,25 @@ namespace Misty
             {
                 comboBox_ram.Enabled = false;
                 comboBox_ram.SelectedItem = "4096";
+            }
+
+            if (File.Exists(Form1.data))
+            {
+                var lignes = File.ReadAllLines(Form1.data);
+
+                foreach (var ligne in lignes)
+                {
+                    if (ligne.StartsWith("raccourci="))
+                    {
+                        if (ligne.Split('=')[1] != "")
+                        {
+                            raccourci = ligne.Split('=')[1];
+                            label7.Text = raccourci;
+                            checkBox1.Checked = true;
+                        }
+                            
+                    }
+                }
             }
 
             comboBox_ram.MouseWheel += comboBox2_MouseWheel;
@@ -138,7 +160,7 @@ namespace Misty
         {
             List<string> pseudos = LireListePseudos();
 
-            comboBox_compte.Items.Clear(); // adapte le nom si ta comboBox s'appelle autrement
+            comboBox_compte.Items.Clear();
             foreach (var pseudo in pseudos)
             {
                 comboBox_compte.Items.Add(pseudo);
@@ -156,8 +178,6 @@ namespace Misty
                     lignes[i] = "ram=" + comboBox_ram.Text;
             }
             File.WriteAllLines(Form1.data, lignes);
-
-            //Ram_choisi = comboBox_ram.Text;
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -242,5 +262,67 @@ namespace Misty
 
             //MessageBox.Show(RamTotale.ToString());
         }
+
+        private void button_find_raccourci_Click(object sender, EventArgs e)
+        {
+            FolderBrowserDialog dossier = new FolderBrowserDialog();
+
+            if (dossier.ShowDialog() == DialogResult.OK)
+            {
+                label7.Text = dossier.SelectedPath;
+
+                if (!File.Exists(Form1.data)) return;
+
+                var lignes = File.ReadAllLines(Form1.data);
+                for (int i = 0; i < lignes.Length; i++)
+                {
+                    if (lignes[i].StartsWith("raccourci="))
+                        lignes[i] = "raccourci=" + dossier.SelectedPath;
+                }
+                File.WriteAllLines(Form1.data, lignes);
+            }
+            string psScript = @$"
+$wshshell = New-Object -ComObject WScript.Shell;
+$lnk = $wshshell.CreateShortcut('{dossier.SelectedPath}\Misty.lnk');
+$lnk.TargetPath = '{AppContext.BaseDirectory}\Misty.exe';
+$lnk.Save();
+";
+            ProcessStartInfo startInfo = new ProcessStartInfo
+            {
+                FileName = "powershell.exe",
+                Arguments = $"-NoProfile -Command \"{psScript}\"",
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+            using (Process process = Process.Start(startInfo))
+            {
+                process.WaitForExit(); // Attend que PowerShell ait fini de créer le raccourci
+            }
+        }
+        private void checkBox1_CheckedChanged(object sender, EventArgs e)
+        {
+            if (checkBox1.Checked)
+            {
+                button_find_raccourci.Visible = true;
+                label7.Visible = true;
+            }
+            else
+            {
+                button_find_raccourci.Visible = false;
+                label7.Visible = false;
+                File.Delete(label7.Text + @"\Misty.lnk");
+
+                if (!File.Exists(Form1.data)) return;
+
+                var lignes = File.ReadAllLines(Form1.data);
+                for (int i = 0; i < lignes.Length; i++)
+                {
+                    if (lignes[i].StartsWith("raccourci="))
+                        lignes[i] = "raccourci=" + "";
+                }
+                File.WriteAllLines(Form1.data, lignes);
+            }
+        }
+                
     }
 }

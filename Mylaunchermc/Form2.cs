@@ -50,7 +50,7 @@
                 "0.2.3.8.1 - Bug pseudo Optifine\n" +
                 "0.2.3.8.2 - Mise à jour du data.txt sans perte de données + reconnecte les comptes premium\n" +
                 "0.2.3.8.3 - Correction dun bug lié au sélectionneur de ram\n" +
-                "0.2.3.9 - Correctif sur la suppression de l'ancien dossier de version(Misty)\n";
+                "0.2.3.9 - Correctif sur la suppression de l'ancien dossier de version(Misty) + correction affichage version\n";
         }
         private void textBox1_TextChanged(object sender, EventArgs e)
         {

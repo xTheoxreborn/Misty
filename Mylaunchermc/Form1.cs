@@ -58,13 +58,12 @@ namespace Misty
 
             version_data = "1.2";
 
-            first = 1319;
-            second = 591;
-
-            Position_label_version();
-
             label2.Text = app_version;
-            label2.Location = new Point(first, second);
+
+            label2.Location = new Point(
+                this.ClientSize.Width - label2.Width - 4,
+                this.ClientSize.Height - label2.Height - 4
+            );
 
             MaximumSize = Size;
             MinimumSize = Size;

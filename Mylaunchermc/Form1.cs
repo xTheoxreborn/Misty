@@ -34,7 +34,7 @@ namespace Misty
         string installedVersionName;
         string Ram_choisie;
         string app_version;
-        string cheminDossier = AppContext.BaseDirectory;
+        public static string cheminDossier = AppContext.BaseDirectory;
         string Path_APP;
         int first, second;
         int nbre_chaine;
@@ -55,7 +55,7 @@ namespace Misty
 
             InitialiserDiscordPresence();
 
-            app_version = "0.2.3.9.1";
+            app_version = "0.2.3.9.2";
             version_data = "1.2.1";
 
             label2.Text = app_version;
@@ -154,6 +154,8 @@ namespace Misty
                 UseShellExecute = true
             });
 
+            File.Copy("Icon.ico", Path.Combine(cheminDossier, $"Misty-{new_appversion}", "Icon.ico"));
+            Thread.Sleep(500);
             System.Windows.Forms.Application.Exit();
         }
         // ── Chargement des versions disponibles (remplace List_release) ──

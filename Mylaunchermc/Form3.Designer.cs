@@ -42,6 +42,7 @@
             label7 = new Label();
             button_find_raccourci = new Button();
             checkBox1 = new CheckBox();
+            button2 = new Button();
             SuspendLayout();
             // 
             // button1
@@ -173,11 +174,23 @@
             checkBox1.UseVisualStyleBackColor = true;
             checkBox1.CheckedChanged += checkBox1_CheckedChanged;
             // 
+            // button2
+            // 
+            button2.Location = new Point(93, 187);
+            button2.Name = "button2";
+            button2.Size = new Size(75, 23);
+            button2.TabIndex = 16;
+            button2.Text = "Recharger";
+            button2.UseVisualStyleBackColor = true;
+            button2.Visible = false;
+            button2.Click += button2_Click_1;
+            // 
             // Form3
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(424, 220);
+            Controls.Add(button2);
             Controls.Add(checkBox1);
             Controls.Add(button_find_raccourci);
             Controls.Add(label7);
@@ -213,5 +226,6 @@
         private Label label7;
         private Button button_find_raccourci;
         private CheckBox checkBox1;
+        private Button button2;
     }
 }

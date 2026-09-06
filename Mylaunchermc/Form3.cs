@@ -65,7 +65,7 @@ namespace Misty
                             label7.Text = raccourci;
                             checkBox1.Checked = true;
                         }
-                            
+
                     }
                 }
             }
@@ -281,10 +281,19 @@ namespace Misty
                 }
                 File.WriteAllLines(Form1.data, lignes);
             }
+            string IconArgument = $"$lnk.IconLocation = '{Form1.cheminDossier}\\Icon.ico'";
+            if (File.Exists(Form1.cheminDossier + "Icon.ico"))
+                IconArgument = $"$lnk.IconLocation = '{Form1.cheminDossier}\\Icon.ico'";
+            else
+                IconArgument = "";
+
+            File.Delete(label7.Text + @"\Misty.lnk");
+
             string psScript = @$"
 $wshshell = New-Object -ComObject WScript.Shell;
 $lnk = $wshshell.CreateShortcut('{dossier.SelectedPath}\Misty.lnk');
 $lnk.TargetPath = '{AppContext.BaseDirectory}\Misty.exe';
+{IconArgument}
 $lnk.Save();
 ";
             ProcessStartInfo startInfo = new ProcessStartInfo
@@ -304,12 +313,15 @@ $lnk.Save();
             if (checkBox1.Checked)
             {
                 button_find_raccourci.Visible = true;
+                button2.Visible = true;
                 label7.Visible = true;
             }
             else
             {
                 button_find_raccourci.Visible = false;
+                button2.Visible = false;
                 label7.Visible = false;
+
                 File.Delete(label7.Text + @"\Misty.lnk");
 
                 if (!File.Exists(Form1.data)) return;
@@ -323,6 +335,34 @@ $lnk.Save();
                 File.WriteAllLines(Form1.data, lignes);
             }
         }
-                
+
+        private void button2_Click_1(object sender, EventArgs e)
+        {
+            string IconArgument = $"$lnk.IconLocation = '{Form1.cheminDossier}\\Icon.ico'";
+            if (File.Exists(Form1.cheminDossier + "Icon.ico"))
+                IconArgument = $"$lnk.IconLocation = '{Form1.cheminDossier}\\Icon.ico'";
+            else
+                IconArgument = "";
+
+            File.Delete(label7.Text + @"\Misty.lnk");
+            string psScript = @$"
+$wshshell = New-Object -ComObject WScript.Shell;
+$lnk = $wshshell.CreateShortcut('{label7.Text}\Misty.lnk');
+$lnk.TargetPath = '{AppContext.BaseDirectory}\Misty.exe';
+{IconArgument}
+$lnk.Save();
+";
+            ProcessStartInfo startInfo = new ProcessStartInfo
+            {
+                FileName = "powershell.exe",
+                Arguments = $"-NoProfile -Command \"{psScript}\"",
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+            using (Process process = Process.Start(startInfo))
+            {
+                process.WaitForExit(); // Attend que PowerShell ait fini de créer le raccourci
+            }
+        }
     }
 }

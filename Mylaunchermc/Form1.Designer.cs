@@ -47,7 +47,9 @@
             pictureBox1 = new PictureBox();
             flowLayoutPanel1 = new FlowLayoutPanel();
             button7 = new Button();
+            pictureBox2 = new PictureBox();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)pictureBox2).BeginInit();
             SuspendLayout();
             // 
             // button1
@@ -229,12 +231,25 @@
             button7.Visible = false;
             button7.Click += button7_Click;
             // 
+            // pictureBox2
+            // 
+            pictureBox2.Image = (Image)resources.GetObject("pictureBox2.Image");
+            pictureBox2.InitialImage = (Image)resources.GetObject("pictureBox2.InitialImage");
+            pictureBox2.Location = new Point(835, 543);
+            pictureBox2.Name = "pictureBox2";
+            pictureBox2.Size = new Size(33, 22);
+            pictureBox2.SizeMode = PictureBoxSizeMode.Zoom;
+            pictureBox2.TabIndex = 25;
+            pictureBox2.TabStop = false;
+            pictureBox2.Click += pictureBox2_Click;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = SystemColors.Control;
             ClientSize = new Size(1366, 613);
+            Controls.Add(pictureBox2);
             Controls.Add(button7);
             Controls.Add(flowLayoutPanel1);
             Controls.Add(pictureBox1);
@@ -258,6 +273,7 @@
             Text = "Misty";
             Load += Form1_Load;
             ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
+            ((System.ComponentModel.ISupportInitialize)pictureBox2).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -282,5 +298,6 @@
         private PictureBox pictureBox1;
         private FlowLayoutPanel flowLayoutPanel1;
         private Button button7;
+        private PictureBox pictureBox2;
     }
 }

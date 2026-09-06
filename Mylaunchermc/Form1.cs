@@ -19,6 +19,7 @@ using System.Net.Http;
 using System.Reflection.Emit;
 using System.Text.Json;
 using static System.Net.Mime.MediaTypeNames;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace Misty
 {
@@ -168,10 +169,12 @@ namespace Misty
                 comboBox1.Items.Clear();
                 foreach (var v in versions)
                 {
+                    comboBox1.Items.Add(v.Name);
+                    /*
                     if (v.Type != null && v.Type.ToString().Equals("Release", StringComparison.OrdinalIgnoreCase))
                     {
                         comboBox1.Items.Add(v.Name);
-                    }
+                    }*/
                 }
             }
             catch (Exception ex)
@@ -1142,6 +1145,16 @@ $lnk.Save();
             MessageBox.Show($"Nom du mod : {resultat.Title}\nDescription : {resultat.Description}\nVersion : {resultat.LatestVersion}\nok :{resultat.LatestVersion}");
             */
             //Fairetest();
+        }
+
+        private async void pictureBox2_Click(object sender, EventArgs e)
+        {
+            string TempVersion = comboBox1.Text;
+            comboBoxMode.Enabled = false;
+            comboBoxMode.Items.Clear();
+            await ChargerVersionsAsync();
+            comboBox1.SelectedItem = TempVersion;
+
         }
     }
 }

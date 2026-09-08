@@ -43,6 +43,11 @@
             button_find_raccourci = new Button();
             checkBox1 = new CheckBox();
             button2 = new Button();
+            label5 = new Label();
+            label_gestion_version = new Label();
+            checkBox2 = new CheckBox();
+            checkBox3 = new CheckBox();
+            checkBox4 = new CheckBox();
             SuspendLayout();
             // 
             // button1
@@ -185,11 +190,67 @@
             button2.Visible = false;
             button2.Click += button2_Click_1;
             // 
+            // label5
+            // 
+            label5.AutoSize = true;
+            label5.Location = new Point(12, 213);
+            label5.Name = "label5";
+            label5.Size = new Size(382, 15);
+            label5.TabIndex = 17;
+            label5.Text = "___________________________________________________________________________";
+            // 
+            // label_gestion_version
+            // 
+            label_gestion_version.AutoSize = true;
+            label_gestion_version.Location = new Point(12, 238);
+            label_gestion_version.Name = "label_gestion_version";
+            label_gestion_version.Size = new Size(120, 15);
+            label_gestion_version.TabIndex = 18;
+            label_gestion_version.Text = "Gestion des versions :";
+            // 
+            // checkBox2
+            // 
+            checkBox2.AutoSize = true;
+            checkBox2.Location = new Point(17, 258);
+            checkBox2.Name = "checkBox2";
+            checkBox2.Size = new Size(75, 19);
+            checkBox2.TabIndex = 19;
+            checkBox2.Text = "Snapshot";
+            checkBox2.UseVisualStyleBackColor = true;
+            checkBox2.CheckedChanged += checkBox2_CheckedChanged;
+            // 
+            // checkBox3
+            // 
+            checkBox3.AutoSize = true;
+            checkBox3.Location = new Point(118, 258);
+            checkBox3.Name = "checkBox3";
+            checkBox3.Size = new Size(49, 19);
+            checkBox3.TabIndex = 20;
+            checkBox3.Text = "Beta";
+            checkBox3.UseVisualStyleBackColor = true;
+            checkBox3.CheckedChanged += checkBox3_CheckedChanged;
+            // 
+            // checkBox4
+            // 
+            checkBox4.AutoSize = true;
+            checkBox4.Location = new Point(189, 258);
+            checkBox4.Name = "checkBox4";
+            checkBox4.Size = new Size(98, 19);
+            checkBox4.TabIndex = 21;
+            checkBox4.Text = "alpha + Indev";
+            checkBox4.UseVisualStyleBackColor = true;
+            checkBox4.CheckedChanged += checkBox4_CheckedChanged;
+            // 
             // Form3
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(424, 220);
+            ClientSize = new Size(424, 293);
+            Controls.Add(checkBox4);
+            Controls.Add(checkBox3);
+            Controls.Add(checkBox2);
+            Controls.Add(label_gestion_version);
+            Controls.Add(label5);
             Controls.Add(button2);
             Controls.Add(checkBox1);
             Controls.Add(button_find_raccourci);
@@ -227,5 +288,10 @@
         private Button button_find_raccourci;
         private CheckBox checkBox1;
         private Button button2;
+        private Label label5;
+        private Label label_gestion_version;
+        private CheckBox checkBox2;
+        private CheckBox checkBox3;
+        private CheckBox checkBox4;
     }
 }

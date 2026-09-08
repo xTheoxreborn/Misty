@@ -65,7 +65,27 @@ namespace Misty
                             label7.Text = raccourci;
                             checkBox1.Checked = true;
                         }
-
+                    }
+                    if (ligne.StartsWith("snapshot="))
+                    {
+                        if (ligne.Split('=')[1] == "true")
+                            checkBox2.Checked = true;
+                        else
+                            checkBox2.Checked = false;
+                    }
+                    if (ligne.StartsWith("beta="))
+                    {
+                        if (ligne.Split('=')[1] == "true")
+                            checkBox3.Checked = true;
+                        else
+                            checkBox3.Checked = false;
+                    }
+                    if (ligne.StartsWith("alpha="))
+                    {
+                        if (ligne.Split('=')[1] == "true")
+                            checkBox4.Checked = true;
+                        else
+                            checkBox4.Checked = false;
                     }
                 }
             }
@@ -362,6 +382,88 @@ $lnk.Save();
             using (Process process = Process.Start(startInfo))
             {
                 process.WaitForExit(); // Attend que PowerShell ait fini de créer le raccourci
+            }
+        }
+
+        private void checkBox2_CheckedChanged(object sender, EventArgs e)
+        {
+            if (checkBox2.Checked)
+            {
+                if (!File.Exists(Form1.data)) return;
+
+                var lignes = File.ReadAllLines(Form1.data);
+                for (int i = 0; i < lignes.Length; i++)
+                {
+                    if (lignes[i].StartsWith("snapshot="))
+                        lignes[i] = "snapshot=" + "true";
+                }
+                File.WriteAllLines(Form1.data, lignes);
+            }
+            else
+            {
+                if (!File.Exists(Form1.data)) return;
+
+                var lignes = File.ReadAllLines(Form1.data);
+                for (int i = 0; i < lignes.Length; i++)
+                {
+                    if (lignes[i].StartsWith("snapshot="))
+                        lignes[i] = "snapshot=" + "false";
+                }
+                File.WriteAllLines(Form1.data, lignes);
+            }
+        }
+
+        private void checkBox3_CheckedChanged(object sender, EventArgs e)
+        {
+            if (checkBox3.Checked)
+            {
+                if (!File.Exists(Form1.data)) return;
+
+                var lignes = File.ReadAllLines(Form1.data);
+                for (int i = 0; i < lignes.Length; i++)
+                {
+                    if (lignes[i].StartsWith("beta="))
+                        lignes[i] = "beta=" + "true";
+                }
+                File.WriteAllLines(Form1.data, lignes);
+            }
+            else
+            {
+                if (!File.Exists(Form1.data)) return;
+                var lignes = File.ReadAllLines(Form1.data);
+                for (int i = 0; i < lignes.Length; i++)
+                {
+                    if (lignes[i].StartsWith("beta="))
+                        lignes[i] = "beta=" + "false";
+                }
+                File.WriteAllLines(Form1.data, lignes);
+            }
+        }
+
+        private void checkBox4_CheckedChanged(object sender, EventArgs e)
+        {
+            if (checkBox4.Checked)
+            {
+                if (!File.Exists(Form1.data)) return;
+
+                var lignes = File.ReadAllLines(Form1.data);
+                for (int i = 0; i < lignes.Length; i++)
+                {
+                    if (lignes[i].StartsWith("alpha="))
+                        lignes[i] = "alpha=" + "true";
+                }
+                File.WriteAllLines(Form1.data, lignes);
+            }
+            else
+            {
+                if (!File.Exists(Form1.data)) return;
+                var lignes = File.ReadAllLines(Form1.data);
+                for (int i = 0; i < lignes.Length; i++)
+                {
+                    if (lignes[i].StartsWith("alpha="))
+                        lignes[i] = "alpha=" + "false";
+                }
+                File.WriteAllLines(Form1.data, lignes);
             }
         }
     }

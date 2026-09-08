@@ -37,10 +37,9 @@ namespace Misty
         string app_version;
         public static string cheminDossier = AppContext.BaseDirectory;
         string Path_APP;
-        int first, second;
-        int nbre_chaine;
+        //int nbre_chaine;
         string new_appversion;
-        string Suppr;
+        string Suppr, beta, alpha, snapshot;
 
         MinecraftLauncher launcher;
         JELoginHandler loginHandler;
@@ -57,7 +56,7 @@ namespace Misty
             InitialiserDiscordPresence();
 
             app_version = "0.2.3.9.2";
-            version_data = "1.2.1";
+            version_data = "1.2.2";
 
             label2.Text = app_version;
 
@@ -97,7 +96,7 @@ namespace Misty
                 textBox1.Text = $"{args.ProgressedBytes}/{args.TotalBytes} octets";
             };
 
-            _ = ChargerVersionsAsync(); // async fire-and-forget dans le constructeur
+            //_ = ChargerVersionsAsync(); // async fire-and-forget dans le constructeur
 
 
             comboBox1.MouseWheel += comboBox1_MouseWheel;
@@ -167,14 +166,20 @@ namespace Misty
                 var versions = await launcher.GetAllVersionsAsync();
 
                 comboBox1.Items.Clear();
+                //VersionVoulue();
                 foreach (var v in versions)
                 {
-                    comboBox1.Items.Add(v.Name);
-                    /*
                     if (v.Type != null && v.Type.ToString().Equals("Release", StringComparison.OrdinalIgnoreCase))
-                    {
                         comboBox1.Items.Add(v.Name);
-                    }*/
+
+                        else if (v.Type != null && v.Type.ToString().Equals("Snapshot", StringComparison.OrdinalIgnoreCase) && snapshot == "true")
+                            comboBox1.Items.Add(v.Name);
+
+                            else if (v.Type != null && v.Type.ToString().Equals("old_beta", StringComparison.OrdinalIgnoreCase) && beta == "true")
+                                comboBox1.Items.Add(v.Name);
+
+                                else if (v.Type != null && v.Type.ToString().Equals("old_alpha", StringComparison.OrdinalIgnoreCase) && alpha == "true")
+                                    comboBox1.Items.Add(v.Name);
                 }
             }
             catch (Exception ex)
@@ -198,7 +203,7 @@ namespace Misty
             }
             // no return value; file is saved to cache
         }
-        private async Task ChargerPseudoEtDerniereVersion()
+        private async Task ChargerPseudoEtConfig()
         {
             string premium = string.Empty;
 
@@ -210,9 +215,6 @@ namespace Misty
                 {
                     if (ligne.StartsWith("lastpseudo="))
                         comboBox_compte.Text = ligne.Split('=')[1];
-
-                    if (ligne.StartsWith("lastversion="))
-                        comboBox1.Text = ligne.Split('=')[1];
 
                     if (ligne.StartsWith("premium="))
                     {
@@ -242,6 +244,16 @@ namespace Misty
                             }
                         }
                     }
+                    if (ligne.StartsWith("snapshot="))
+                        snapshot = ligne.Split('=')[1];
+
+                    if (ligne.StartsWith("beta="))
+                        beta = ligne.Split('=')[1];
+                    
+
+                    if (ligne.StartsWith("alpha="))
+                        alpha = ligne.Split('=')[1];
+                    
 
                     if (ligne.StartsWith("Suppr="))
                     {
@@ -276,17 +288,21 @@ $lnk.Save();
                             }
 
                             bool dossierSupprime = false;
-
-                            try
+                            if (Directory.Exists(Suppr))
                             {
-                                Directory.Delete(Suppr, true);
+                                try
+                                {
+                                    Directory.Delete(Suppr, true);
+                                    dossierSupprime = true;
+                                }
+                                catch (Exception ex)
+                                {
+                                    MessageBox.Show("Le dossier ne peut pas être supprimé. Il se supprimera au prochain redémarrage de l'application.", "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                    dossierSupprime = false;
+                                }
+                            }
+                            else
                                 dossierSupprime = true;
-                            }
-                            catch (Exception ex)
-                            {
-                                MessageBox.Show("Le dossier ne peut pas être supprimé. Il se supprimera au prochain redémarrage de l'application.", "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                                dossierSupprime = false;
-                            }
 
                             if (dossierSupprime)
                             {
@@ -305,6 +321,19 @@ $lnk.Save();
             }
             else
                 comboBox_compte.Text = "PseudoTest";
+        }
+        private async Task ChargerDerniereVersion()
+        {
+            if (File.Exists(data))
+            {
+                var lignes = File.ReadAllLines(data);
+
+                foreach (var ligne in lignes)
+                {
+                    if (ligne.StartsWith("lastversion="))
+                        comboBox1.Text = ligne.Split('=')[1];
+                }
+            }
         }
         /*
         private async Task Fairetest()
@@ -456,9 +485,12 @@ $lnk.Save();
                     sw.WriteLine($"versiondatatxt={version_data}");
                     sw.WriteLine("lastpseudo=PseudoTest");
                     sw.WriteLine("lastversion=");
+                    sw.WriteLine("ram=");
                     sw.WriteLine("premium=");
                     sw.WriteLine($"raccourci=");
-                    sw.WriteLine("ram=");
+                    sw.WriteLine($"snapshot=");
+                    sw.WriteLine($"beta=");
+                    sw.WriteLine($"alpha=");
                     sw.WriteLine("Suppr=");
                 }
             }
@@ -472,7 +504,11 @@ $lnk.Save();
 
             await VerifierMiseAJour();
             ChargerPseudos();
-            ChargerPseudoEtDerniereVersion();
+            ChargerPseudoEtConfig();
+            await ChargerVersionsAsync();
+            ChargerDerniereVersion();
+
+
         }
         private async Task verif_datafile()
         {
@@ -483,6 +519,9 @@ $lnk.Save();
             string ramassocie = string.Empty;
             string premium = string.Empty;
             string raccourci = string.Empty;
+            string snapshot = string.Empty;
+            string beta = string.Empty;
+            string alpha = string.Empty;
 
             if (File.Exists(data))
             {
@@ -510,6 +549,15 @@ $lnk.Save();
 
                     if (ligne.StartsWith("raccourci="))
                         raccourci = ligne.Split('=')[1];
+
+                    if (ligne.StartsWith("snapshot="))
+                        snapshot = ligne.Split('=')[1];
+
+                    if (ligne.StartsWith("beta="))
+                        beta = ligne.Split('=')[1];
+
+                    if (ligne.StartsWith("alpha="))
+                        alpha = ligne.Split('=')[1];
                 }
                 if (version_data != version_data2)
                 {
@@ -523,6 +571,9 @@ $lnk.Save();
                         sw.WriteLine($"ram={ramassocie}");
                         sw.WriteLine($"premium={premium}");
                         sw.WriteLine($"raccourci={raccourci}");
+                        sw.WriteLine($"snapshot={snapshot}");
+                        sw.WriteLine($"beta={beta}");
+                        sw.WriteLine($"alpha={alpha}");
                         sw.WriteLine($"Suppr={dossierasuppr}");
                     }
 
@@ -1111,7 +1162,10 @@ $lnk.Save();
         private void Form3_FormClosed(object sender, FormClosedEventArgs e)
         {
             ChargerPseudos();
-            ChargerPseudoEtDerniereVersion();
+            ChargerPseudoEtConfig();
+            ChargerDerniereVersion();
+
+
         }
 
         private void comboBox_compte_SelectedIndexChanged(object sender, EventArgs e)

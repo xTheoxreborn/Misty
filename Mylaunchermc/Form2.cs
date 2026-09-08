@@ -52,7 +52,8 @@
                 "0.2.3.8.3 - Correction dun bug lié au sélectionneur de ram\n" +
                 "0.2.3.9 - Correctif sur la suppression de l'ancien dossier de version(Misty) + correction affichage version\n" +
                 "0.2.3.9.1 - Ajout de la gestion des raccourcis\n" +
-                "0.2.3.9.2 - Gestion des icons (fichier nommé icon.ico pour changer l'icone + save apres maj) + amélioration du système de raccourci";
+                "0.2.3.9.2v1 - Gestion des icons (fichier nommé icon.ico pour changer l'icone + save apres maj) + amélioration du système de raccourci +\n" +
+                "0.2.3.9.2v2 - Rechargement des versions + ajout des snapshots + beta + alpha + indev\n";
         }
         private void textBox1_TextChanged(object sender, EventArgs e)
         {

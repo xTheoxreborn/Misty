@@ -37,7 +37,6 @@ namespace Misty
         string app_version;
         public static string cheminDossier = AppContext.BaseDirectory;
         string Path_APP;
-        //int nbre_chaine;
         string new_appversion;
         string Suppr, beta, alpha, snapshot;
 
@@ -55,7 +54,7 @@ namespace Misty
 
             InitialiserDiscordPresence();
 
-            app_version = "0.2.3.9.2";
+            app_version = "0.2.3.9.4.3";
             version_data = "1.2.2";
 
             label2.Text = app_version;
@@ -76,7 +75,7 @@ namespace Misty
             neoForgee = new NeoForgeInstaller(launcher);
             optifineInstaller = new OptifineInstaller(new HttpClient());
 
-            system_register();
+            _ = system_register();
 
             // Progression du téléchargement (remplace tes anciens compteurs "tache")
             launcher.FileProgressChanged += (sender, args) =>
@@ -118,6 +117,7 @@ namespace Misty
             cheminDossier = cheminDossier.Split(Path_APP)[0];
 
             await download_newversion_app(urlTelechargement);
+
         }
         private async Task download_newversion_app(string url)
         {
@@ -133,8 +133,20 @@ namespace Misty
                     await response.Content.CopyToAsync(fs);
                 }
             }
+        
+            Path_APP = $"Misty-{app_version}";
+            string cheminDossiercut = cheminDossier.Split(Path_APP)[0];
 
-            await ZipFile.ExtractToDirectoryAsync(cheminDossierZip, cheminDossier);
+            
+            try
+            {
+                await ZipFile.ExtractToDirectoryAsync(cheminDossierZip, cheminDossiercut);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Erreur lors de l'extraction du fichier ZIP : " + ex.Message);
+                return;
+            }
             File.Delete(cheminDossierZip);
 
 
@@ -148,14 +160,15 @@ namespace Misty
             }
             File.WriteAllLines(data, lignes);
 
+            if (File.Exists(Path.Combine(AppContext.BaseDirectory, "Icon.ico")))
+                File.Copy(Path.Combine(AppContext.BaseDirectory, "Icon.ico"), Path.Combine(cheminDossier, $"Misty-{new_appversion}", "Icon.ico"));
+
             Process.Start(new ProcessStartInfo
             {
                 FileName = Path.Combine(cheminDossier, $"Misty-{new_appversion}", "Misty.exe"),
                 UseShellExecute = true
             });
 
-            File.Copy("Icon.ico", Path.Combine(cheminDossier, $"Misty-{new_appversion}", "Icon.ico"));
-            Thread.Sleep(500);
             System.Windows.Forms.Application.Exit();
         }
         // ── Chargement des versions disponibles (remplace List_release) ──
@@ -234,7 +247,6 @@ namespace Misty
                                 comboBox_compte.Enabled = false;
 
                                 button4.Enabled = true;
-                                button5.Enabled = true;
                             }
                             catch (Exception ex)
                             {
@@ -249,12 +261,10 @@ namespace Misty
 
                     if (ligne.StartsWith("beta="))
                         beta = ligne.Split('=')[1];
-                    
 
                     if (ligne.StartsWith("alpha="))
                         alpha = ligne.Split('=')[1];
                     
-
                     if (ligne.StartsWith("Suppr="))
                     {
                         Suppr = ligne.Split('=')[1];
@@ -288,21 +298,18 @@ $lnk.Save();
                             }
 
                             bool dossierSupprime = false;
-                            if (Directory.Exists(Suppr))
+
+                            try
                             {
-                                try
-                                {
-                                    Directory.Delete(Suppr, true);
-                                    dossierSupprime = true;
-                                }
-                                catch (Exception ex)
-                                {
-                                    MessageBox.Show("Le dossier ne peut pas être supprimé. Il se supprimera au prochain redémarrage de l'application.", "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                                    dossierSupprime = false;
-                                }
-                            }
-                            else
+                                Directory.Delete(Suppr, true);
                                 dossierSupprime = true;
+                            }
+                            catch (Exception ex)
+                            {
+                                MessageBox.Show("Erreur lors de la suppression du dossier : " + ex.Message);
+                                dossierSupprime = false;
+                            }
+                            
 
                             if (dossierSupprime)
                             {
@@ -612,7 +619,7 @@ $lnk.Save();
                     if (resultat == DialogResult.Yes)
                     {
                         //Process.Start(new ProcessStartInfo(urlTelechargement) { UseShellExecute = true });
-                        Initiale_Path(urlTelechargement);
+                        await Initiale_Path(urlTelechargement);
                     }
                     /*
                     else if (resultat == MessageBoxResult.No)
@@ -741,7 +748,7 @@ $lnk.Save();
                 return false;
 
             var min = new Version(1, 7, 10);
-            var max = new Version(26, 3);
+            var max = new Version(26, 4);
 
             return v >= min && v <= max;
         }
@@ -751,7 +758,7 @@ $lnk.Save();
                 return false;
 
             var min = new Version(1, 7, 2);
-            var max = new Version(26, 3);
+            var max = new Version(26, 4);
 
             return v >= min && v <= max;
         }
@@ -761,7 +768,7 @@ $lnk.Save();
                 return false;
 
             var min = new Version(1, 14, 0); // Fabric a été introduit vers cette période
-            var max = new Version(26, 3);
+            var max = new Version(26, 4);
 
             return v >= min && v <= max;
         }
@@ -772,7 +779,7 @@ $lnk.Save();
                 return false;
 
             var min = new Version(1, 14, 0); // Quilt est un fork de Fabric, plage similaire
-            var max = new Version(26, 3);
+            var max = new Version(26, 4);
 
             return v >= min && v <= max;
         }
@@ -782,7 +789,7 @@ $lnk.Save();
             if (!System.Version.TryParse(NettoyerVersion(version), out var v))
                 return false;
 
-            var min = new Version(1, 0, 0);
+            var min = new Version(1, 5, 1);
             var max = new Version(1, 12, 2); // LiteLoader n'a jamais suivi les versions récentes
 
             return v >= min && v <= max;
@@ -793,7 +800,7 @@ $lnk.Save();
                 return false;
 
             var min = new Version(1, 20, 1);
-            var max = new Version(26, 3);
+            var max = new Version(26, 4);
 
             return v >= min && v <= max;
         }
@@ -823,7 +830,7 @@ $lnk.Save();
                 comboBox_compte.Enabled = false;
 
                 button4.Enabled = true;
-                button5.Enabled = true;
+                //button5.Enabled = true;
 
                 if (!File.Exists(data)) return;
 
@@ -851,7 +858,7 @@ $lnk.Save();
             session = null;
 
             button4.Enabled = false;
-            button5.Enabled = false;
+            //button5.Enabled = false;
 
             if (!File.Exists(data)) return;
 
@@ -877,7 +884,7 @@ $lnk.Save();
                 comboBox_compte.Enabled = true;
 
                 button4.Enabled = false;
-                button5.Enabled = false;
+                //button5.Enabled = false;
 
                 if (!File.Exists(data)) return;
 
@@ -1119,7 +1126,6 @@ $lnk.Save();
         {
 
         }
-
 
         DiscordRpcClient discordClient;
 

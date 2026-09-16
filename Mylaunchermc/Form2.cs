@@ -53,7 +53,8 @@
                 "0.2.3.9 - Correctif sur la suppression de l'ancien dossier de version(Misty) + correction affichage version\n" +
                 "0.2.3.9.1 - Ajout de la gestion des raccourcis\n" +
                 "0.2.3.9.2v1 - Gestion des icons (fichier nommé icon.ico pour changer l'icone + save apres maj) + amélioration du système de raccourci +\n" +
-                "0.2.3.9.2v2 - Rechargement des versions + ajout des snapshots + beta + alpha + indev\n";
+                "0.2.3.9.2v2 - Rechargement des versions + ajout des snapshots + beta + alpha + indev\n" +
+                "0.2.3.9.2 - Possibilité de déconnecter le compte si cela expire et que la connexion n'est plus possible\n";
         }
         private void textBox1_TextChanged(object sender, EventArgs e)
         {

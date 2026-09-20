@@ -30,9 +30,9 @@ namespace Misty
             MinimumSize = Size;
 
 
-            if (File.Exists(Form1.data))
+            if (File.Exists(Form1.new_data))
             {
-                var lignes = File.ReadAllLines(Form1.data);
+                var lignes = File.ReadAllLines(Form1.new_data);
 
                 foreach (var ligne in lignes)
                 {
@@ -51,9 +51,9 @@ namespace Misty
                 comboBox_ram.SelectedItem = "4096";
             }
 
-            if (File.Exists(Form1.data))
+            if (File.Exists(Form1.new_data))
             {
-                var lignes = File.ReadAllLines(Form1.data);
+                var lignes = File.ReadAllLines(Form1.new_data);
 
                 foreach (var ligne in lignes)
                 {
@@ -129,9 +129,9 @@ namespace Misty
         {
             var resultat = new List<string>();
 
-            if (!File.Exists(Form1.listpseudo)) return resultat;
+            if (!File.Exists(Form1.new_listpseudo)) return resultat;
 
-            var lignes = File.ReadAllLines(Form1.listpseudo);
+            var lignes = File.ReadAllLines(Form1.new_listpseudo);
             foreach (var ligne in lignes)
             {
                 if (ligne.StartsWith("listpseudo="))
@@ -149,11 +149,11 @@ namespace Misty
         // ===== Réécrit la liste complète dans le fichier =====
         private void EcrireListePseudos(List<string> pseudos)
         {
-            if (!File.Exists(Form1.listpseudo)) return;
+            if (!File.Exists(Form1.new_listpseudo)) return;
 
             string nouvelleValeur = "listpseudo=" + string.Join(",", pseudos);
 
-            var lignes = File.ReadAllLines(Form1.listpseudo);
+            var lignes = File.ReadAllLines(Form1.new_listpseudo);
             bool ligneExiste = false;
 
             for (int i = 0; i < lignes.Length; i++)
@@ -167,11 +167,11 @@ namespace Misty
 
             if (ligneExiste)
             {
-                File.WriteAllLines(Form1.listpseudo, lignes);
+                File.WriteAllLines(Form1.new_listpseudo, lignes);
             }
             else
             {
-                File.AppendAllLines(Form1.listpseudo, new[] { nouvelleValeur });
+                File.AppendAllLines(Form1.new_listpseudo, new[] { nouvelleValeur });
             }
         }
 
@@ -189,15 +189,15 @@ namespace Misty
 
         private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (!File.Exists(Form1.data)) return;
+            if (!File.Exists(Form1.new_data)) return;
 
-            var lignes = File.ReadAllLines(Form1.data);
+            var lignes = File.ReadAllLines(Form1.new_data);
             for (int i = 0; i < lignes.Length; i++)
             {
                 if (lignes[i].StartsWith("ram="))
                     lignes[i] = "ram=" + comboBox_ram.Text;
             }
-            File.WriteAllLines(Form1.data, lignes);
+            File.WriteAllLines(Form1.new_data, lignes);
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -291,15 +291,15 @@ namespace Misty
             {
                 label7.Text = dossier.SelectedPath;
 
-                if (!File.Exists(Form1.data)) return;
+                if (!File.Exists(Form1.new_data)) return;
 
-                var lignes = File.ReadAllLines(Form1.data);
+                var lignes = File.ReadAllLines(Form1.new_data);
                 for (int i = 0; i < lignes.Length; i++)
                 {
                     if (lignes[i].StartsWith("raccourci="))
                         lignes[i] = "raccourci=" + dossier.SelectedPath;
                 }
-                File.WriteAllLines(Form1.data, lignes);
+                File.WriteAllLines(Form1.new_data, lignes);
             }
             string IconArgument = $"$lnk.IconLocation = '{Form1.cheminDossier}\\Icon.ico'";
             if (File.Exists(Form1.cheminDossier + "Icon.ico"))
@@ -344,15 +344,15 @@ $lnk.Save();
 
                 File.Delete(label7.Text + @"\Misty.lnk");
 
-                if (!File.Exists(Form1.data)) return;
+                if (!File.Exists(Form1.new_data)) return;
 
-                var lignes = File.ReadAllLines(Form1.data);
+                var lignes = File.ReadAllLines(Form1.new_data);
                 for (int i = 0; i < lignes.Length; i++)
                 {
                     if (lignes[i].StartsWith("raccourci="))
                         lignes[i] = "raccourci=" + "";
                 }
-                File.WriteAllLines(Form1.data, lignes);
+                File.WriteAllLines(Form1.new_data, lignes);
             }
         }
 
@@ -389,27 +389,27 @@ $lnk.Save();
         {
             if (checkBox2.Checked)
             {
-                if (!File.Exists(Form1.data)) return;
+                if (!File.Exists(Form1.new_data)) return;
 
-                var lignes = File.ReadAllLines(Form1.data);
+                var lignes = File.ReadAllLines(Form1.new_data);
                 for (int i = 0; i < lignes.Length; i++)
                 {
                     if (lignes[i].StartsWith("snapshot="))
                         lignes[i] = "snapshot=" + "true";
                 }
-                File.WriteAllLines(Form1.data, lignes);
+                File.WriteAllLines(Form1.new_data, lignes);
             }
             else
             {
-                if (!File.Exists(Form1.data)) return;
+                if (!File.Exists(Form1.new_data)) return;
 
-                var lignes = File.ReadAllLines(Form1.data);
+                var lignes = File.ReadAllLines(Form1.new_data);
                 for (int i = 0; i < lignes.Length; i++)
                 {
                     if (lignes[i].StartsWith("snapshot="))
                         lignes[i] = "snapshot=" + "false";
                 }
-                File.WriteAllLines(Form1.data, lignes);
+                File.WriteAllLines(Form1.new_data, lignes);
             }
         }
 
@@ -417,26 +417,26 @@ $lnk.Save();
         {
             if (checkBox3.Checked)
             {
-                if (!File.Exists(Form1.data)) return;
+                if (!File.Exists(Form1.new_data)) return;
 
-                var lignes = File.ReadAllLines(Form1.data);
+                var lignes = File.ReadAllLines(Form1.new_data);
                 for (int i = 0; i < lignes.Length; i++)
                 {
                     if (lignes[i].StartsWith("beta="))
                         lignes[i] = "beta=" + "true";
                 }
-                File.WriteAllLines(Form1.data, lignes);
+                File.WriteAllLines(Form1.new_data, lignes);
             }
             else
             {
-                if (!File.Exists(Form1.data)) return;
-                var lignes = File.ReadAllLines(Form1.data);
+                if (!File.Exists(Form1.new_data)) return;
+                var lignes = File.ReadAllLines(Form1.new_data);
                 for (int i = 0; i < lignes.Length; i++)
                 {
                     if (lignes[i].StartsWith("beta="))
                         lignes[i] = "beta=" + "false";
                 }
-                File.WriteAllLines(Form1.data, lignes);
+                File.WriteAllLines(Form1.new_data, lignes);
             }
         }
 
@@ -444,26 +444,26 @@ $lnk.Save();
         {
             if (checkBox4.Checked)
             {
-                if (!File.Exists(Form1.data)) return;
+                if (!File.Exists(Form1.new_data)) return;
 
-                var lignes = File.ReadAllLines(Form1.data);
+                var lignes = File.ReadAllLines(Form1.new_data);
                 for (int i = 0; i < lignes.Length; i++)
                 {
                     if (lignes[i].StartsWith("alpha="))
                         lignes[i] = "alpha=" + "true";
                 }
-                File.WriteAllLines(Form1.data, lignes);
+                File.WriteAllLines(Form1.new_data, lignes);
             }
             else
             {
-                if (!File.Exists(Form1.data)) return;
-                var lignes = File.ReadAllLines(Form1.data);
+                if (!File.Exists(Form1.new_data)) return;
+                var lignes = File.ReadAllLines(Form1.new_data);
                 for (int i = 0; i < lignes.Length; i++)
                 {
                     if (lignes[i].StartsWith("alpha="))
                         lignes[i] = "alpha=" + "false";
                 }
-                File.WriteAllLines(Form1.data, lignes);
+                File.WriteAllLines(Form1.new_data, lignes);
             }
         }
     }

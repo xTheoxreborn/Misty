@@ -27,8 +27,11 @@ namespace Misty
     public partial class Form1 : Form
     {
         string chemin = @"C:\TEXT\";
-        public static string data = @"C:\TEXT\data.txt";
-        public static string listpseudo = @"C:\TEXT\listpseudo.txt";
+        string new_chemin = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"Misty");
+        //public static string data = @"C:\TEXT\data.txt";
+        public static string new_data = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Misty") + @"\data.txt";
+        //public static string listpseudo = @"C:\TEXT\listpseudo.txt";
+        public static string new_listpseudo = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Misty") + @"\listpseudo.txt";
         string version_data;
         string selectedVersion = "";
         string Nomversion;
@@ -54,7 +57,7 @@ namespace Misty
 
             InitialiserDiscordPresence();
 
-            app_version = "0.2.3.9.4.3";
+            app_version = "0.2.3.9.5";
             version_data = "1.2.2";
 
             label2.Text = app_version;
@@ -69,11 +72,12 @@ namespace Misty
             if (File.Exists(cheminDossier + "icon.ico"))
                 this.Icon = new Icon(cheminDossier + "icon.ico");
 
-            mcPath = new MinecraftPath(chemin);
+            mcPath = new MinecraftPath(new_chemin);
             launcher = new MinecraftLauncher(mcPath);
             forgee = new ForgeInstaller(launcher);
             neoForgee = new NeoForgeInstaller(launcher);
             optifineInstaller = new OptifineInstaller(new HttpClient());
+
 
             _ = system_register();
 
@@ -106,9 +110,69 @@ namespace Misty
             comboBoxMode.DropDownStyle = ComboBoxStyle.DropDownList;
             comboBox_compte.DropDownStyle = ComboBoxStyle.DropDownList;
 
-            //Fairetest();            
+            //Fairetest();
         }
+        private async Task changement_dossier()
+        {
+            if (Path.Exists(chemin))
+            {
+                bool dir = false;
+                if (!Directory.Exists(new_chemin))
+                {
 
+                    try
+                    {
+                        MessageBox.Show("Misty est en cours de mise à jour vers le nouveau dossier d'installation. Veuillez ne pas fermer l'application.");
+                        await CopyDirectoryAsync(chemin, new_chemin);
+                        dir = true;
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("Erreur lors de la copie des fichiers : " + ex.Message);
+                        dir = false;
+                    }
+                    try
+                    {
+                        Directory.Delete(chemin, true);
+                        MessageBox.Show("Misty a été mis à jour vers le nouveau dossier d'installation avec succès !");
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("Erreur lors de la suppression de l'ancien dossier : " + ex.Message);
+                    }
+                }
+                else if (Directory.Exists(chemin))
+                {
+                    try
+                    {
+                        Directory.Delete(chemin, true);
+                        MessageBox.Show("Misty a été mis à jour vers le nouveau dossier d'installation avec succès !");
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("Erreur lors de la suppression de l'ancien dossier : " + ex.Message);
+                    }
+                }
+            }
+        }
+        static async Task CopyDirectoryAsync(string sourceDir, string destinationDir)
+        {
+            Directory.CreateDirectory(destinationDir);
+
+            foreach (string file in Directory.GetFiles(sourceDir))
+            {
+                string destFile = Path.Combine(destinationDir, Path.GetFileName(file));
+                using var sourceStream = File.OpenRead(file);
+                using var destStream = File.Create(destFile);
+                await sourceStream.CopyToAsync(destStream);
+            }
+
+            foreach (string subDir in Directory.GetDirectories(sourceDir))
+            {
+                string destSubDir = Path.Combine(destinationDir, Path.GetFileName(subDir));
+                await CopyDirectoryAsync(subDir, destSubDir);
+            }
+        }
 
         private void comboBox1_MouseWheel(object sender, MouseEventArgs e) { ((HandledMouseEventArgs)e).Handled = true; }
         private async Task Initiale_Path(string urlTelechargement)
@@ -150,15 +214,15 @@ namespace Misty
             File.Delete(cheminDossierZip);
 
 
-            if (!File.Exists(data)) return;
+            if (!File.Exists(Form1.new_data)) return;
 
-            var lignes = File.ReadAllLines(data);
+            var lignes = File.ReadAllLines(Form1.new_data);
             for (int i = 0; i < lignes.Length; i++)
             {
                 if (lignes[i].StartsWith("Suppr="))
                     lignes[i] = "Suppr=" + cheminDossier + Path_APP;
             }
-            File.WriteAllLines(data, lignes);
+            File.WriteAllLines(Form1.new_data, lignes);
 
             if (File.Exists(Path.Combine(AppContext.BaseDirectory, "Icon.ico")))
                 File.Copy(Path.Combine(AppContext.BaseDirectory, "Icon.ico"), Path.Combine(cheminDossier, $"Misty-{new_appversion}", "Icon.ico"));
@@ -220,9 +284,9 @@ namespace Misty
         {
             string premium = string.Empty;
 
-            if (File.Exists(data))
+            if (File.Exists(new_data))
             {
-                var lignes = File.ReadAllLines(data);
+                var lignes = File.ReadAllLines(new_data);
 
                 foreach (var ligne in lignes)
                 {
@@ -320,7 +384,7 @@ $lnk.Save();
                                     if (lignes[i].StartsWith("Suppr="))
                                         lignes[i] = "Suppr=";
                                 }
-                                File.WriteAllLines(data, lignes);
+                                File.WriteAllLines(new_data, lignes);
                             }
                         }
                     }
@@ -331,9 +395,9 @@ $lnk.Save();
         }
         private async Task ChargerDerniereVersion()
         {
-            if (File.Exists(data))
+            if (File.Exists(new_data))
             {
-                var lignes = File.ReadAllLines(data);
+                var lignes = File.ReadAllLines(new_data);
 
                 foreach (var ligne in lignes)
                 {
@@ -399,9 +463,9 @@ $lnk.Save();
         }*/
         private void affect_ram()
         {
-            if (File.Exists(Form1.data))
+            if (File.Exists(Form1.new_data))
             {
-                var lignes = File.ReadAllLines(Form1.data);
+                var lignes = File.ReadAllLines(Form1.new_data);
 
                 foreach (var ligne in lignes)
                 {
@@ -443,9 +507,9 @@ $lnk.Save();
         {
             var resultat = new List<string>();
 
-            if (!File.Exists(listpseudo)) return resultat;
+            if (!File.Exists(new_listpseudo)) return resultat;
 
-            var lignes = File.ReadAllLines(listpseudo);
+            var lignes = File.ReadAllLines(new_listpseudo);
             foreach (var ligne in lignes)
             {
                 if (ligne.StartsWith("listpseudo="))
@@ -480,14 +544,15 @@ $lnk.Save();
         }
         private async Task system_register()
         {
+            await changement_dossier();
             await verif_datafile();
 
-            if (!Directory.Exists(chemin))
-                Directory.CreateDirectory(chemin);
+            if (!Directory.Exists(new_chemin))
+                Directory.CreateDirectory(new_chemin);
 
-            if (!File.Exists(data))
+            if (!File.Exists(new_data))
             {
-                using (StreamWriter sw = File.CreateText(data))
+                using (StreamWriter sw = File.CreateText(new_data))
                 {
                     sw.WriteLine($"versiondatatxt={version_data}");
                     sw.WriteLine("lastpseudo=PseudoTest");
@@ -501,9 +566,9 @@ $lnk.Save();
                     sw.WriteLine("Suppr=");
                 }
             }
-            if (!File.Exists(listpseudo))
+            if (!File.Exists(new_listpseudo))
             {
-                using (StreamWriter sw = File.CreateText(listpseudo))
+                using (StreamWriter sw = File.CreateText(new_listpseudo))
                 {
                     sw.WriteLine("listpseudo=PseudoTest");
                 }
@@ -530,9 +595,9 @@ $lnk.Save();
             string beta = string.Empty;
             string alpha = string.Empty;
 
-            if (File.Exists(data))
+            if (File.Exists(new_data))
             {
-                var lignes = File.ReadAllLines(data);
+                var lignes = File.ReadAllLines(new_data);
 
                 foreach (var ligne in lignes)
                 {
@@ -568,9 +633,9 @@ $lnk.Save();
                 }
                 if (version_data != version_data2)
                 {
-                    File.Move(data, chemin + "data_old.txt");
+                    File.Move(new_data, new_chemin + "data_old.txt");
 
-                    using (StreamWriter sw = File.CreateText(data))
+                    using (StreamWriter sw = File.CreateText(new_data))
                     {
                         sw.WriteLine($"versiondatatxt={version_data}");
                         sw.WriteLine($"lastpseudo={lastPseudo}");
@@ -584,7 +649,7 @@ $lnk.Save();
                         sw.WriteLine($"Suppr={dossierasuppr}");
                     }
 
-                    File.Delete(chemin + "data_old.txt");
+                    File.Delete(new_chemin + "data_old.txt");
                 }
             }
         }
@@ -645,15 +710,15 @@ $lnk.Save();
 
             selectedVersion = comboBox1.Text;
 
-            if (!File.Exists(data)) return;
+            if (!File.Exists(new_data)) return;
 
-            var lignes = File.ReadAllLines(data);
+            var lignes = File.ReadAllLines(new_data);
             for (int i = 0; i < lignes.Length; i++)
             {
                 if (lignes[i].StartsWith("lastversion="))
                     lignes[i] = "lastversion=" + comboBox1.Text;
             }
-            File.WriteAllLines(data, lignes);
+            File.WriteAllLines(new_data, lignes);
 
             comboBoxMode.Enabled = false;
             comboBoxMode.Items.Clear();
@@ -832,15 +897,15 @@ $lnk.Save();
                 button4.Enabled = true;
                 //button5.Enabled = true;
 
-                if (!File.Exists(data)) return;
+                if (!File.Exists(new_data)) return;
 
-                var lignes = File.ReadAllLines(data);
+                var lignes = File.ReadAllLines(new_data);
                 for (int i = 0; i < lignes.Length; i++)
                 {
                     if (lignes[i].StartsWith("premium="))
                         lignes[i] = "premium=" + "True";
                 }
-                File.WriteAllLines(data, lignes);
+                File.WriteAllLines(new_data, lignes);
             }
             catch (Exception ex)
             {
@@ -860,15 +925,15 @@ $lnk.Save();
             button4.Enabled = false;
             //button5.Enabled = false;
 
-            if (!File.Exists(data)) return;
+            if (!File.Exists(new_data)) return;
 
-            var lignes = File.ReadAllLines(data);
+            var lignes = File.ReadAllLines(new_data);
             for (int i = 0; i < lignes.Length; i++)
             {
                 if (lignes[i].StartsWith("premium="))
                     lignes[i] = "premium=" + "False";
             }
-            File.WriteAllLines(data, lignes);
+            File.WriteAllLines(new_data, lignes);
         }
 
         private async void button5_Click_1(object sender, EventArgs e)
@@ -886,15 +951,15 @@ $lnk.Save();
                 button4.Enabled = false;
                 //button5.Enabled = false;
 
-                if (!File.Exists(data)) return;
+                if (!File.Exists(new_data)) return;
 
-                var lignes = File.ReadAllLines(data);
+                var lignes = File.ReadAllLines(new_data);
                 for (int i = 0; i < lignes.Length; i++)
                 {
                     if (lignes[i].StartsWith("premium="))
                         lignes[i] = "premium=" + "False";
                 }
-                File.WriteAllLines(data, lignes);
+                File.WriteAllLines(new_data, lignes);
             }
             catch (Exception ex)
             {
@@ -1176,13 +1241,13 @@ $lnk.Save();
 
         private void comboBox_compte_SelectedIndexChanged(object sender, EventArgs e)
         {
-            var lignes = File.ReadAllLines(data);
+            var lignes = File.ReadAllLines(new_data);
             for (int i = 0; i < lignes.Length; i++)
             {
                 if (lignes[i].StartsWith("lastpseudo="))
                     lignes[i] = "lastpseudo=" + comboBox_compte.Text;
             }
-            File.WriteAllLines(data, lignes);
+            File.WriteAllLines(new_data, lignes);
         }
 
         private void comboBoxMode_SelectedIndexChanged(object sender, EventArgs e)
@@ -1192,7 +1257,7 @@ $lnk.Save();
 
         private void pictureBox1_Click(object sender, EventArgs e)
         {
-            Process.Start("explorer.exe", chemin);
+            Process.Start("explorer.exe", new_chemin);
         }
 
         private async void button7_Click(object sender, EventArgs e)

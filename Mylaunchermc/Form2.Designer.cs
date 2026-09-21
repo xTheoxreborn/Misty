@@ -32,6 +32,7 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form2));
             contextMenuStrip1 = new ContextMenuStrip(components);
             label1 = new Label();
+            label2 = new Label();
             SuspendLayout();
             // 
             // contextMenuStrip1
@@ -50,11 +51,21 @@
             label1.Text = "label1";
             label1.Click += label1_Click;
             // 
+            // label2
+            // 
+            label2.AutoSize = true;
+            label2.Location = new Point(7, 5);
+            label2.Name = "label2";
+            label2.Size = new Size(38, 15);
+            label2.TabIndex = 3;
+            label2.Text = "label2";
+            // 
             // Form2
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(864, 752);
+            ClientSize = new Size(864, 831);
+            Controls.Add(label2);
             Controls.Add(label1);
             Icon = (Icon)resources.GetObject("$this.Icon");
             Name = "Form2";
@@ -67,5 +78,6 @@
 
         private ContextMenuStrip contextMenuStrip1;
         private Label label1;
+        private Label label2;
     }
 }

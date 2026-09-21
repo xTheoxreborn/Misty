@@ -9,6 +9,8 @@
             MaximumSize = Size;
             MinimumSize = Size;
 
+            label1.Visible = false;
+
             label1.Text = "0.0.1 - Release\n" +
                 "0.0.2 - Modification du pseudo\n" +
                 "0.0.3 - Sauvegarde du pseudo\n" +
@@ -55,8 +57,13 @@
                 "0.2.3.9.2v1 - Gestion des icons (fichier nommé icon.ico pour changer l'icone + save apres maj) + amélioration du système de raccourci +\n" +
                 "0.2.3.9.2v2 - Rechargement des versions + ajout des snapshots + beta + alpha + indev\n" +
                 "0.2.3.9.2 - Possibilité de déconnecter le compte si cela expire et que la connexion n'est plus possible\n" + 
-                "0.2.3.9.4.3 - Ajout de la nouvelle version mc" +
-                "0.2.3.9.5 - Changement du dossier de sauvegarde";
+                "0.2.3.9.4.3 - Ajout de la nouvelle version mc";
+
+
+
+            label2.Text = 
+                "0.2.3.9.5 - Changement du dossier de sauvegarde" +
+                "0.2.3.9.5.1 - Calcul de la taille du dossier, possibilité de le vider";
         }
         private void textBox1_TextChanged(object sender, EventArgs e)
         {

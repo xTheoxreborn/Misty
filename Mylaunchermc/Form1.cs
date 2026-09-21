@@ -27,7 +27,7 @@ namespace Misty
     public partial class Form1 : Form
     {
         string chemin = @"C:\TEXT\";
-        string new_chemin = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"Misty");
+        public static string new_chemin = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"Misty");
         //public static string data = @"C:\TEXT\data.txt";
         public static string new_data = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Misty") + @"\data.txt";
         //public static string listpseudo = @"C:\TEXT\listpseudo.txt";
@@ -57,7 +57,7 @@ namespace Misty
 
             InitialiserDiscordPresence();
 
-            app_version = "0.2.3.9.5";
+            app_version = "0.2.3.9.5.1";
             version_data = "1.2.2";
 
             label2.Text = app_version;
@@ -122,7 +122,7 @@ namespace Misty
 
                     try
                     {
-                        MessageBox.Show("Misty est en cours de mise à jour vers le nouveau dossier d'installation. Veuillez ne pas fermer l'application.");
+                        MessageBox.Show("Misty est en cours de mise à jour vers le nouveau dossier d'installation. Veuillez ne pas fermer l'application et ne pas toucher l'application.");
                         await CopyDirectoryAsync(chemin, new_chemin);
                         dir = true;
                     }
@@ -854,7 +854,7 @@ $lnk.Save();
             if (!System.Version.TryParse(NettoyerVersion(version), out var v))
                 return false;
 
-            var min = new Version(1, 5, 1);
+            var min = new Version(1, 5, 2);
             var max = new Version(1, 12, 2); // LiteLoader n'a jamais suivi les versions récentes
 
             return v >= min && v <= max;

@@ -29,6 +29,7 @@ namespace Misty
             MaximumSize = Size;
             MinimumSize = Size;
 
+            CalculMainPath();
 
             if (File.Exists(Form1.new_data))
             {
@@ -465,6 +466,33 @@ $lnk.Save();
                 }
                 File.WriteAllLines(Form1.new_data, lignes);
             }
+        }
+        private void CalculMainPath()
+        {
+            if (Directory.Exists(Form1.new_chemin))
+            {
+                // Calcul de la taille en octets
+                long tailleOctets = Directory.EnumerateFiles(Form1.new_chemin, "*", SearchOption.AllDirectories)
+                                             .Sum(file => new FileInfo(file).Length);
+
+                // Conversion en Mégaoctets (Mo) pour plus de lisibilité
+                double tailleMo = tailleOctets / (1024.0 * 1024.0);
+                double tailleGo = tailleMo / (1024.0);
+
+                label9.Text = $"Taille : {tailleMo:F2} Mo / {tailleGo:F2} Go";
+            }
+            else
+                label9.Text = $"Taille : 0 Mo";
+        }
+        private void button3_Click(object sender, EventArgs e)
+        {
+            if (MessageBox.Show("Êtes-vous sûr de vouloir supprimer le profil Misty et toutes ses données ?", "Confirmation", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes 
+                && Directory.Exists(Form1.new_chemin))
+            {
+                Directory.Delete(Form1.new_chemin, true);
+            }
+            if (MessageBox.Show("Voulez-vous fermer le launcher afin de ne pas recréer de données ?", "Confirmation", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
+                Application.Exit();
         }
     }
 }

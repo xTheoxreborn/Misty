@@ -48,6 +48,10 @@
             checkBox2 = new CheckBox();
             checkBox3 = new CheckBox();
             checkBox4 = new CheckBox();
+            label6 = new Label();
+            button_clean = new Button();
+            label8 = new Label();
+            label9 = new Label();
             SuspendLayout();
             // 
             // button1
@@ -241,11 +245,52 @@
             checkBox4.UseVisualStyleBackColor = true;
             checkBox4.CheckedChanged += checkBox4_CheckedChanged;
             // 
+            // label6
+            // 
+            label6.AutoSize = true;
+            label6.Location = new Point(12, 280);
+            label6.Name = "label6";
+            label6.Size = new Size(382, 15);
+            label6.TabIndex = 22;
+            label6.Text = "___________________________________________________________________________";
+            // 
+            // button_clean
+            // 
+            button_clean.Location = new Point(153, 311);
+            button_clean.Name = "button_clean";
+            button_clean.Size = new Size(96, 23);
+            button_clean.TabIndex = 23;
+            button_clean.Text = "Tout supprimer";
+            button_clean.UseVisualStyleBackColor = true;
+            button_clean.Click += button3_Click;
+            // 
+            // label8
+            // 
+            label8.AutoSize = true;
+            label8.Location = new Point(12, 315);
+            label8.Name = "label8";
+            label8.Size = new Size(135, 15);
+            label8.TabIndex = 24;
+            label8.Text = "Dossier de l'application :";
+            // 
+            // label9
+            // 
+            label9.AutoSize = true;
+            label9.Location = new Point(12, 341);
+            label9.Name = "label9";
+            label9.Size = new Size(38, 15);
+            label9.TabIndex = 25;
+            label9.Text = "label9";
+            // 
             // Form3
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(424, 293);
+            ClientSize = new Size(424, 384);
+            Controls.Add(label9);
+            Controls.Add(label8);
+            Controls.Add(button_clean);
+            Controls.Add(label6);
             Controls.Add(checkBox4);
             Controls.Add(checkBox3);
             Controls.Add(checkBox2);
@@ -293,5 +338,9 @@
         private CheckBox checkBox2;
         private CheckBox checkBox3;
         private CheckBox checkBox4;
+        private Label label6;
+        private Button button_clean;
+        private Label label8;
+        private Label label9;
     }
 }

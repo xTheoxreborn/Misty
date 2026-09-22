@@ -3,13 +3,16 @@ using System.Threading.Tasks;
 using Modrinth;
 using Modrinth.Models;
 
-namespace Misty.Service
+namespace Misty.Services
 {
+    /// <summary>
+    /// Recherche de mods sur Modrinth (en cours de développement, pas encore branché à l'interface).
+    /// </summary>
     public class ModrinthService
     {
         public async Task<dynamic?> RechercherMod(string nom)
         {
-            var client = new ModrinthClient(userAgent: "Misty/1.0");
+            var client = new ModrinthClient(new ModrinthClientConfig { UserAgent = "Misty/1.0" });
 
             var search = await client.Project.SearchAsync(nom);
 

@@ -1,5 +1,10 @@
 <Solution>
-  <Project Path="Mylaunchermc/Misty.csproj">
+  <Folder Name="/Solution Items/">
+    <File Path=".gitignore" />
+    <File Path="CHANGELOG.md" />
+    <File Path="README.md" />
+  </Folder>
+  <Project Path="src/Misty/Misty.csproj">
     <BuildType Project="Release" />
   </Project>
 </Solution>

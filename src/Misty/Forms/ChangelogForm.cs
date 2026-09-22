@@ -1,17 +1,20 @@
-﻿namespace Misty
+﻿namespace Misty.Forms
 {
-    public partial class Form2 : Form
+    /// <summary>
+    /// Notes de version (ouverte en cliquant sur le numéro de version dans la fenêtre principale).
+    /// </summary>
+    public partial class ChangelogForm : Form
     {
-        public Form2()
+        public ChangelogForm()
         {
             InitializeComponent();
 
             MaximumSize = Size;
             MinimumSize = Size;
 
-            label1.Visible = false;
+            lblAnciennesVersions.Visible = false;
 
-            label1.Text = "0.0.1 - Release\n" +
+            lblAnciennesVersions.Text = "0.0.1 - Release\n" +
                 "0.0.2 - Modification du pseudo\n" +
                 "0.0.3 - Sauvegarde du pseudo\n" +
                 "0.0.4 - Changement des textes sur les boutons\n" +
@@ -61,21 +64,9 @@
 
 
 
-            label2.Text = 
-                "0.2.3.9.5 - Changement du dossier de sauvegarde" +
+            lblNouveautes.Text = 
+                "0.2.3.9.5 - Changement du dossier de sauvegarde\n" +
                 "0.2.3.9.5.1 - Calcul de la taille du dossier, possibilité de le vider";
-        }
-        private void textBox1_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void label1_Click(object sender, EventArgs e)
-        {
-
         }
     }
 }
-
-
-          

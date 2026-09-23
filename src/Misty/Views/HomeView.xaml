@@ -1,0 +1,213 @@
+<UserControl x:Class="Misty.Views.HomeView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:Misty.Controls">
+
+    <Grid Margin="26,0,30,26">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- ═══════════ Héros ═══════════ -->
+        <Grid Grid.Row="0" Margin="0,0,0,20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <!-- Titre -->
+            <StackPanel VerticalAlignment="Center" Margin="14,0,0,0">
+                <Border HorizontalAlignment="Left" CornerRadius="10" Background="#401C2335" Padding="12,6" Margin="6,0,0,14">
+                    <TextBlock Style="{StaticResource PixelLabel}" Foreground="White" FontSize="12" Text="LAUNCHER MINECRAFT" />
+                </Border>
+
+                <controls:OutlinedText Text="MISTY" FontFamily="{StaticResource PixelFont}" FontSize="128"
+                                       Fill="White" Stroke="{StaticResource SlateBrush}" StrokeThickness="6"
+                                       ShadowBrush="{StaticResource SlateDarkBrush}" ShadowDepth="9" />
+
+                <TextBlock Style="{StaticResource BodyText}" FontSize="16" Foreground="{StaticResource Navy2Brush}"
+                           Margin="8,10,0,0" MaxWidth="420" HorizontalAlignment="Left" LineHeight="24">
+                    Toutes les versions, tous les mod loaders.<LineBreak />Choisis, clique, joue.
+                </TextBlock>
+
+                <!-- Loaders pris en charge -->
+                <WrapPanel Margin="6,20,0,0" MaxWidth="480" HorizontalAlignment="Left">
+                    <WrapPanel.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="10" />
+                            <Setter Property="Background" Value="{StaticResource GlassBrush}" />
+                            <Setter Property="BorderBrush" Value="{StaticResource GlassBorderBrush}" />
+                            <Setter Property="BorderThickness" Value="1.5" />
+                            <Setter Property="Padding" Value="10,5" />
+                            <Setter Property="Margin" Value="0,0,8,8" />
+                        </Style>
+                        <Style TargetType="TextBlock" BasedOn="{StaticResource PixelLabel}">
+                            <Setter Property="FontSize" Value="11" />
+                            <Setter Property="Foreground" Value="{StaticResource NavyBrush}" />
+                        </Style>
+                    </WrapPanel.Resources>
+                    <Border><TextBlock Text="FORGE" /></Border>
+                    <Border><TextBlock Text="NEOFORGE" /></Border>
+                    <Border><TextBlock Text="FABRIC" /></Border>
+                    <Border><TextBlock Text="OPTIFINE" /></Border>
+                    <Border><TextBlock Text="LITELOADER" /></Border>
+                </WrapPanel>
+            </StackPanel>
+
+            <!-- Carte version (façon vignette) + texte vertical -->
+            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                <Grid Width="330" Height="350">
+                    <Border CornerRadius="30" Background="#D9E9FA" Padding="5" Effect="{StaticResource SoftShadow}">
+                        <Border CornerRadius="26" Background="{StaticResource CardDarkBrush}" ClipToBounds="True">
+                            <Grid>
+                                <!-- lueur -->
+                                <Ellipse Width="260" Height="260" VerticalAlignment="Top" Margin="0,-40,0,0" Opacity="0.35">
+                                    <Ellipse.Fill>
+                                        <RadialGradientBrush>
+                                            <GradientStop Offset="0" Color="#C4DFF8" />
+                                            <GradientStop Offset="1" Color="#00C4DFF8" />
+                                        </RadialGradientBrush>
+                                    </Ellipse.Fill>
+                                </Ellipse>
+
+                                <!-- bloc qui flotte -->
+                                <Grid VerticalAlignment="Top" Margin="0,48,0,0">
+                                    <Ellipse x:Name="OmbreBloc" Width="120" Height="16" Fill="#66000000" VerticalAlignment="Top"
+                                             Margin="0,172,0,0" RenderTransformOrigin="0.5,0.5">
+                                        <Ellipse.RenderTransform>
+                                            <ScaleTransform />
+                                        </Ellipse.RenderTransform>
+                                    </Ellipse>
+                                    <Image x:Name="Bloc" Source="{x:Static controls:PixelArt.BlocHerbe}" Width="144" Height="144"
+                                           RenderOptions.BitmapScalingMode="NearestNeighbor" VerticalAlignment="Top">
+                                        <Image.RenderTransform>
+                                            <TranslateTransform />
+                                        </Image.RenderTransform>
+                                    </Image>
+                                </Grid>
+
+                                <!-- version sélectionnée -->
+                                <StackPanel VerticalAlignment="Bottom" Margin="22,0,22,22">
+                                    <TextBlock Style="{StaticResource PixelLabel}" FontSize="11" Foreground="#99FFFFFF" Text="VERSION SÉLECTIONNÉE" />
+                                    <controls:OutlinedText x:Name="CarteVersion" Text="—" FontFamily="{StaticResource PixelFont}" FontSize="34"
+                                                           Fill="White" Stroke="{StaticResource NavyBrush}" StrokeThickness="3"
+                                                           ShadowBrush="#000A0F1A" Margin="0,4,0,0" />
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </Border>
+
+                    <!-- pastilles (comme les icônes du visuel) -->
+                    <Border x:Name="PastilleCompte" Width="54" Height="54" CornerRadius="27" Background="White"
+                            HorizontalAlignment="Left" VerticalAlignment="Top" Margin="-16,26,0,0"
+                            Effect="{StaticResource SmallShadow}" ToolTip="Hors-ligne">
+                        <Border Margin="5" CornerRadius="22" Background="{StaticResource BlueBrush}">
+                            <TextBlock x:Name="PastilleCompteIcone" Style="{StaticResource Icon}" Foreground="White" FontSize="20" Text="&#xE77B;" />
+                        </Border>
+                    </Border>
+                    <Border Width="auto" Height="42" CornerRadius="21" Background="White" Padding="5"
+                            HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,-14,76"
+                            Effect="{StaticResource SmallShadow}">
+                        <Border CornerRadius="16" Background="{StaticResource GreenBrush}" Padding="12,0">
+                            <TextBlock x:Name="CarteLoader" Style="{StaticResource PixelLabel}" Foreground="White" FontSize="13"
+                                       VerticalAlignment="Center" Text="VANILLA" />
+                        </Border>
+                    </Border>
+                </Grid>
+
+                <controls:OutlinedText Text="JOUER" FontFamily="{StaticResource PixelFont}" FontSize="30"
+                                       Fill="White" Stroke="{StaticResource SlateBrush}" StrokeThickness="3"
+                                       ShadowBrush="{StaticResource SlateDarkBrush}" ShadowDepth="4"
+                                       VerticalAlignment="Top" Margin="22,0,0,0">
+                    <controls:OutlinedText.LayoutTransform>
+                        <RotateTransform Angle="90" />
+                    </controls:OutlinedText.LayoutTransform>
+                </controls:OutlinedText>
+            </StackPanel>
+        </Grid>
+
+        <!-- ═══════════ Barre de lancement ═══════════ -->
+        <Border Grid.Row="1" Style="{StaticResource GlassCard}" CornerRadius="26" Padding="18,16" Background="#73FFFFFF">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <!-- Compte -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Bottom">
+                    <Border Width="58" Height="58" CornerRadius="16" Background="#1C2335" BorderBrush="White" BorderThickness="2.5"
+                            Margin="0,0,12,0" VerticalAlignment="Bottom">
+                        <Border CornerRadius="13" ClipToBounds="True">
+                            <Grid>
+                                <Image Source="{x:Static controls:PixelArt.BlocHerbe}" RenderOptions.BitmapScalingMode="NearestNeighbor" Margin="10" />
+                                <Image x:Name="Avatar" RenderOptions.BitmapScalingMode="NearestNeighbor" Stretch="UniformToFill" />
+                            </Grid>
+                        </Border>
+                    </Border>
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource PixelLabel}" FontSize="10" Text="COMPTE" Margin="4,0,0,6" />
+                        <StackPanel Orientation="Horizontal">
+                            <Grid Width="170">
+                                <ComboBox x:Name="CmbCompte" Style="{StaticResource GlassCombo}" SelectionChanged="CmbCompte_SelectionChanged" />
+                                <Border x:Name="PanneauPremium" Visibility="Collapsed" CornerRadius="12" Height="44"
+                                        Background="{StaticResource NavyBrush}" Padding="12,0">
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <TextBlock Style="{StaticResource Icon}" Text="&#xE73E;" Foreground="{StaticResource GreenBrush}" FontSize="13" Margin="0,0,8,0" />
+                                        <TextBlock x:Name="TxtPseudoPremium" Foreground="White" FontWeight="SemiBold" FontSize="13"
+                                                   VerticalAlignment="Center" TextTrimming="CharacterEllipsis" MaxWidth="120" />
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
+                            <Button x:Name="BtnMicrosoft" Style="{StaticResource IconButton}" Width="44" Height="44" Margin="8,0,0,0"
+                                    Content="&#xE8FA;" ToolTip="Se connecter avec un compte Microsoft" Click="BtnMicrosoft_Click" />
+                        </StackPanel>
+                    </StackPanel>
+                </StackPanel>
+
+                <Rectangle Grid.Column="1" Width="1.5" Fill="#66FFFFFF" Margin="18,4" />
+
+                <!-- Version -->
+                <StackPanel Grid.Column="2" VerticalAlignment="Bottom" Margin="0,0,10,0">
+                    <TextBlock Style="{StaticResource PixelLabel}" FontSize="10" Text="VERSION" Margin="4,0,0,6" />
+                    <StackPanel Orientation="Horizontal">
+                        <ComboBox x:Name="CmbVersion" Style="{StaticResource GlassCombo}" Width="170"
+                                  SelectionChanged="CmbVersion_SelectionChanged" />
+                        <Button x:Name="BtnRecharger" Style="{StaticResource IconButton}" Width="44" Height="44" Margin="8,0,0,0"
+                                Content="&#xE72C;" ToolTip="Recharger la liste des versions" Click="BtnRecharger_Click" />
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- Loader -->
+                <StackPanel Grid.Column="3" VerticalAlignment="Bottom">
+                    <TextBlock Style="{StaticResource PixelLabel}" FontSize="10" Text="MOD LOADER" Margin="4,0,0,6" />
+                    <ComboBox x:Name="CmbMode" Style="{StaticResource GlassCombo}" Width="150" IsEnabled="False"
+                              SelectionChanged="CmbMode_SelectionChanged" />
+                </StackPanel>
+
+                <!-- Statut / progression -->
+                <StackPanel Grid.Row="1" Grid.ColumnSpan="5" Margin="2,16,24,0">
+                    <DockPanel Margin="0,0,0,8">
+                        <TextBlock x:Name="TxtPourcentage" DockPanel.Dock="Right" Style="{StaticResource PixelLabel}" FontSize="11" />
+                        <TextBlock x:Name="TxtStatut" Style="{StaticResource BodyText}" FontWeight="SemiBold" Foreground="{StaticResource Navy2Brush}"
+                                   TextTrimming="CharacterEllipsis" TextWrapping="NoWrap" Text="Chargement…" />
+                    </DockPanel>
+                    <ProgressBar x:Name="Progression" Style="{StaticResource SlimProgress}" Maximum="100" />
+                </StackPanel>
+
+                <!-- Jouer -->
+                <Button x:Name="BtnJouer" Grid.Column="5" Grid.RowSpan="2" Style="{StaticResource PlayButton}" Width="220" Height="96"
+                        Content="JOUER" IsEnabled="False" Click="BtnJouer_Click" />
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

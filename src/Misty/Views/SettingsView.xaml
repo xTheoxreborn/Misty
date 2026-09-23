@@ -1,0 +1,162 @@
+<UserControl x:Class="Misty.Views.SettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:Misty.Controls">
+
+    <Grid Margin="26,0,30,26">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <controls:OutlinedText Text="OPTIONS" FontFamily="{StaticResource PixelFont}" FontSize="48"
+                               Fill="White" Stroke="{StaticResource SlateBrush}" StrokeThickness="4"
+                               ShadowBrush="{StaticResource SlateDarkBrush}" ShadowDepth="5" Margin="6,0,0,18" />
+
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,10,0">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="18" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <!-- ═══ Colonne gauche ═══ -->
+                <StackPanel Grid.Column="0">
+
+                    <!-- Profils hors-ligne -->
+                    <Border Style="{StaticResource GlassCard}" Margin="0,0,0,18">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource SectionTitle}" Text="PROFILS HORS-LIGNE" />
+                            <TextBlock Style="{StaticResource BodyText}" Text="Pseudos utilisables sans compte Microsoft." Margin="0,0,0,14" />
+
+                            <ItemsControl x:Name="ListeProfils">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border CornerRadius="12" Background="{StaticResource GlassStrongBrush}" BorderBrush="{StaticResource GlassBorderBrush}"
+                                                BorderThickness="1.5" Padding="12,0,4,0" Height="38" Margin="0,0,8,8">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="{Binding}" FontWeight="SemiBold" FontSize="13" Foreground="{StaticResource NavyBrush}" VerticalAlignment="Center" />
+                                                <Button Style="{StaticResource ChromeCloseButton}" Width="28" Height="28" Margin="8,0,0,0"
+                                                        Content="&#xE8BB;" FontSize="9" Tag="{Binding}" ToolTip="Supprimer ce profil"
+                                                        Click="BtnSupprimerProfil_Click" />
+                                            </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                            <DockPanel Margin="0,6,0,0">
+                                <Button DockPanel.Dock="Right" Style="{StaticResource PrimaryButton}" Margin="10,0,0,0" Click="BtnAjouterProfil_Click">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Style="{StaticResource Icon}" Text="&#xE710;" FontSize="12" Margin="0,0,8,0" Foreground="White" />
+                                        <TextBlock Text="Ajouter" />
+                                    </StackPanel>
+                                </Button>
+                                <TextBox x:Name="TxtNouveauProfil" Style="{StaticResource GlassTextBox}" MaxLength="16" KeyDown="TxtNouveauProfil_KeyDown" />
+                            </DockPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Compte Microsoft -->
+                    <Border Style="{StaticResource GlassCard}" Margin="0,0,0,18">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource SectionTitle}" Text="COMPTE MICROSOFT" />
+                            <TextBlock x:Name="TxtEtatMicrosoft" Style="{StaticResource BodyText}" Margin="0,0,0,14" />
+                            <WrapPanel>
+                                <Button x:Name="BtnConnexion" Style="{StaticResource PrimaryButton}" Content="Se connecter" Margin="0,0,10,0" Click="BtnConnexion_Click" />
+                                <Button x:Name="BtnDeconnexion" Style="{StaticResource GlassButton}" Content="Se déconnecter" Margin="0,0,10,0" Click="BtnDeconnexion_Click" />
+                                <Button x:Name="BtnDeconnexionTotale" Style="{StaticResource GlassButton}" Content="Déconnexion totale" Click="BtnDeconnexionTotale_Click"
+                                        ToolTip="Oublie aussi le compte mis en cache sur ce PC" />
+                            </WrapPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Raccourci -->
+                    <Border Style="{StaticResource GlassCard}">
+                        <StackPanel>
+                            <CheckBox x:Name="ChkRaccourci" Style="{StaticResource ToggleSwitch}" Checked="ChkRaccourci_Changed" Unchecked="ChkRaccourci_Changed">
+                                <StackPanel>
+                                    <TextBlock Style="{StaticResource SectionTitle}" Text="RACCOURCI" />
+                                    <TextBlock Style="{StaticResource BodyText}" FontWeight="Normal" Text="Crée un raccourci Misty, mis à jour automatiquement." />
+                                </StackPanel>
+                            </CheckBox>
+                            <StackPanel x:Name="PanneauRaccourci" Margin="0,14,0,0" Visibility="Collapsed">
+                                <Border CornerRadius="10" Background="#40FFFFFF" Padding="12,8" Margin="0,0,0,10">
+                                    <TextBlock x:Name="TxtCheminRaccourci" Style="{StaticResource BodyText}" Foreground="{StaticResource Navy2Brush}"
+                                               TextTrimming="CharacterEllipsis" TextWrapping="NoWrap" Text="Aucun dossier choisi" />
+                                </Border>
+                                <StackPanel Orientation="Horizontal">
+                                    <Button Style="{StaticResource GlassButton}" Content="Choisir le dossier…" Margin="0,0,10,0" Click="BtnChoisirRaccourci_Click" />
+                                    <Button Style="{StaticResource GlassButton}" Content="Recréer" Click="BtnRecreerRaccourci_Click" />
+                                </StackPanel>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <!-- ═══ Colonne droite ═══ -->
+                <StackPanel Grid.Column="2">
+
+                    <!-- Mémoire -->
+                    <Border Style="{StaticResource GlassCard}" Margin="0,0,0,18">
+                        <StackPanel>
+                            <DockPanel>
+                                <Border DockPanel.Dock="Right" CornerRadius="10" Background="{StaticResource NavyBrush}" Padding="12,6" VerticalAlignment="Top">
+                                    <TextBlock x:Name="TxtRam" Style="{StaticResource PixelLabel}" Foreground="White" FontSize="14" />
+                                </Border>
+                                <StackPanel>
+                                    <TextBlock Style="{StaticResource SectionTitle}" Text="MÉMOIRE" />
+                                    <TextBlock x:Name="TxtRamTotale" Style="{StaticResource BodyText}" />
+                                </StackPanel>
+                            </DockPanel>
+                            <Slider x:Name="SliderRam" Style="{StaticResource GlassSlider}" Margin="0,16,0,0"
+                                    Minimum="1024" SmallChange="1024" LargeChange="1024" TickFrequency="1024" IsSnapToTickEnabled="True"
+                                    ValueChanged="SliderRam_ValueChanged" />
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Versions -->
+                    <Border Style="{StaticResource GlassCard}" Margin="0,0,0,18">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource SectionTitle}" Text="VERSIONS AFFICHÉES" />
+                            <TextBlock Style="{StaticResource BodyText}" Text="Les releases sont toujours affichées." Margin="0,0,0,12" />
+                            <CheckBox x:Name="ChkSnapshot" Style="{StaticResource ToggleSwitch}" Content="Snapshots" Margin="0,4" Click="ChkTypes_Click" />
+                            <CheckBox x:Name="ChkBeta" Style="{StaticResource ToggleSwitch}" Content="Bêtas" Margin="0,4" Click="ChkTypes_Click" />
+                            <CheckBox x:Name="ChkAlpha" Style="{StaticResource ToggleSwitch}" Content="Alphas et Indev" Margin="0,4" Click="ChkTypes_Click" />
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Stockage -->
+                    <Border Style="{StaticResource GlassCard}" Margin="0,0,0,18">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource SectionTitle}" Text="STOCKAGE" />
+                            <TextBlock x:Name="TxtDossier" Style="{StaticResource BodyText}" TextTrimming="CharacterEllipsis" TextWrapping="NoWrap" />
+                            <TextBlock x:Name="TxtTaille" Style="{StaticResource PixelLabel}" FontSize="14" Foreground="{StaticResource NavyBrush}" Margin="0,10,0,14" Text="…" />
+                            <StackPanel Orientation="Horizontal">
+                                <Button Style="{StaticResource GlassButton}" Content="Ouvrir le dossier" Margin="0,0,10,0" Click="BtnOuvrirDossier_Click" />
+                                <Button Style="{StaticResource DangerButton}" Content="Tout supprimer" Click="BtnToutSupprimer_Click" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- À propos -->
+                    <Border Style="{StaticResource GlassCard}">
+                        <DockPanel>
+                            <Button DockPanel.Dock="Right" Style="{StaticResource GlassButton}" Content="GitHub" VerticalAlignment="Center" Click="BtnGitHub_Click" />
+                            <StackPanel>
+                                <TextBlock Style="{StaticResource SectionTitle}" Text="À PROPOS" />
+                                <TextBlock x:Name="TxtAPropos" Style="{StaticResource BodyText}" />
+                            </StackPanel>
+                        </DockPanel>
+                    </Border>
+                </StackPanel>
+            </Grid>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

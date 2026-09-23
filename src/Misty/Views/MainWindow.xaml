@@ -1,0 +1,146 @@
+<Window x:Class="Misty.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="clr-namespace:Misty.Controls"
+        Title="Misty"
+        Icon="pack://application:,,,/Misty;component/Assets/icone.ico"
+        Width="1204" Height="744"
+        WindowStartupLocation="CenterScreen"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ResizeMode="CanMinimize"
+        FontFamily="{StaticResource UiFont}"
+        TextOptions.TextFormattingMode="Display"
+        UseLayoutRounding="True">
+
+    <WindowChrome.WindowChrome>
+        <WindowChrome CaptionHeight="46" CornerRadius="0" GlassFrameThickness="0" ResizeBorderThickness="0" UseAeroCaptionButtons="False" />
+    </WindowChrome.WindowChrome>
+
+    <Grid Margin="12">
+        <!-- Ombre de la fenêtre (séparée du contenu pour ne pas le re-rendre en boucle) -->
+        <Border CornerRadius="24" Background="#FF5B7FB0" Effect="{StaticResource SoftShadow}" />
+
+        <Border x:Name="Frame" CornerRadius="24" Background="{StaticResource WindowBackgroundBrush}">
+            <Grid x:Name="FrameContent">
+
+                <!-- ═══ Décor de fond ═══ -->
+                <Grid IsHitTestVisible="False">
+                    <!-- vignette sombre en bas à droite -->
+                    <Rectangle>
+                        <Rectangle.Fill>
+                            <RadialGradientBrush Center="1,1" GradientOrigin="1,1" RadiusX="0.9" RadiusY="0.9">
+                                <GradientStop Offset="0" Color="#AA3F4A5E" />
+                                <GradientStop Offset="1" Color="#003F4A5E" />
+                            </RadialGradientBrush>
+                        </Rectangle.Fill>
+                    </Rectangle>
+                    <!-- halo clair en haut -->
+                    <Rectangle>
+                        <Rectangle.Fill>
+                            <RadialGradientBrush Center="0.45,0" GradientOrigin="0.45,0" RadiusX="0.6" RadiusY="0.7">
+                                <GradientStop Offset="0" Color="#88E4F1FF" />
+                                <GradientStop Offset="1" Color="#00E4F1FF" />
+                            </RadialGradientBrush>
+                        </Rectangle.Fill>
+                    </Rectangle>
+                    <!-- bloc fantôme en bas à gauche (comme les icônes estompées du visuel) -->
+                    <Image Source="{x:Static controls:PixelArt.BlocHerbe}" Width="170" Height="170"
+                           HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="40,0,0,-40"
+                           Opacity="0.13" RenderOptions.BitmapScalingMode="NearestNeighbor" RenderTransformOrigin="0.5,0.5">
+                        <Image.RenderTransform>
+                            <RotateTransform Angle="-14" />
+                        </Image.RenderTransform>
+                    </Image>
+                    <!-- carrés flottants générés en code -->
+                    <Canvas x:Name="Particles" />
+                </Grid>
+
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="92" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <!-- ═══ Barre latérale ═══ -->
+                    <Border Grid.Column="0" Margin="14,14,4,14" CornerRadius="22" Background="#591C2335"
+                            BorderBrush="#40FFFFFF" BorderThickness="1.5">
+                        <DockPanel Margin="0,16">
+                            <!-- logo -->
+                            <Border DockPanel.Dock="Top" Width="50" Height="50" CornerRadius="15" Background="#1C2335"
+                                    BorderBrush="#66FFFFFF" BorderThickness="2" Margin="0,0,0,26" ToolTip="Misty">
+                                <Image Source="{x:Static controls:PixelArt.BlocHerbe}" Width="28" Height="28"
+                                       RenderOptions.BitmapScalingMode="NearestNeighbor" />
+                            </Border>
+
+                            <!-- bas : dossier + version -->
+                            <StackPanel DockPanel.Dock="Bottom" HorizontalAlignment="Center">
+                                <Button x:Name="BtnDossier" Style="{StaticResource IconButton}" Content="&#xE8B7;"
+                                        Foreground="White" Background="#26FFFFFF" BorderBrush="#40FFFFFF"
+                                        ToolTip="Ouvrir le dossier du jeu" Click="BtnDossier_Click" Margin="0,0,0,12" />
+                                <TextBlock x:Name="TxtVersionApp" Style="{StaticResource PixelLabel}" FontSize="9"
+                                           Foreground="#CCFFFFFF" HorizontalAlignment="Center" TextAlignment="Center"
+                                           TextWrapping="Wrap" Width="70" />
+                            </StackPanel>
+
+                            <StackPanel HorizontalAlignment="Center">
+                                <RadioButton x:Name="NavAccueil" Style="{StaticResource NavButton}" Content="&#xE80F;"
+                                             ToolTip="Jouer" IsChecked="True" Checked="Nav_Checked" Margin="0,0,0,10" />
+                                <RadioButton x:Name="NavOptions" Style="{StaticResource NavButton}" Content="&#xE713;"
+                                             ToolTip="Options" Checked="Nav_Checked" Margin="0,0,0,10" />
+                                <RadioButton x:Name="NavNotes" Style="{StaticResource NavButton}" Content="&#xE81C;"
+                                             ToolTip="Notes de version" Checked="Nav_Checked" />
+                            </StackPanel>
+                        </DockPanel>
+                    </Border>
+
+                    <!-- ═══ Contenu ═══ -->
+                    <Grid Grid.Column="1">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="46" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <!-- barre de titre -->
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,8,10,0">
+                            <Button Style="{StaticResource ChromeButton}" Content="&#xE921;" Click="BtnMinimiser_Click" ToolTip="Réduire" />
+                            <Button Style="{StaticResource ChromeCloseButton}" Content="&#xE8BB;" Click="BtnFermer_Click" ToolTip="Fermer" Margin="4,0,0,0" />
+                        </StackPanel>
+
+                        <ContentControl x:Name="PageHost" Grid.Row="1" Focusable="False">
+                            <ContentControl.RenderTransform>
+                                <TranslateTransform />
+                            </ContentControl.RenderTransform>
+                        </ContentControl>
+                    </Grid>
+                </Grid>
+
+                <!-- ═══ Boîte de dialogue ═══ -->
+                <Grid x:Name="DialogLayer" Visibility="Collapsed" Opacity="0">
+                    <Rectangle Fill="#8C1C2335" />
+                    <Border x:Name="DialogCard" Width="440" HorizontalAlignment="Center" VerticalAlignment="Center"
+                            CornerRadius="24" Background="#F2F6FAFF" BorderBrush="White" BorderThickness="2"
+                            Padding="28,26" Effect="{StaticResource SoftShadow}" RenderTransformOrigin="0.5,0.5">
+                        <Border.RenderTransform>
+                            <ScaleTransform ScaleX="0.92" ScaleY="0.92" />
+                        </Border.RenderTransform>
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                                <Border x:Name="DialogIconBg" Width="34" Height="34" CornerRadius="10" Background="{StaticResource BlueBrush}" Margin="0,0,12,0">
+                                    <TextBlock x:Name="DialogIcon" Style="{StaticResource Icon}" Foreground="White" Text="&#xE946;" />
+                                </Border>
+                                <TextBlock x:Name="DialogTitre" Style="{StaticResource SectionTitle}" VerticalAlignment="Center" Margin="0" />
+                            </StackPanel>
+                            <TextBlock x:Name="DialogMessage" Style="{StaticResource BodyText}" FontSize="14" Foreground="{StaticResource Navy2Brush}" LineHeight="20" />
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,24,0,0">
+                                <Button x:Name="DialogAnnuler" Style="{StaticResource GlassButton}" Margin="0,0,10,0" Click="DialogAnnuler_Click" />
+                                <Button x:Name="DialogOk" Style="{StaticResource PrimaryButton}" Click="DialogOk_Click" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

@@ -28,10 +28,30 @@ namespace Misty.Services
             string version = (doc.RootElement.GetProperty("tag_name").GetString() ?? "").TrimStart('v');
             string? url = doc.RootElement.GetProperty("assets")[0].GetProperty("browser_download_url").GetString();
 
-            if (string.IsNullOrEmpty(version) || string.IsNullOrEmpty(url) || version == AppInfo.Version)
+            if (string.IsNullOrEmpty(version) || string.IsNullOrEmpty(url) || !EstPlusRecente(version, AppInfo.Version))
                 return null;
 
             return new ReleaseInfo(version, url);
+        }
+
+        /// <summary>
+        /// Compare deux versions segment par segment ("0.2.3.9.5.1" &gt; "0.2.3.9.5").
+        /// System.Version ne gère que 4 segments, d'où cette comparaison maison.
+        /// </summary>
+        public static bool EstPlusRecente(string distante, string locale)
+        {
+            int[] a = Segments(distante), b = Segments(locale);
+            for (int i = 0; i < Math.Max(a.Length, b.Length); i++)
+            {
+                int x = i < a.Length ? a[i] : 0, y = i < b.Length ? b[i] : 0;
+                if (x != y) return x > y;
+            }
+            return false;
+
+            // "3v2" -> 3 : on ne garde que les chiffres de tête de chaque segment
+            static int[] Segments(string v) => v.Split('.')
+                .Select(s => int.TryParse(new string(s.TakeWhile(char.IsDigit).ToArray()), out int n) ? n : 0)
+                .ToArray();
         }
 
         /// <summary>Télécharge, extrait et lance la nouvelle version. L'appelant doit ensuite quitter l'application.</summary>

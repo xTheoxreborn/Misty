@@ -1,6 +1,8 @@
 # Misty
 
-Launcher Minecraft pour Windows (WinForms, .NET 10), basé sur [CmlLib.Core](https://github.com/CmlLib/CmlLib.Core).
+Launcher Minecraft pour Windows (WPF, .NET 10), basé sur [CmlLib.Core](https://github.com/CmlLib/CmlLib.Core).
+
+Interface « verre dépoli » sur fond ciel, titres en police pixel, animations fluides (navigation, boutons, progression).
 
 ## Fonctionnalités
 
@@ -27,7 +29,7 @@ Les mises à jour suivantes s'installent toutes seules à côté de ce dossier.
 
 - Windows 10/11
 - [SDK .NET 10](https://dotnet.microsoft.com/download/dotnet/10.0)
-- Visual Studio 2022 17.14+ / Visual Studio 2026 (pour ouvrir `Misty.slnx` et le designer WinForms), ou VS Code / Rider
+- Visual Studio 2022 17.14+ / Visual Studio 2026 (pour ouvrir `Misty.slnx`), ou VS Code / Rider
 
 ### Compiler et lancer
 
@@ -45,7 +47,7 @@ dotnet publish src/Misty -c Release -r win-x64 --self-contained false -o publish
 
 Puis :
 
-1. Mettre à jour `AppInfo.Version` dans [src/Misty/AppInfo.cs](src/Misty/AppInfo.cs), ajouter l'entrée dans [CHANGELOG.md](CHANGELOG.md) et dans `ChangelogForm`.
+1. Mettre à jour `AppInfo.Version` dans [src/Misty/AppInfo.cs](src/Misty/AppInfo.cs) et ajouter l'entrée dans [CHANGELOG.md](CHANGELOG.md). Ce fichier est intégré à l'exe et affiché dans la page « Notes de version ».
 2. Zipper le dossier `Misty-<version>` : le zip doit contenir ce dossier à sa racine, c'est ce qu'attend le système de mise à jour.
 3. Créer une release GitHub avec le tag `v<version>` et le zip comme **premier** asset.
 
@@ -56,13 +58,22 @@ Puis :
 ```
 Misty.slnx
 src/Misty/
-├── Program.cs                  Point d'entrée
+├── App.xaml                    Point d'entrée, charge le thème
 ├── AppInfo.cs                  Version de l'app, version de data.txt, IDs (GitHub, Discord)
-├── Assets/icone.ico            Icône de l'exécutable
-├── Forms/
-│   ├── MainForm                Fenêtre principale (compte, version, loader, lancement)
-│   ├── SettingsForm            Options (profils, RAM, raccourci, types de versions, dossier)
-│   └── ChangelogForm           Notes de version (clic sur le numéro de version)
+├── Assets/
+│   ├── icone.ico               Icône de l'exécutable
+│   └── Fonts/                  Police pixel Silkscreen (licence OFL)
+├── Themes/
+│   ├── Colors.xaml             Palette, dégradés, polices
+│   └── Controls.xaml           Styles : boutons, ComboBox, interrupteurs, slider, barre de progression…
+├── Controls/
+│   ├── OutlinedText.cs         Texte pixel avec contour + ombre (titres)
+│   └── PixelArt.cs             Bloc d'herbe généré en pixel art
+├── Views/
+│   ├── MainWindow              Cadre sans bordure, barre latérale, navigation, boîtes de dialogue
+│   ├── HomeView                Accueil : compte, version, loader, bouton JOUER
+│   ├── SettingsView            Options (profils, Microsoft, RAM, raccourci, versions, stockage)
+│   └── ChangelogView           Notes de version (lues depuis CHANGELOG.md)
 └── Services/
     ├── AppPaths.cs             Tous les chemins (dossier de données, exe, icône…)
     ├── SettingsStore.cs        Lecture/écriture de data.txt
@@ -72,6 +83,8 @@ src/Misty/
     ├── UpdateService.cs        Mise à jour via GitHub + migration de l'ancien dossier
     ├── ShortcutService.cs      Création du raccourci Misty.lnk
     ├── DiscordPresenceService.cs
+    ├── AccountService.cs       Session Microsoft partagée entre les pages
+    ├── Dialogs.cs              Boîtes de dialogue intégrées à la fenêtre
     ├── SystemInfo.cs           RAM totale, taille d'un dossier
     └── ModrinthService.cs      Recherche de mods Modrinth (en cours, pas encore dans l'interface)
 ```

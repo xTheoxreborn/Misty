@@ -1,0 +1,54 @@
+<UserControl x:Class="Misty.Views.ChangelogView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:Misty.Controls">
+
+    <Grid Margin="26,0,30,26">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <controls:OutlinedText Text="NOTES DE VERSION" FontFamily="{StaticResource PixelFont}" FontSize="48"
+                               Fill="White" Stroke="{StaticResource SlateBrush}" StrokeThickness="4"
+                               ShadowBrush="{StaticResource SlateDarkBrush}" ShadowDepth="5" Margin="6,0,0,18" />
+
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,10,0">
+            <ItemsControl x:Name="ListeVersions">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border x:Name="Carte" Style="{StaticResource GlassCard}" Margin="0,0,0,14" Padding="20,18">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="170" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Border x:Name="Pastille" CornerRadius="10" Background="{StaticResource NavyBrush}" Padding="12,7"
+                                        HorizontalAlignment="Left" VerticalAlignment="Top">
+                                    <TextBlock Style="{StaticResource PixelLabel}" Foreground="White" FontSize="12" Text="{Binding Titre}" />
+                                </Border>
+                                <ItemsControl Grid.Column="1" ItemsSource="{Binding Lignes}" Margin="0,4,0,0">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <DockPanel Margin="0,0,0,6">
+                                                <Border DockPanel.Dock="Left" Width="6" Height="6" CornerRadius="1" Background="{StaticResource GreenBrush}"
+                                                        VerticalAlignment="Top" Margin="0,7,10,0" />
+                                                <TextBlock Style="{StaticResource BodyText}" FontSize="13.5" Foreground="{StaticResource Navy2Brush}" Text="{Binding}" />
+                                            </DockPanel>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </Grid>
+                        </Border>
+                        <DataTemplate.Triggers>
+                            <DataTrigger Binding="{Binding EstRecente}" Value="True">
+                                <Setter TargetName="Pastille" Property="Background" Value="{StaticResource GreenBrush}" />
+                                <Setter TargetName="Carte" Property="Background" Value="#8CFFFFFF" />
+                            </DataTrigger>
+                        </DataTemplate.Triggers>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

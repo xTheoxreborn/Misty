@@ -15,7 +15,6 @@
   <ItemGroup>
     <PackageReference Include="CmlLib.Core" Version="4.0.6" />
     <PackageReference Include="CmlLib.Core.Auth.Microsoft" Version="3.3.1" />
-    <PackageReference Include="CmlLib.Core.Installer.Forge" Version="1.1.1" />
     <PackageReference Include="CmlLib.Core.Installer.NeoForge" Version="4.0.1" />
     <PackageReference Include="DiscordRichPresence" Version="1.6.1.70" />
     <PackageReference Include="Modrinth.Net" Version="3.8.0" />
@@ -33,6 +32,12 @@
     <Resource Include="Assets\Fonts\*.ttf" />
     <!-- Notes de version affichées dans l'app -->
     <EmbeddedResource Include="..\..\CHANGELOG.md" LogicalName="Misty.CHANGELOG.md" Link="CHANGELOG.md" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="CmlLib.Core.Installer.Forge">
+      <HintPath>..\..\CmlLib.Core.Installer.Forge.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>

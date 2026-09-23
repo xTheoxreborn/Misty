@@ -4,6 +4,7 @@ using CmlLib.Core.Installer.NeoForge;
 using CmlLib.Core.Installer.NeoForge.Installers;
 using CmlLib.Core.ModLoaders.FabricMC;
 using CmlLib.Core.ModLoaders.LiteLoader;
+using CmlLib.Core.ModLoaders.QuiltMC;
 using Optifine.Installer;
 
 namespace Misty.Services
@@ -19,6 +20,9 @@ namespace Misty.Services
         public const string Fabric = "Fabric";
         public const string OptiFine = "OptiFine";
         public const string LiteLoader = "LiteLoader";
+        public const string Quilt = "Quilt";
+        public const string version_quilt = "0.30.1";
+
 
         private static readonly HttpClient http = new();
 
@@ -27,6 +31,7 @@ namespace Misty.Services
         private readonly ForgeInstaller forgeInstaller;
         private readonly NeoForgeInstaller neoForgeInstaller;
         private readonly OptifineInstaller optifineInstaller;
+        private readonly QuiltInstaller quiltInstaller;
 
         public ModLoaderService(MinecraftLauncher launcher, MinecraftPath mcPath)
         {
@@ -35,6 +40,7 @@ namespace Misty.Services
             forgeInstaller = new ForgeInstaller(launcher);
             neoForgeInstaller = new NeoForgeInstaller(launcher);
             optifineInstaller = new OptifineInstaller(http);
+            quiltInstaller = new QuiltInstaller(new HttpClient());
         }
 
         /// <summary>Liste des modes disponibles pour une version de Minecraft (Vanilla toujours en premier).</summary>
@@ -44,6 +50,9 @@ namespace Misty.Services
 
             if (VersionCompatibility.Forge(version))
                 await Essayer(async () => (await forgeInstaller.GetForgeVersions(version)).Any(), Forge);
+
+            if (VersionCompatibility.Quilt(version))
+                await Essayer(async () => (await quiltInstaller.GetLoaders(version)).Any(), Quilt);
 
             if (VersionCompatibility.OptiFine(version))
                 await Essayer(async () => (await optifineInstaller.GetOptifineVersionsAsync()).Any(v => v.MinecraftVersion == version), OptiFine);
@@ -103,6 +112,10 @@ namespace Misty.Services
 
                 case Fabric:
                     nomVersion = await new FabricInstaller(http).Install(version, mcPath);
+                    break;
+
+                case Quilt:
+                    nomVersion = await quiltInstaller.Install(version, version_quilt, mcPath);
                     break;
 
                 case LiteLoader:

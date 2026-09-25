@@ -13,7 +13,7 @@ namespace Misty.Services
         public static bool NeoForge(string version) => Entre(version, new(1, 20, 1), MaxConnue);
         public static bool Fabric(string version) => Entre(version, new(1, 14, 0), MaxConnue);
         public static bool Quilt(string version) => Entre(version, new(1, 14, 0), MaxConnue); // fork de Fabric
-        public static bool LiteLoader(string version) => Entre(version, new(1, 5, 2), new(1, 12, 2)); // abandonné après 1.12.2
+        public static bool LiteLoader(string version) => Entre(version, new(1, 5, 2), new(1, 12, 2));
 
         private static bool Entre(string version, Version min, Version max)
         {

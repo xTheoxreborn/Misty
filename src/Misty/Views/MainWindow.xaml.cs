@@ -18,8 +18,10 @@ namespace Misty.Views
         private readonly HomeView accueil;
         private readonly SettingsView options;
         private readonly ChangelogView notes;
+        private readonly ProfilesView profils;
+        private readonly InstanceView instanceVue;
 
-        private TaskCompletionSource<bool>? dialogEnCours;
+        private TaskCompletionSource<string?>? dialogEnCours;
 
         public MainWindow()
         {
@@ -34,6 +36,18 @@ namespace Misty.Views
             accueil = new HomeView(discord);
             options = new SettingsView();
             notes = new ChangelogView();
+            profils = new ProfilesView();
+            instanceVue = new InstanceView();
+
+            profils.OuvrirDemande += OuvrirProfil;
+            profils.JouerDemande += JouerProfil;
+            instanceVue.JouerDemande += JouerProfil;
+            instanceVue.RetourDemande += () => { profils.Rafraichir(); Naviguer(profils); };
+            accueil.GererProfilDemande += instance =>
+            {
+                NavProfils.IsChecked = true;
+                OuvrirProfil(instance);
+            };
             PageHost.Content = accueil;
 
             // Coins arrondis : on découpe le contenu à la forme du cadre
@@ -134,14 +148,30 @@ namespace Misty.Views
 
             UserControl page = sender == NavOptions ? options
                              : sender == NavNotes ? notes
+                             : sender == NavProfils ? profils
                              : accueil;
 
             if (page == accueil)
                 accueil.Rafraichir(options.ConsommerChangementTypesVersions());
             if (page == options)
                 options.Rafraichir();
+            if (page == profils)
+                profils.Rafraichir();
 
             Naviguer(page);
+        }
+
+        private void OuvrirProfil(Misty.Models.Instance instance)
+        {
+            instanceVue.Charger(instance);
+            Naviguer(instanceVue);
+        }
+
+        /// <summary>Lance un profil : on revient sur l'accueil, qui affiche la progression.</summary>
+        private void JouerProfil(Misty.Models.Instance instance)
+        {
+            NavAccueil.IsChecked = true;
+            accueil.SelectionnerEtJouer(instance);
         }
 
         private void Naviguer(UserControl page)
@@ -170,10 +200,25 @@ namespace Misty.Views
 
         // ───────────────────────── Dialogues ─────────────────────────
 
-        public Task<bool> AfficherAsync(string titre, string message, string ok, string? annuler, bool danger)
+        public async Task<bool> AfficherAsync(string titre, string message, string ok, string? annuler, bool danger)
         {
-            dialogEnCours?.TrySetResult(false);
-            dialogEnCours = new TaskCompletionSource<bool>();
+            DialogChoix.ItemsSource = null;
+            DialogOk.Visibility = Visibility.Visible;
+            return await OuvrirDialog(titre, message, ok, annuler, danger) != null;
+        }
+
+        public Task<string?> ChoisirAsync(string titre, string message, IReadOnlyList<string> options)
+        {
+            DialogChoix.ItemsSource = options;
+            DialogOk.Visibility = Visibility.Collapsed;
+            return OuvrirDialog(titre, message, "", "Annuler", false);
+        }
+
+        /// <summary>Résultat : "" pour OK, l'option choisie, ou null pour Annuler/Échap.</summary>
+        private Task<string?> OuvrirDialog(string titre, string message, string ok, string? annuler, bool danger)
+        {
+            dialogEnCours?.TrySetResult(null);
+            dialogEnCours = new TaskCompletionSource<string?>();
 
             DialogTitre.Text = titre;
             DialogMessage.Text = message;
@@ -191,11 +236,12 @@ namespace Misty.Views
             DialogCard.RenderTransform.BeginAnimation(ScaleTransform.ScaleXProperty, new DoubleAnimation(0.92, 1, duree) { EasingFunction = ease });
             DialogCard.RenderTransform.BeginAnimation(ScaleTransform.ScaleYProperty, new DoubleAnimation(0.92, 1, duree) { EasingFunction = ease });
 
-            DialogOk.Focus();
+            if (DialogOk.Visibility == Visibility.Visible)
+                DialogOk.Focus();
             return dialogEnCours.Task;
         }
 
-        private void FermerDialog(bool resultat)
+        private void FermerDialog(string? resultat)
         {
             var anim = new DoubleAnimation(0, TimeSpan.FromMilliseconds(150));
             anim.Completed += (_, _) =>
@@ -210,9 +256,12 @@ namespace Misty.Views
             tcs?.TrySetResult(resultat);
         }
 
-        private void DialogOk_Click(object sender, RoutedEventArgs e) => FermerDialog(true);
+        private void DialogOk_Click(object sender, RoutedEventArgs e) => FermerDialog("");
 
-        private void DialogAnnuler_Click(object sender, RoutedEventArgs e) => FermerDialog(false);
+        private void DialogAnnuler_Click(object sender, RoutedEventArgs e) => FermerDialog(null);
+
+        private void DialogChoix_Click(object sender, RoutedEventArgs e) =>
+            FermerDialog((sender as FrameworkElement)?.DataContext as string);
 
         private void MainWindow_PreviewKeyDown(object sender, KeyEventArgs e)
         {
@@ -220,7 +269,7 @@ namespace Misty.Views
 
             if (e.Key == Key.Escape)
             {
-                FermerDialog(false);
+                FermerDialog(null);
                 e.Handled = true;
             }
         }

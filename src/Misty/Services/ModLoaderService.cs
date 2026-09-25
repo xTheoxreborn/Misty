@@ -10,7 +10,7 @@ using Optifine.Installer;
 namespace Misty.Services
 {
     /// <summary>
-    /// Détection et installation des mod loaders (Forge, NeoForge, Fabric, OptiFine, LiteLoader).
+    /// Détection et installation des mod loaders (Forge, NeoForge, Fabric, Quilt, OptiFine, LiteLoader).
     /// </summary>
     internal sealed class ModLoaderService
     {
@@ -79,8 +79,9 @@ namespace Misty.Services
             }
         }
 
-        /// <summary>Installe la version + le loader choisi. Renvoie le nom de version à lancer.</summary>
-        public async Task<string> InstallerAsync(string version, string mode)
+        /// <summary>Installe la version + le loader choisi (version du loader précise si fournie, pour les modpacks).
+        /// Renvoie le nom de version à lancer.</summary>
+        public async Task<string> InstallerAsync(string version, string mode, string? versionLoader = null)
         {
             string nomVersion;
 
@@ -103,19 +104,25 @@ namespace Misty.Services
                     break;
 
                 case Forge:
-                    nomVersion = await forgeInstaller.Install(version, new ForgeInstallOptions());
+                    nomVersion = versionLoader != null
+                        ? await forgeInstaller.Install(version, versionLoader, new ForgeInstallOptions())
+                        : await forgeInstaller.Install(version, new ForgeInstallOptions());
                     break;
 
                 case NeoForge:
-                    nomVersion = await neoForgeInstaller.Install(version, new NeoForgeInstallOptions());
+                    nomVersion = versionLoader != null
+                        ? await neoForgeInstaller.Install(version, versionLoader, new NeoForgeInstallOptions())
+                        : await neoForgeInstaller.Install(version, new NeoForgeInstallOptions());
                     break;
 
                 case Fabric:
-                    nomVersion = await new FabricInstaller(http).Install(version, mcPath);
+                    nomVersion = versionLoader != null
+                        ? await new FabricInstaller(http).Install(version, versionLoader, mcPath)
+                        : await new FabricInstaller(http).Install(version, mcPath);
                     break;
 
                 case Quilt:
-                    nomVersion = await quiltInstaller.Install(version, version_quilt, mcPath);
+                    nomVersion = await quiltInstaller.Install(version, versionLoader ?? version_quilt, mcPath);
                     break;
 
                 case LiteLoader:

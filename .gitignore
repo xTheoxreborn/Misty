@@ -361,3 +361,5 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+# Clé API CurseForge (privée, intégrée à l'exe au build)
+src/Misty/curseforge.key

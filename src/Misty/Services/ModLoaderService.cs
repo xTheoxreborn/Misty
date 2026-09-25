@@ -51,8 +51,8 @@ namespace Misty.Services
             if (VersionCompatibility.Forge(version))
                 await Essayer(async () => (await forgeInstaller.GetForgeVersions(version)).Any(), Forge);
 
-            if (VersionCompatibility.Quilt(version))
-                await Essayer(async () => (await quiltInstaller.GetLoaders(version)).Any(), Quilt);
+            //if (VersionCompatibility.Quilt(version))
+            //    await Essayer(async () => (await quiltInstaller.GetLoaders(version)).Any(), Quilt);
 
             if (VersionCompatibility.OptiFine(version))
                 await Essayer(async () => (await optifineInstaller.GetOptifineVersionsAsync()).Any(v => v.MinecraftVersion == version), OptiFine);

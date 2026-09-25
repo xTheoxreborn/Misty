@@ -95,7 +95,7 @@ namespace Misty.Views
         {
             if ((sender as FrameworkElement)?.Tag is not string pseudo) return;
 
-            if (await Dialogs.ConfirmerAsync("Supprimer le profil", $"Supprimer le profil « {pseudo} » ?", "Supprimer", danger: true))
+            if (await Dialogs.ConfirmerAsync("Supprimer le compte", $"Supprimer le compte hors-ligne « {pseudo} » ?", "Supprimer", danger: true))
             {
                 ProfileStore.Supprimer(pseudo);
                 ChargerProfils();

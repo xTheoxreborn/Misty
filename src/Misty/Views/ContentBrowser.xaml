@@ -1,0 +1,118 @@
+<UserControl x:Class="Misty.Views.ContentBrowser"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:Misty.Controls">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- Types de contenu + choix de la plateforme -->
+        <DockPanel Margin="0,0,0,12">
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                <RadioButton x:Name="SourceModrinth" Style="{StaticResource TabPill}"
+                             Checked="Source_Checked" Margin="0,0,8,0" ToolTip="Chercher sur Modrinth">
+                    <StackPanel Orientation="Horizontal">
+                        <Ellipse Width="9" Height="9" Fill="#1BD96A" Margin="0,0,8,0" VerticalAlignment="Center" />
+                        <TextBlock Text="Modrinth" />
+                    </StackPanel>
+                </RadioButton>
+                <RadioButton x:Name="SourceCurseForge" Style="{StaticResource TabPill}"
+                             Checked="Source_Checked" Margin="0" ToolTip="Chercher sur CurseForge">
+                    <StackPanel Orientation="Horizontal">
+                        <Ellipse Width="9" Height="9" Fill="#F16436" Margin="0,0,8,0" VerticalAlignment="Center" />
+                        <TextBlock Text="CurseForge" />
+                    </StackPanel>
+                </RadioButton>
+            </StackPanel>
+            <StackPanel x:Name="PanneauTypes" Orientation="Horizontal" />
+        </DockPanel>
+
+        <!-- Recherche + tri -->
+        <DockPanel Grid.Row="1" Margin="0,0,0,12">
+            <ComboBox x:Name="CmbTri" DockPanel.Dock="Right" Style="{StaticResource GlassCombo}" Width="170" Margin="10,0,0,0"
+                      SelectionChanged="CmbTri_SelectionChanged" />
+            <TextBox x:Name="TxtRecherche" Style="{StaticResource SearchBox}" Tag="Rechercher…"
+                     TextChanged="TxtRecherche_TextChanged" />
+        </DockPanel>
+
+        <!-- Résultats -->
+        <Grid Grid.Row="2">
+            <ScrollViewer x:Name="Defilement" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
+                          Padding="0,0,8,0" ScrollChanged="Defilement_ScrollChanged">
+                <StackPanel>
+                    <TextBlock x:Name="TxtInfo" Style="{StaticResource BodyText}" Margin="2,0,0,10" />
+                    <ItemsControl x:Name="ListeResultats">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border CornerRadius="18" Background="{StaticResource GlassBrush}" BorderBrush="{StaticResource GlassBorderBrush}"
+                                        BorderThickness="1.5" Padding="14,12" Margin="0,0,0,10">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <Border Width="58" Height="58" CornerRadius="14" Background="#1C2335" ClipToBounds="True" VerticalAlignment="Top">
+                                            <Grid>
+                                                <Image Source="{x:Static controls:PixelArt.BlocHerbe}" Margin="14" Opacity="0.6"
+                                                       RenderOptions.BitmapScalingMode="NearestNeighbor" />
+                                                <Image Source="{Binding Icone}" Stretch="UniformToFill" />
+                                            </Grid>
+                                        </Border>
+
+                                        <StackPanel Grid.Column="1" Margin="14,0,14,0" VerticalAlignment="Center">
+                                            <TextBlock TextTrimming="CharacterEllipsis">
+                                                <Run Text="{Binding Projet.Titre, Mode=OneWay}" FontWeight="SemiBold" FontSize="15" Foreground="{StaticResource NavyBrush}" />
+                                                <Run Text="{Binding Auteur, Mode=OneWay}" FontSize="12" Foreground="{StaticResource TextMutedBrush}" />
+                                            </TextBlock>
+                                            <TextBlock Style="{StaticResource BodyText}" Text="{Binding Projet.Description}" Margin="0,3,0,5"
+                                                       MaxHeight="36" TextTrimming="CharacterEllipsis" Foreground="{StaticResource Navy2Brush}" />
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Style="{StaticResource Icon}" Text="&#xE896;" FontSize="11" Foreground="{StaticResource SlateBrush}" />
+                                                <TextBlock Text="{Binding Telechargements}" FontSize="12" Foreground="{StaticResource SlateBrush}" Margin="5,0,14,0" />
+                                                <TextBlock Text="{Binding Categories}" FontSize="12" Foreground="{StaticResource TextMutedBrush}" TextTrimming="CharacterEllipsis" />
+                                            </StackPanel>
+                                        </StackPanel>
+
+                                        <Button Grid.Column="2" x:Name="BtnInstaller" Style="{StaticResource PrimaryButton}" MinWidth="118"
+                                                VerticalAlignment="Center" Click="BtnInstaller_Click"
+                                                IsEnabled="{Binding BoutonActif}">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Style="{StaticResource Icon}" Text="{Binding IconeBouton}" FontSize="12" Foreground="White" Margin="0,0,8,0" />
+                                                <TextBlock Text="{Binding LibelleBouton}" />
+                                            </StackPanel>
+                                        </Button>
+                                    </Grid>
+                                </Border>
+                                <DataTemplate.Triggers>
+                                    <DataTrigger Binding="{Binding EstInstalle}" Value="True">
+                                        <Setter TargetName="BtnInstaller" Property="Background" Value="{StaticResource GreenBrush}" />
+                                        <Setter TargetName="BtnInstaller" Property="BorderBrush" Value="{StaticResource GreenBrush}" />
+                                    </DataTrigger>
+                                </DataTemplate.Triggers>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <TextBlock x:Name="TxtBas" Style="{StaticResource PixelLabel}" FontSize="11" HorizontalAlignment="Center" Margin="0,6,0,14" />
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- CurseForge sans clé API -->
+            <Border x:Name="PanneauSansCle" Style="{StaticResource GlassCard}" Visibility="Collapsed"
+                    VerticalAlignment="Top" HorizontalAlignment="Left" MaxWidth="560">
+                <StackPanel>
+                    <TextBlock Style="{StaticResource SectionTitle}" Text="CLÉ API CURSEFORGE MANQUANTE" />
+                    <TextBlock Style="{StaticResource BodyText}" Margin="0,6,0,0" LineHeight="20">
+                        CurseForge exige une clé API personnelle. Demande-la gratuitement sur console.curseforge.com,
+                        colle-la dans le fichier src/Misty/curseforge.key puis recompile Misty.
+                    </TextBlock>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

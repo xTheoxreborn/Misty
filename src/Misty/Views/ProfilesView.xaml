@@ -1,0 +1,181 @@
+<UserControl x:Class="Misty.Views.ProfilesView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:Misty.Controls"
+             xmlns:views="clr-namespace:Misty.Views">
+
+    <UserControl.Resources>
+        <!-- Carte de profil : verre qui s'éclaircit au survol -->
+        <Style x:Key="CarteProfil" TargetType="Border" BasedOn="{StaticResource GlassCard}">
+            <Setter Property="Padding" Value="16" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="{StaticResource GlassHoverBrush}" />
+                    <Setter Property="BorderBrush" Value="White" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid>
+        <!-- ═══════════ Liste des profils ═══════════ -->
+        <Grid x:Name="PanneauListe" Margin="26,0,30,26">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <DockPanel Margin="6,0,0,18">
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button Style="{StaticResource GlassButton}" Margin="0,0,10,0" Click="BtnModpacks_Click">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource Icon}" Text="&#xE896;" FontSize="12" Margin="0,0,8,0" />
+                            <TextBlock Text="Installer un modpack" />
+                        </StackPanel>
+                    </Button>
+                    <Button Style="{StaticResource PrimaryButton}" Click="BtnNouveau_Click">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource Icon}" Text="&#xE710;" FontSize="12" Margin="0,0,8,0" Foreground="White" />
+                            <TextBlock Text="Nouveau profil" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+                <controls:OutlinedText Text="PROFILS" FontFamily="{StaticResource PixelFont}" FontSize="48"
+                                       Fill="White" Stroke="{StaticResource SlateBrush}" StrokeThickness="4"
+                                       ShadowBrush="{StaticResource SlateDarkBrush}" ShadowDepth="5" HorizontalAlignment="Left" />
+            </DockPanel>
+
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,8,0">
+                <StackPanel>
+                    <ItemsControl x:Name="ListeProfils">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Style="{StaticResource CarteProfil}" Width="236" Margin="0,0,16,16" MouseLeftButtonUp="Carte_Click">
+                                    <StackPanel>
+                                        <Border Width="76" Height="76" CornerRadius="20" Background="#1C2335" BorderBrush="White" BorderThickness="2.5"
+                                                HorizontalAlignment="Left" ClipToBounds="True">
+                                            <Grid>
+                                                <Image Source="{x:Static controls:PixelArt.BlocHerbe}" Margin="16" RenderOptions.BitmapScalingMode="NearestNeighbor" />
+                                                <Image Source="{Binding Icone}" Stretch="UniformToFill" />
+                                            </Grid>
+                                        </Border>
+                                        <TextBlock Text="{Binding Nom}" FontWeight="SemiBold" FontSize="16" Foreground="{StaticResource NavyBrush}"
+                                                   TextTrimming="CharacterEllipsis" Margin="0,14,0,4" />
+                                        <TextBlock Text="{Binding Resume}" Style="{StaticResource PixelLabel}" FontSize="11" />
+                                        <DockPanel Margin="0,14,0,0">
+                                            <Button DockPanel.Dock="Right" Style="{StaticResource IconButton}" Content="&#xE768;" Width="42" Height="42"
+                                                    Background="{StaticResource GreenBrush}" BorderBrush="#66FFFFFF" Foreground="White"
+                                                    ToolTip="Jouer" Click="BtnJouer_Click" />
+                                            <TextBlock Text="{Binding DernierLancementTexte}" VerticalAlignment="Center"
+                                                       FontSize="12" Foreground="{StaticResource TextMutedBrush}" />
+                                        </DockPanel>
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <!-- État vide -->
+                    <Border x:Name="PanneauVide" Style="{StaticResource GlassCard}" Padding="40" HorizontalAlignment="Left" Visibility="Collapsed">
+                        <StackPanel>
+                            <Image Source="{x:Static controls:PixelArt.BlocHerbe}" Width="64" Height="64" HorizontalAlignment="Left" RenderOptions.BitmapScalingMode="NearestNeighbor" />
+                            <TextBlock Style="{StaticResource SectionTitle}" Text="AUCUN PROFIL" Margin="0,16,0,6" />
+                            <TextBlock Style="{StaticResource BodyText}" MaxWidth="420" HorizontalAlignment="Left">
+                                Un profil a sa propre version, son mod loader et son dossier (mods, packs de ressources, shaders, mondes).
+                                Crée-en un, ou installe un modpack depuis Modrinth.
+                            </TextBlock>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+
+        <!-- ═══════════ Modpacks Modrinth ═══════════ -->
+        <Grid x:Name="PanneauModpacks" Margin="26,0,30,26" Visibility="Collapsed">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,18">
+                <Button Style="{StaticResource IconButton}" Content="&#xE72B;" ToolTip="Retour aux profils" VerticalAlignment="Center"
+                        Margin="0,0,16,0" Click="BtnRetourListe_Click" />
+                <controls:OutlinedText Text="MODPACKS" FontFamily="{StaticResource PixelFont}" FontSize="48"
+                                       Fill="White" Stroke="{StaticResource SlateBrush}" StrokeThickness="4"
+                                       ShadowBrush="{StaticResource SlateDarkBrush}" ShadowDepth="5" />
+            </StackPanel>
+            <views:ContentBrowser x:Name="ExplorateurModpacks" Grid.Row="1" />
+        </Grid>
+
+        <!-- ═══════════ Création d'un profil ═══════════ -->
+        <Grid x:Name="PanneauCreation" Visibility="Collapsed">
+            <Rectangle Fill="#661C2335" MouseLeftButtonDown="FondCreation_Click" />
+            <Border Width="460" HorizontalAlignment="Center" VerticalAlignment="Center" CornerRadius="24" Background="#F2F6FAFF"
+                    BorderBrush="White" BorderThickness="2" Padding="28,26" Effect="{StaticResource SoftShadow}">
+                <StackPanel>
+                    <TextBlock Style="{StaticResource SectionTitle}" Text="NOUVEAU PROFIL" Margin="0,0,0,18" />
+
+                    <TextBlock Style="{StaticResource PixelLabel}" FontSize="10" Text="NOM" Margin="4,0,0,6" />
+                    <TextBox x:Name="TxtNom" Style="{StaticResource GlassTextBox}" MaxLength="40" Margin="0,0,0,14" />
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="12" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource PixelLabel}" FontSize="10" Text="VERSION" Margin="4,0,0,6" />
+                            <ComboBox x:Name="CmbVersion" Style="{StaticResource GlassCombo}" SelectionChanged="CmbVersion_SelectionChanged" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="2">
+                            <TextBlock Style="{StaticResource PixelLabel}" FontSize="10" Text="MOD LOADER" Margin="4,0,0,6" />
+                            <ComboBox x:Name="CmbLoader" Style="{StaticResource GlassCombo}" IsEnabled="False" />
+                        </StackPanel>
+                    </Grid>
+
+                    <TextBlock x:Name="TxtCreationInfo" Style="{StaticResource BodyText}" Margin="2,12,0,0" />
+
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,22,0,0">
+                        <Button Style="{StaticResource GlassButton}" Content="Annuler" Margin="0,0,10,0" Click="BtnAnnulerCreation_Click" />
+                        <Button x:Name="BtnCreer" Style="{StaticResource PrimaryButton}" Content="Créer le profil" Click="BtnCreer_Click" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <!-- ═══════════ Installation d'un modpack en cours ═══════════ -->
+        <Grid x:Name="PanneauAttente" Visibility="Collapsed">
+            <Rectangle Fill="#8C1C2335" />
+            <Border Width="420" HorizontalAlignment="Center" VerticalAlignment="Center" CornerRadius="24" Background="#F2F6FAFF"
+                    BorderBrush="White" BorderThickness="2" Padding="28,26" Effect="{StaticResource SoftShadow}">
+                <StackPanel>
+                    <Ellipse Width="44" Height="44" Stroke="{StaticResource GreenBrush}" StrokeThickness="5" StrokeDashArray="3 2"
+                             StrokeDashCap="Round" HorizontalAlignment="Center" RenderTransformOrigin="0.5,0.5">
+                        <Ellipse.RenderTransform>
+                            <RotateTransform />
+                        </Ellipse.RenderTransform>
+                        <Ellipse.Triggers>
+                            <EventTrigger RoutedEvent="Loaded">
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetProperty="RenderTransform.Angle" From="0" To="360"
+                                                         Duration="0:0:1.2" RepeatBehavior="Forever" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </EventTrigger>
+                        </Ellipse.Triggers>
+                    </Ellipse>
+                    <TextBlock x:Name="TxtAttenteTitre" Style="{StaticResource SectionTitle}" HorizontalAlignment="Center"
+                               TextAlignment="Center" TextWrapping="Wrap" Margin="0,18,0,6" />
+                    <TextBlock x:Name="TxtAttente" Style="{StaticResource BodyText}" HorizontalAlignment="Center" TextAlignment="Center" />
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

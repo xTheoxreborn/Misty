@@ -32,7 +32,7 @@
                 </TextBlock>
 
                 <!-- Loaders pris en charge -->
-                <WrapPanel Margin="6,20,0,0" MaxWidth="480" HorizontalAlignment="Left">
+                <WrapPanel Margin="6,20,0,0" MaxWidth="560" HorizontalAlignment="Left">
                     <WrapPanel.Resources>
                         <Style TargetType="Border">
                             <Setter Property="CornerRadius" Value="10" />
@@ -50,6 +50,7 @@
                     <Border><TextBlock Text="FORGE" /></Border>
                     <Border><TextBlock Text="NEOFORGE" /></Border>
                     <Border><TextBlock Text="FABRIC" /></Border>
+                    <Border><TextBlock Text="QUILT" /></Border>
                     <Border><TextBlock Text="OPTIFINE" /></Border>
                     <Border><TextBlock Text="LITELOADER" /></Border>
                 </WrapPanel>
@@ -89,7 +90,7 @@
 
                                 <!-- version sélectionnée -->
                                 <StackPanel VerticalAlignment="Bottom" Margin="22,0,22,22">
-                                    <TextBlock Style="{StaticResource PixelLabel}" FontSize="11" Foreground="#99FFFFFF" Text="VERSION SÉLECTIONNÉE" />
+                                    <TextBlock x:Name="CarteLibelle" Style="{StaticResource PixelLabel}" FontSize="11" Foreground="#99FFFFFF" Text="VERSION SÉLECTIONNÉE" TextTrimming="CharacterEllipsis" />
                                     <controls:OutlinedText x:Name="CarteVersion" Text="—" FontFamily="{StaticResource PixelFont}" FontSize="34"
                                                            Fill="White" Stroke="{StaticResource NavyBrush}" StrokeThickness="3"
                                                            ShadowBrush="#000A0F1A" Margin="0,4,0,0" />
@@ -157,7 +158,7 @@
                     <StackPanel>
                         <TextBlock Style="{StaticResource PixelLabel}" FontSize="10" Text="COMPTE" Margin="4,0,0,6" />
                         <StackPanel Orientation="Horizontal">
-                            <Grid Width="170">
+                            <Grid Width="140">
                                 <ComboBox x:Name="CmbCompte" Style="{StaticResource GlassCombo}" SelectionChanged="CmbCompte_SelectionChanged" />
                                 <Border x:Name="PanneauPremium" Visibility="Collapsed" CornerRadius="12" Height="44"
                                         Background="{StaticResource NavyBrush}" Padding="12,0">
@@ -176,23 +177,46 @@
 
                 <Rectangle Grid.Column="1" Width="1.5" Fill="#66FFFFFF" Margin="18,4" />
 
-                <!-- Version -->
+                <!-- Profil -->
                 <StackPanel Grid.Column="2" VerticalAlignment="Bottom" Margin="0,0,10,0">
-                    <TextBlock Style="{StaticResource PixelLabel}" FontSize="10" Text="VERSION" Margin="4,0,0,6" />
-                    <StackPanel Orientation="Horizontal">
-                        <ComboBox x:Name="CmbVersion" Style="{StaticResource GlassCombo}" Width="170"
-                                  SelectionChanged="CmbVersion_SelectionChanged" />
-                        <Button x:Name="BtnRecharger" Style="{StaticResource IconButton}" Width="44" Height="44" Margin="8,0,0,0"
-                                Content="&#xE72C;" ToolTip="Recharger la liste des versions" Click="BtnRecharger_Click" />
-                    </StackPanel>
+                    <TextBlock Style="{StaticResource PixelLabel}" FontSize="10" Text="PROFIL" Margin="4,0,0,6" />
+                    <ComboBox x:Name="CmbProfil" Style="{StaticResource GlassCombo}" Width="160"
+                              SelectionChanged="CmbProfil_SelectionChanged" />
                 </StackPanel>
 
-                <!-- Loader -->
-                <StackPanel Grid.Column="3" VerticalAlignment="Bottom">
-                    <TextBlock Style="{StaticResource PixelLabel}" FontSize="10" Text="MOD LOADER" Margin="4,0,0,6" />
-                    <ComboBox x:Name="CmbMode" Style="{StaticResource GlassCombo}" Width="150" IsEnabled="False"
-                              SelectionChanged="CmbMode_SelectionChanged" />
-                </StackPanel>
+                <Grid Grid.Column="3" VerticalAlignment="Bottom">
+                    <!-- Jeu rapide : version + loader au choix -->
+                    <StackPanel x:Name="PanneauRapide" Orientation="Horizontal">
+                        <StackPanel Margin="0,0,10,0">
+                            <TextBlock Style="{StaticResource PixelLabel}" FontSize="10" Text="VERSION" Margin="4,0,0,6" />
+                            <StackPanel Orientation="Horizontal">
+                                <ComboBox x:Name="CmbVersion" Style="{StaticResource GlassCombo}" Width="130"
+                                          SelectionChanged="CmbVersion_SelectionChanged" />
+                                <Button x:Name="BtnRecharger" Style="{StaticResource IconButton}" Width="44" Height="44" Margin="8,0,0,0"
+                                        Content="&#xE72C;" ToolTip="Recharger la liste des versions" Click="BtnRecharger_Click" />
+                            </StackPanel>
+                        </StackPanel>
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource PixelLabel}" FontSize="10" Text="MOD LOADER" Margin="4,0,0,6" />
+                            <ComboBox x:Name="CmbMode" Style="{StaticResource GlassCombo}" Width="130" IsEnabled="False"
+                                      SelectionChanged="CmbMode_SelectionChanged" />
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- Profil choisi : résumé + accès à la gestion du contenu -->
+                    <StackPanel x:Name="PanneauProfil" Visibility="Collapsed">
+                        <TextBlock Style="{StaticResource PixelLabel}" FontSize="10" Text="CONTENU" Margin="4,0,0,6" />
+                        <StackPanel Orientation="Horizontal">
+                            <Border CornerRadius="12" Height="44" Width="258" Background="{StaticResource GlassStrongBrush}"
+                                    BorderBrush="{StaticResource GlassBorderBrush}" BorderThickness="1.5" Padding="14,0">
+                                <TextBlock x:Name="TxtResumeProfil" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="13"
+                                           Foreground="{StaticResource NavyBrush}" TextTrimming="CharacterEllipsis" />
+                            </Border>
+                            <Button Style="{StaticResource IconButton}" Width="44" Height="44" Margin="8,0,0,0"
+                                    Content="&#xE70F;" ToolTip="Gérer les mods, packs et shaders" Click="BtnGererProfil_Click" />
+                        </StackPanel>
+                    </StackPanel>
+                </Grid>
 
                 <!-- Statut / progression -->
                 <StackPanel Grid.Row="1" Grid.ColumnSpan="5" Margin="2,16,24,0">
@@ -205,7 +229,7 @@
                 </StackPanel>
 
                 <!-- Jouer -->
-                <Button x:Name="BtnJouer" Grid.Column="5" Grid.RowSpan="2" Style="{StaticResource PlayButton}" Width="220" Height="96"
+                <Button x:Name="BtnJouer" Grid.Column="5" Grid.RowSpan="2" Style="{StaticResource PlayButton}" Width="190" Height="96"
                         Content="JOUER" IsEnabled="False" Click="BtnJouer_Click" />
             </Grid>
         </Border>

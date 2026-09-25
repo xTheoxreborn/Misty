@@ -27,7 +27,7 @@
                     <!-- Profils hors-ligne -->
                     <Border Style="{StaticResource GlassCard}" Margin="0,0,0,18">
                         <StackPanel>
-                            <TextBlock Style="{StaticResource SectionTitle}" Text="PROFILS HORS-LIGNE" />
+                            <TextBlock Style="{StaticResource SectionTitle}" Text="COMPTES HORS-LIGNE" />
                             <TextBlock Style="{StaticResource BodyText}" Text="Pseudos utilisables sans compte Microsoft." Margin="0,0,0,14" />
 
                             <ItemsControl x:Name="ListeProfils">
@@ -43,7 +43,7 @@
                                             <StackPanel Orientation="Horizontal">
                                                 <TextBlock Text="{Binding}" FontWeight="SemiBold" FontSize="13" Foreground="{StaticResource NavyBrush}" VerticalAlignment="Center" />
                                                 <Button Style="{StaticResource ChromeCloseButton}" Width="28" Height="28" Margin="8,0,0,0"
-                                                        Content="&#xE8BB;" FontSize="9" Tag="{Binding}" ToolTip="Supprimer ce profil"
+                                                        Content="&#xE8BB;" FontSize="9" Tag="{Binding}" ToolTip="Supprimer ce compte"
                                                         Click="BtnSupprimerProfil_Click" />
                                             </StackPanel>
                                         </Border>

@@ -17,7 +17,6 @@
     <PackageReference Include="CmlLib.Core.Auth.Microsoft" Version="3.3.1" />
     <PackageReference Include="CmlLib.Core.Installer.NeoForge" Version="4.0.1" />
     <PackageReference Include="DiscordRichPresence" Version="1.6.1.70" />
-    <PackageReference Include="Modrinth.Net" Version="3.8.0" />
     <PackageReference Include="Optifine.Installer" Version="1.0.1" />
   </ItemGroup>
 
@@ -32,6 +31,8 @@
     <Resource Include="Assets\Fonts\*.ttf" />
     <!-- Notes de version affichées dans l'app -->
     <EmbeddedResource Include="..\..\CHANGELOG.md" LogicalName="Misty.CHANGELOG.md" Link="CHANGELOG.md" />
+    <!-- Clé API CurseForge : fichier privé ignoré par git (voir CurseForgeApi) -->
+    <EmbeddedResource Include="curseforge.key" LogicalName="Misty.curseforge.key" Condition="Exists('curseforge.key')" />
   </ItemGroup>
 
   <ItemGroup>

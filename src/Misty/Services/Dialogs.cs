@@ -4,6 +4,7 @@ namespace Misty.Services
     internal interface IDialogHost
     {
         Task<bool> AfficherAsync(string titre, string message, string ok, string? annuler, bool danger);
+        Task<string?> ChoisirAsync(string titre, string message, IReadOnlyList<string> options);
     }
 
     /// <summary>
@@ -21,6 +22,10 @@ namespace Misty.Services
 
         public static Task<bool> ConfirmerAsync(string titre, string message, string oui = "Oui", string non = "Annuler", bool danger = false) =>
             Afficher(titre, message, oui, non, danger);
+
+        /// <summary>Choix dans une liste. Renvoie l'option choisie, ou null si annulé.</summary>
+        public static Task<string?> ChoisirAsync(string titre, string message, IReadOnlyList<string> options) =>
+            Host?.ChoisirAsync(titre, message, options) ?? Task.FromResult(options.FirstOrDefault());
 
         private static Task<bool> Afficher(string titre, string message, string ok, string? annuler, bool danger)
         {

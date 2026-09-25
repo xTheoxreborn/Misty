@@ -1,6 +1,8 @@
 using CmlLib.Core;
 using CmlLib.Core.Auth;
 using CmlLib.Core.ProcessBuilder;
+using Misty.Controls;
+using Misty.Models;
 using Misty.Services;
 using System.Diagnostics;
 using System.Windows;
@@ -12,36 +14,36 @@ using System.Windows.Media.Imaging;
 namespace Misty.Views
 {
     /// <summary>
-    /// Page d'accueil : choix du compte, de la version, du mod loader et lancement du jeu.
+    /// Page d'accueil : choix du compte, du profil (ou jeu rapide : version + mod loader) et lancement du jeu.
     /// </summary>
     public partial class HomeView : UserControl
     {
-        private readonly MinecraftPath mcPath;
-        private readonly MinecraftLauncher launcher;
-        private readonly ModLoaderService modLoaders;
+        /// <summary>Élément de la liste des profils ; Instance = null pour le jeu rapide.</summary>
+        private sealed record ChoixProfil(string Nom, Instance? Instance)
+        {
+            public override string ToString() => Nom;
+        }
+
         private readonly DiscordPresenceService discord;
 
         private string selectedVersion = "";
+        private bool modesCharges;
         private bool installationEnCours;
         private bool jeuEnCours;
+        private Instance? profil;
+
+        /// <summary>L'utilisateur veut gérer le contenu du profil sélectionné.</summary>
+        public event Action<Instance>? GererProfilDemande;
 
         internal HomeView(DiscordPresenceService discord)
         {
             InitializeComponent();
 
             this.discord = discord;
-            mcPath = new MinecraftPath(AppPaths.DataDir);
-            launcher = new MinecraftLauncher(mcPath);
-            modLoaders = new ModLoaderService(launcher, mcPath);
-
-            launcher.FileProgressChanged += (sender, args) => Dispatcher.Invoke(() =>
-            {
-                if (args.TotalTasks <= 0) return;
-                double pourcentage = args.ProgressedTasks * 100.0 / args.TotalTasks;
-                AfficherProgression(pourcentage, $"Téléchargement… {args.Name}");
-            });
+            MinecraftService.Launcher.FileProgressChanged += ProgressionFichiers;
 
             AccountService.SessionChanged += () => Dispatcher.Invoke(MajCompte);
+            InstanceStore.Modifie += () => Dispatcher.Invoke(ChargerProfils);
 
             AnimerBloc();
         }
@@ -53,13 +55,14 @@ namespace Misty.Views
         {
             ChargerPseudos();
             MajCompte();
+            ChargerProfils();
 
             _ = ConnexionPremiumAutoAsync(); // en parallèle du chargement des versions
 
             Statut("Chargement des versions…");
             await ChargerVersionsAsync();
             ChargerDerniereVersion();
-            if (CmbVersion.SelectedItem == null)
+            if (profil == null && CmbVersion.SelectedItem == null)
                 Statut("Choisis une version pour commencer");
         }
 
@@ -67,6 +70,7 @@ namespace Misty.Views
         public async void Rafraichir(bool rechargerVersions)
         {
             ChargerPseudos();
+            ChargerProfils();
             if (rechargerVersions)
                 await RechargerVersionsAsync();
         }
@@ -170,31 +174,117 @@ namespace Misty.Views
             }
         }
 
-        // ───────────────────────── Versions ─────────────────────────
+        // ───────────────────────── Profils ─────────────────────────
+
+        private void ChargerProfils()
+        {
+            string? idVoulu = profil?.Id ?? SettingsStore.Get(SettingsStore.DernierProfil);
+
+            var choix = new List<ChoixProfil> { new("Jeu rapide", null) };
+            choix.AddRange(InstanceStore.Lister().Select(i => new ChoixProfil(i.Nom, i)));
+
+            CmbProfil.SelectionChanged -= CmbProfil_SelectionChanged;
+            CmbProfil.ItemsSource = choix;
+            CmbProfil.SelectedItem = choix.FirstOrDefault(c => c.Instance?.Id == idVoulu) ?? choix[0];
+            CmbProfil.SelectionChanged += CmbProfil_SelectionChanged;
+
+            profil = (CmbProfil.SelectedItem as ChoixProfil)?.Instance;
+            MajModeProfil();
+        }
+
+        private void CmbProfil_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            profil = (CmbProfil.SelectedItem as ChoixProfil)?.Instance;
+            SettingsStore.Set(SettingsStore.DernierProfil, profil?.Id ?? "");
+            MajModeProfil();
+        }
+
+        /// <summary>Bascule l'affichage entre le jeu rapide et le profil sélectionné.</summary>
+        private void MajModeProfil()
+        {
+            bool avecProfil = profil != null;
+            PanneauRapide.Visibility = avecProfil ? Visibility.Collapsed : Visibility.Visible;
+            PanneauProfil.Visibility = avecProfil ? Visibility.Visible : Visibility.Collapsed;
+
+            if (profil != null)
+            {
+                CarteLibelle.Text = "PROFIL · " + profil.Nom.ToUpperInvariant();
+                CarteVersion.Text = profil.VersionMc;
+                CarteLoader.Text = profil.Loader.ToUpperInvariant();
+                TxtResumeProfil.Text = ResumeContenu(profil);
+
+                // L'icône du profil remplace le bloc d'herbe (en lissé : ce n'est pas du pixel art)
+                var icone = profil.Icone;
+                Bloc.Source = icone ?? PixelArt.BlocHerbe;
+                RenderOptions.SetBitmapScalingMode(Bloc, icone != null ? BitmapScalingMode.HighQuality : BitmapScalingMode.NearestNeighbor);
+            }
+            else
+            {
+                CarteLibelle.Text = "VERSION SÉLECTIONNÉE";
+                CarteVersion.Text = string.IsNullOrEmpty(selectedVersion) ? "—" : selectedVersion;
+                CarteLoader.Text = (CmbMode.SelectedItem as string ?? ModLoaderService.Vanilla).ToUpperInvariant();
+                Bloc.Source = PixelArt.BlocHerbe;
+                RenderOptions.SetBitmapScalingMode(Bloc, BitmapScalingMode.NearestNeighbor);
+            }
+
+            if (!installationEnCours)
+            {
+                BtnJouer.IsEnabled = avecProfil || modesCharges;
+                if (avecProfil || modesCharges)
+                    Statut(jeuEnCours ? "Minecraft est en cours d'exécution" : "Prêt à jouer");
+            }
+        }
+
+        /// <summary>"12 mods · 2 shaders"</summary>
+        private static string ResumeContenu(Instance instance)
+        {
+            var morceaux = new List<string>();
+            try
+            {
+                foreach (var groupe in ContentService.Lister(instance).Where(c => c.Actif).GroupBy(c => c.Type))
+                {
+                    int n = groupe.Count();
+                    string libelle = groupe.Key switch
+                    {
+                        ContentService.Mod => n > 1 ? "mods" : "mod",
+                        ContentService.PackRessources => n > 1 ? "packs de ressources" : "pack de ressources",
+                        ContentService.Datapack => n > 1 ? "datapacks" : "datapack",
+                        ContentService.Shader => n > 1 ? "shaders" : "shader",
+                        _ => groupe.Key,
+                    };
+                    morceaux.Add($"{n} {libelle}");
+                }
+            }
+            catch { }
+            return morceaux.Count > 0 ? string.Join(" · ", morceaux) : "Aucun contenu : clique sur le crayon pour en ajouter";
+        }
+
+        private void BtnGererProfil_Click(object sender, RoutedEventArgs e)
+        {
+            if (profil != null)
+                GererProfilDemande?.Invoke(profil);
+        }
+
+        /// <summary>Sélectionne un profil et lance la partie (depuis la page Profils).</summary>
+        public void SelectionnerEtJouer(Instance instance)
+        {
+            profil = instance;
+            SettingsStore.Set(SettingsStore.DernierProfil, instance.Id);
+            ChargerProfils();
+            if (!installationEnCours)
+                BtnJouer_Click(this, new RoutedEventArgs());
+        }
+
+        // ───────────────────────── Versions (jeu rapide) ─────────────────────────
 
         private async Task ChargerVersionsAsync()
         {
-            bool snapshot = SettingsStore.GetBool(SettingsStore.Snapshot);
-            bool beta = SettingsStore.GetBool(SettingsStore.Beta);
-            bool alpha = SettingsStore.GetBool(SettingsStore.Alpha);
-
             try
             {
-                var versions = await launcher.GetAllVersionsAsync();
-
+                var versions = await MinecraftService.VersionsAsync();
                 CmbVersion.Items.Clear();
                 foreach (var v in versions)
-                {
-                    string type = v.Type?.ToString() ?? "";
-
-                    if (type.Equals("release", StringComparison.OrdinalIgnoreCase)
-                        || (snapshot && type.Equals("snapshot", StringComparison.OrdinalIgnoreCase))
-                        || (beta && type.Equals("old_beta", StringComparison.OrdinalIgnoreCase))
-                        || (alpha && type.Equals("old_alpha", StringComparison.OrdinalIgnoreCase)))
-                    {
-                        CmbVersion.Items.Add(v.Name);
-                    }
-                }
+                    CmbVersion.Items.Add(v);
             }
             catch (Exception ex)
             {
@@ -216,13 +306,13 @@ namespace Misty.Views
         {
             object? versionActuelle = CmbVersion.SelectedItem;
             BtnRecharger.IsEnabled = false;
-            Statut("Chargement des versions…");
+            if (profil == null) Statut("Chargement des versions…");
 
             await ChargerVersionsAsync();
 
             if (versionActuelle != null && CmbVersion.Items.Contains(versionActuelle))
                 CmbVersion.SelectedItem = versionActuelle;
-            else
+            else if (profil == null)
                 Statut("Choisis une version pour commencer");
 
             BtnRecharger.IsEnabled = true;
@@ -234,16 +324,20 @@ namespace Misty.Views
         {
             if (CmbVersion.SelectedItem is not string version) return;
 
-            BtnJouer.IsEnabled = false;
+            modesCharges = false;
             CmbMode.IsEnabled = false;
             CmbMode.Items.Clear();
 
             selectedVersion = version;
-            CarteVersion.Text = version;
             SettingsStore.Set(SettingsStore.LastVersion, version);
-            Statut($"Recherche des mod loaders pour {version}…");
+            if (profil == null)
+            {
+                BtnJouer.IsEnabled = false;
+                CarteVersion.Text = version;
+                Statut($"Recherche des mod loaders pour {version}…");
+            }
 
-            var modes = await modLoaders.ModesDisponiblesAsync(version);
+            var modes = await MinecraftService.Loaders.ModesDisponiblesAsync(version);
 
             // L'utilisateur a changé de version pendant le chargement : on laisse la nouvelle sélection gérer
             if (version != selectedVersion) return;
@@ -251,39 +345,41 @@ namespace Misty.Views
             foreach (var mode in modes)
                 CmbMode.Items.Add(mode);
             CmbMode.SelectedIndex = 0;
-            CmbMode.IsEnabled = true;
+            CmbMode.IsEnabled = !installationEnCours;
+            modesCharges = true;
 
-            if (!installationEnCours)
-            {
-                BtnJouer.IsEnabled = true;
-                Statut(jeuEnCours ? "Minecraft est en cours d'exécution" : "Prêt à jouer");
-            }
+            if (profil == null)
+                MajModeProfil();
         }
 
         private void CmbMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            CarteLoader.Text = (CmbMode.SelectedItem as string ?? ModLoaderService.Vanilla).ToUpperInvariant();
+            if (profil == null)
+                CarteLoader.Text = (CmbMode.SelectedItem as string ?? ModLoaderService.Vanilla).ToUpperInvariant();
         }
 
         // ───────────────────────── Lancement ─────────────────────────
 
         private async void BtnJouer_Click(object sender, RoutedEventArgs e)
         {
-            string version = selectedVersion;
-            string mode = CmbMode.SelectedItem as string ?? ModLoaderService.Vanilla;
+            var instance = profil;
+            string version = instance?.VersionMc ?? selectedVersion;
+            string mode = instance?.Loader ?? CmbMode.SelectedItem as string ?? ModLoaderService.Vanilla;
+            if (string.IsNullOrEmpty(version)) return;
 
             installationEnCours = true;
             BtnJouer.IsEnabled = false;
             CmbVersion.IsEnabled = false;
             CmbMode.IsEnabled = false;
-            AfficherProgression(0, $"Préparation de {version} {mode}…");
+            CmbProfil.IsEnabled = false;
+            AfficherProgression(0, $"Préparation de {instance?.Nom ?? $"{version} {mode}"}…");
 
             try
             {
                 string nomVersion;
                 try
                 {
-                    nomVersion = await modLoaders.InstallerAsync(version, mode);
+                    nomVersion = await MinecraftService.Loaders.InstallerAsync(version, mode, instance?.LoaderVersion);
                 }
                 catch (Exception ex)
                 {
@@ -293,7 +389,7 @@ namespace Misty.Views
                 }
 
                 AfficherProgression(100, "Lancement de Minecraft…");
-                await LancerJeuAsync(version, mode, nomVersion);
+                await LancerJeuAsync(version, mode, nomVersion, instance);
             }
             finally
             {
@@ -301,12 +397,13 @@ namespace Misty.Views
                 BtnJouer.Content = "JOUER";
                 BtnJouer.IsEnabled = true;
                 CmbVersion.IsEnabled = true;
-                CmbMode.IsEnabled = true;
+                CmbMode.IsEnabled = modesCharges;
+                CmbProfil.IsEnabled = true;
                 TxtPourcentage.Text = "";
             }
         }
 
-        private async Task LancerJeuAsync(string version, string mode, string nomVersion)
+        private async Task LancerJeuAsync(string version, string mode, string nomVersion, Instance? instance)
         {
             if (!int.TryParse(SettingsStore.Get(SettingsStore.Ram), out int ramMo))
                 ramMo = AppInfo.RamParDefautMo;
@@ -319,11 +416,19 @@ namespace Misty.Views
                     MaximumRamMb = ramMo
                 };
 
+                // Un profil a son propre dossier de jeu (mods, options, mondes) ; le jeu rapide utilise le dossier principal
+                var launcher = MinecraftService.Launcher;
+                if (instance != null)
+                {
+                    launcher = new MinecraftLauncher(InstanceStore.CheminMinecraft(instance));
+                    launcher.FileProgressChanged += ProgressionFichiers;
+                }
+
                 Process process = mode == ModLoaderService.OptiFine
                     ? await launcher.InstallAndBuildProcessAsync(nomVersion, option)
                     : await launcher.BuildProcessAsync(nomVersion, option);
 
-                discord.EnJeu(version, mode);
+                discord.EnJeu(version, instance != null ? $"{mode} · {instance.Nom}" : mode);
 
                 process.EnableRaisingEvents = true;
                 process.Exited += (s, args) => Dispatcher.Invoke(() =>
@@ -331,11 +436,18 @@ namespace Misty.Views
                     jeuEnCours = false;
                     discord.DansLeLauncher();
                     Statut("Prêt à jouer");
+                    if (profil != null) TxtResumeProfil.Text = ResumeContenu(profil);
                 });
 
                 process.Start();
                 jeuEnCours = true;
-                Statut($"Minecraft {version} est lancé, bon jeu !");
+                Statut($"{instance?.Nom ?? "Minecraft " + version} est lancé, bon jeu !");
+
+                if (instance != null)
+                {
+                    instance.DernierLancement = DateTime.Now;
+                    InstanceStore.Sauver(instance);
+                }
             }
             catch (Exception ex)
             {
@@ -345,6 +457,13 @@ namespace Misty.Views
         }
 
         // ───────────────────────── Affichage ─────────────────────────
+
+        private void ProgressionFichiers(object? sender, CmlLib.Core.Installers.InstallerProgressChangedEventArgs args) => Dispatcher.Invoke(() =>
+        {
+            if (args.TotalTasks <= 0) return;
+            double pourcentage = args.ProgressedTasks * 100.0 / args.TotalTasks;
+            AfficherProgression(pourcentage, $"Téléchargement… {args.Name}");
+        });
 
         private void Statut(string texte) => TxtStatut.Text = texte;
 

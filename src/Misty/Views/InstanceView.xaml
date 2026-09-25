@@ -1,0 +1,148 @@
+﻿<UserControl x:Class="Misty.Views.InstanceView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:Misty.Controls"
+             xmlns:views="clr-namespace:Misty.Views">
+
+    <Grid Margin="26,0,30,26">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- ═══ En-tête ═══ -->
+        <Grid Margin="0,0,0,18">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <Button Style="{StaticResource IconButton}" Content="&#xE72B;" ToolTip="Retour aux profils"
+                    VerticalAlignment="Center" Click="BtnRetour_Click" />
+
+            <Border Grid.Column="1" Width="80" Height="80" CornerRadius="22" Background="#1C2335" BorderBrush="White"
+                    BorderThickness="3" Margin="16,0,18,0" ClipToBounds="True" Effect="{StaticResource SmallShadow}">
+                <Grid>
+                    <Image Source="{x:Static controls:PixelArt.BlocHerbe}" Margin="16" RenderOptions.BitmapScalingMode="NearestNeighbor" />
+                    <Image x:Name="ImgIcone" Stretch="UniformToFill" />
+                </Grid>
+            </Border>
+
+            <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                <Grid>
+                    <TextBlock x:Name="TxtNom" Style="{StaticResource PixelLabel}" FontSize="28" Foreground="White"
+                               TextTrimming="CharacterEllipsis">
+                        <TextBlock.Effect>
+                            <DropShadowEffect BlurRadius="0" ShadowDepth="3" Direction="270" Color="#3E526A" />
+                        </TextBlock.Effect>
+                    </TextBlock>
+                    <!-- Renommage : remplace le nom le temps de la saisie -->
+                    <DockPanel x:Name="PanneauRenommer" Visibility="Collapsed" MaxWidth="420" HorizontalAlignment="Left">
+                        <Button DockPanel.Dock="Right" Style="{StaticResource PrimaryButton}" Content="OK" Margin="8,0,0,0" Click="BtnValiderNom_Click" />
+                        <TextBox x:Name="TxtNouveauNom" Style="{StaticResource GlassTextBox}" MaxLength="40" MinWidth="260" KeyDown="TxtNouveauNom_KeyDown" />
+                    </DockPanel>
+                </Grid>
+                <WrapPanel x:Name="PanneauBadges" Margin="0,8,0,0" />
+            </StackPanel>
+
+            <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center">
+                <Button Style="{StaticResource IconButton}" Content="&#xE8B7;" ToolTip="Ouvrir le dossier du profil" Margin="0,0,8,0" Click="BtnDossier_Click" />
+                <Button Style="{StaticResource IconButton}" Content="&#xE8B9;" ToolTip="Changer l'icône" Margin="0,0,8,0" Click="BtnIcone_Click" />
+                <Button Style="{StaticResource IconButton}" Content="&#xE70F;" ToolTip="Renommer" Margin="0,0,8,0" Click="BtnRenommer_Click" />
+                <Button Style="{StaticResource IconButton}" Content="&#xE74D;" ToolTip="Supprimer le profil" Margin="0,0,14,0"
+                        Foreground="{StaticResource DangerBrush}" Click="BtnSupprimer_Click" />
+                <Button x:Name="BtnJouer" Style="{StaticResource PlayButton}" Width="150" Height="60" FontSize="22" Content="JOUER" Click="BtnJouer_Click" />
+            </StackPanel>
+        </Grid>
+
+        <!-- ═══ Onglets ═══ -->
+        <DockPanel Grid.Row="1" Margin="0,0,0,14">
+            <TextBlock x:Name="TxtStatut" DockPanel.Dock="Right" Style="{StaticResource BodyText}" FontWeight="SemiBold"
+                       Foreground="{StaticResource Navy2Brush}" VerticalAlignment="Center" TextWrapping="NoWrap"
+                       TextTrimming="CharacterEllipsis" MaxWidth="420" />
+            <StackPanel Orientation="Horizontal">
+                <RadioButton x:Name="OngletContenu" Style="{StaticResource TabPill}" GroupName="OngletsInstance" IsChecked="True" Checked="Onglet_Checked">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Style="{StaticResource Icon}" Text="&#xE8F1;" FontSize="13" Margin="0,0,8,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}" />
+                        <TextBlock x:Name="TxtOngletContenu" Text="Contenu" />
+                    </StackPanel>
+                </RadioButton>
+                <RadioButton x:Name="OngletDecouvrir" Style="{StaticResource TabPill}" GroupName="OngletsInstance" Checked="Onglet_Checked">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Style="{StaticResource Icon}" Text="&#xE721;" FontSize="13" Margin="0,0,8,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}" />
+                        <TextBlock Text="Découvrir" />
+                    </StackPanel>
+                </RadioButton>
+            </StackPanel>
+        </DockPanel>
+
+        <!-- ═══ Contenu installé ═══ -->
+        <Grid x:Name="PanneauContenu" Grid.Row="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <DockPanel Margin="0,0,0,12">
+                <TextBox x:Name="TxtFiltre" DockPanel.Dock="Right" Style="{StaticResource SearchBox}" Width="240" Tag="Filtrer…"
+                         TextChanged="TxtFiltre_TextChanged" />
+                <StackPanel x:Name="PanneauFiltres" Orientation="Horizontal" />
+            </DockPanel>
+
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,8,0">
+                <StackPanel>
+                    <ItemsControl x:Name="ListeContenu">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border x:Name="Ligne" CornerRadius="16" Background="{StaticResource GlassBrush}" BorderBrush="{StaticResource GlassBorderBrush}"
+                                        BorderThickness="1.5" Padding="10,8,12,8" Margin="0,0,0,8">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <Border Width="42" Height="42" CornerRadius="11" Background="#1C2335" ClipToBounds="True">
+                                            <Grid>
+                                                <Image Source="{x:Static controls:PixelArt.BlocHerbe}" Margin="10" Opacity="0.6" RenderOptions.BitmapScalingMode="NearestNeighbor" />
+                                                <Image Source="{Binding Icone}" Stretch="UniformToFill" />
+                                            </Grid>
+                                        </Border>
+                                        <StackPanel Grid.Column="1" Margin="12,0" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding Titre}" FontWeight="SemiBold" FontSize="14" Foreground="{StaticResource NavyBrush}" TextTrimming="CharacterEllipsis" />
+                                            <TextBlock Text="{Binding Details}" FontSize="12" Foreground="{StaticResource TextMutedBrush}" TextTrimming="CharacterEllipsis" Margin="0,2,0,0" />
+                                        </StackPanel>
+                                        <CheckBox Grid.Column="2" Style="{StaticResource ToggleSwitch}" IsChecked="{Binding Actif, Mode=OneWay}"
+                                                  ToolTip="Activer / désactiver" Click="ChkActif_Click" VerticalAlignment="Center" />
+                                        <Button Grid.Column="3" Style="{StaticResource ChromeCloseButton}" Width="36" Height="36" Margin="10,0,0,0"
+                                                Content="&#xE74D;" FontSize="13" ToolTip="Supprimer" Click="BtnSupprimerContenu_Click" />
+                                    </Grid>
+                                </Border>
+                                <DataTemplate.Triggers>
+                                    <DataTrigger Binding="{Binding Actif}" Value="False">
+                                        <Setter TargetName="Ligne" Property="Opacity" Value="0.6" />
+                                    </DataTrigger>
+                                </DataTemplate.Triggers>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <!-- État vide -->
+                    <StackPanel x:Name="PanneauVide" HorizontalAlignment="Center" Margin="0,40,0,0" Visibility="Collapsed">
+                        <Image Source="{x:Static controls:PixelArt.BlocHerbe}" Width="64" Height="64" Opacity="0.8" RenderOptions.BitmapScalingMode="NearestNeighbor" />
+                        <TextBlock Style="{StaticResource SectionTitle}" Text="RIEN ICI POUR L'INSTANT" HorizontalAlignment="Center" Margin="0,14,0,4" />
+                        <TextBlock Style="{StaticResource BodyText}" HorizontalAlignment="Center" TextAlignment="Center"
+                                   Text="Va dans « Découvrir » pour ajouter des mods, packs ou shaders depuis Modrinth ou CurseForge." />
+                    </StackPanel>
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+
+        <!-- ═══ Découvrir ═══ -->
+        <views:ContentBrowser x:Name="Explorateur" Grid.Row="2" Visibility="Collapsed" />
+    </Grid>
+</UserControl>

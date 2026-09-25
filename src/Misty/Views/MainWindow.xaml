@@ -87,6 +87,8 @@
                             <StackPanel HorizontalAlignment="Center">
                                 <RadioButton x:Name="NavAccueil" Style="{StaticResource NavButton}" Content="&#xE80F;"
                                              ToolTip="Jouer" IsChecked="True" Checked="Nav_Checked" Margin="0,0,0,10" />
+                                <RadioButton x:Name="NavProfils" Style="{StaticResource NavButton}" Content="&#xE8F1;"
+                                             ToolTip="Profils, mods et modpacks" Checked="Nav_Checked" Margin="0,0,0,10" />
                                 <RadioButton x:Name="NavOptions" Style="{StaticResource NavButton}" Content="&#xE713;"
                                              ToolTip="Options" Checked="Nav_Checked" Margin="0,0,0,10" />
                                 <RadioButton x:Name="NavNotes" Style="{StaticResource NavButton}" Content="&#xE81C;"
@@ -133,6 +135,17 @@
                                 <TextBlock x:Name="DialogTitre" Style="{StaticResource SectionTitle}" VerticalAlignment="Center" Margin="0" />
                             </StackPanel>
                             <TextBlock x:Name="DialogMessage" Style="{StaticResource BodyText}" FontSize="14" Foreground="{StaticResource Navy2Brush}" LineHeight="20" />
+                            <!-- options (mode "choix dans une liste") -->
+                            <ScrollViewer MaxHeight="260" VerticalScrollBarVisibility="Auto" Margin="0,8,0,0">
+                                <ItemsControl x:Name="DialogChoix">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Button Style="{StaticResource GlassButton}" Content="{Binding}" Margin="0,6,0,0"
+                                                    HorizontalContentAlignment="Left" Click="DialogChoix_Click" />
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </ScrollViewer>
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,24,0,0">
                                 <Button x:Name="DialogAnnuler" Style="{StaticResource GlassButton}" Margin="0,0,10,0" Click="DialogAnnuler_Click" />
                                 <Button x:Name="DialogOk" Style="{StaticResource PrimaryButton}" Click="DialogOk_Click" />

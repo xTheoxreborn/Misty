@@ -53,7 +53,25 @@ namespace Misty.Views
         }
 
         // ───────────────────────── Création ─────────────────────────
+        private async void BtnSupprimer_Click(object sender, RoutedEventArgs e)
+        {
+            if ((sender as FrameworkElement)?.DataContext is not Instance instance) return;
 
+            if (!await Dialogs.ConfirmerAsync("Supprimer le profil",
+                    $"Supprimer « {instance.Nom} » ? Ses mods, packs, mondes et options seront effacés définitivement.",
+                    "Supprimer", danger: true))
+                return;
+
+            try
+            {
+                InstanceStore.Supprimer(instance);
+                Rafraichir();
+            }
+            catch (Exception ex)
+            {
+                await Dialogs.ErreurAsync("Suppression impossible", ex.Message + "\n\nLe jeu est peut-être encore ouvert.");
+            }
+        }
         private async void BtnNouveau_Click(object sender, RoutedEventArgs e)
         {
             TxtNom.Text = "";
@@ -127,6 +145,7 @@ namespace Misty.Views
                 ExplorateurModpacks.RafraichirEtats();
             }
         }
+
 
         private void BtnRetourListe_Click(object sender, RoutedEventArgs e) => Rafraichir();
 

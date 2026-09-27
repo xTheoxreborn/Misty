@@ -50,12 +50,12 @@
                     <Border><TextBlock Text="FORGE" /></Border>
                     <Border><TextBlock Text="NEOFORGE" /></Border>
                     <Border><TextBlock Text="FABRIC" /></Border>
-                    <Border><TextBlock Text="QUILT" /></Border>
+                    
                     <Border><TextBlock Text="OPTIFINE" /></Border>
                     <Border><TextBlock Text="LITELOADER" /></Border>
                 </WrapPanel>
             </StackPanel>
-
+            <!--     <Border><TextBlock Text="QUILT" /></Border> -->
             <!-- Carte version (façon vignette) + texte vertical -->
             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                 <Grid Width="330" Height="350">

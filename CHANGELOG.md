@@ -1,4 +1,6 @@
 # Changelog
+## 0.2.4.1
+- Possibilité de supprimer un profil directement où il y a la liste des profils
 
 ## 0.2.4
 - CurseForge en plus de Modrinth : choix de la plateforme dans l'explorateur (mods, packs de ressources, datapacks, shaders, modpacks)

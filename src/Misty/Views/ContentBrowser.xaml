@@ -26,7 +26,7 @@
                         <Ellipse Width="9" Height="9" Fill="#F16436" Margin="0,0,8,0" VerticalAlignment="Center" />
                         <TextBlock Text="CurseForge" />
                     </StackPanel>
-                </RadioButton>
+                </RadioButton> 
             </StackPanel>
             <StackPanel x:Name="PanneauTypes" Orientation="Horizontal" />
         </DockPanel>

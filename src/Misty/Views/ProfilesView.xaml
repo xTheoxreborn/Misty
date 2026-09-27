@@ -70,8 +70,11 @@
                                         <TextBlock Text="{Binding Resume}" Style="{StaticResource PixelLabel}" FontSize="11" />
                                         <DockPanel Margin="0,14,0,0">
                                             <Button DockPanel.Dock="Right" Style="{StaticResource IconButton}" Content="&#xE768;" Width="42" Height="42"
-                                                    Background="{StaticResource GreenBrush}" BorderBrush="#66FFFFFF" Foreground="White"
+                                                    Background="{DynamicResource GreenBrush}" BorderBrush="#66FFFFFF" Foreground="White"
                                                     ToolTip="Jouer" Click="BtnJouer_Click" />
+                                            <Button DockPanel.Dock="Right" Style="{StaticResource IconButton}" Content="&#xE74D;" Width="42" Height="42"
+                                                    Background="{DynamicResource DangerBrush}" BorderBrush="#66FFFFFF" Foreground="White"
+                                                    ToolTip="Supprimer" Click="BtnSupprimer_Click" />
                                             <TextBlock Text="{Binding DernierLancementTexte}" VerticalAlignment="Center"
                                                        FontSize="12" Foreground="{StaticResource TextMutedBrush}" />
                                         </DockPanel>

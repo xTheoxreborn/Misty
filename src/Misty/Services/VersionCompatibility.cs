@@ -6,7 +6,7 @@ namespace Misty.Services
     /// </summary>
     internal static class VersionCompatibility
     {
-        private static readonly Version MaxConnue = new(26, 4);
+        private static readonly Version MaxConnue = new(26, 5);
 
         public static bool Forge(string version) => Entre(version, new(1, 7, 10), MaxConnue);
         public static bool OptiFine(string version) => Entre(version, new(1, 7, 2), MaxConnue);

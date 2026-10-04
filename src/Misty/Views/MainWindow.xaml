@@ -92,7 +92,9 @@
                                 <RadioButton x:Name="NavOptions" Style="{StaticResource NavButton}" Content="&#xE713;"
                                              ToolTip="Options" Checked="Nav_Checked" Margin="0,0,0,10" />
                                 <RadioButton x:Name="NavNotes" Style="{StaticResource NavButton}" Content="&#xE81C;"
-                                             ToolTip="Notes de version" Checked="Nav_Checked" />
+                                             ToolTip="Notes de version" Checked="Nav_Checked" Margin="0,0,0,10" />
+                                <RadioButton x:Name="Soon" Style="{StaticResource NavButton}" Content="&#xE946;"
+                                             ToolTip="Fonctionnalités à venir" Checked="Nav_Checked" />
                             </StackPanel>
                         </DockPanel>
                     </Border>

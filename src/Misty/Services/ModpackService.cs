@@ -1,6 +1,8 @@
 using Misty.Models;
+using Misty.Views;
 using System.IO.Compression;
 using System.Text.Json;
+using System.Windows.Controls;
 
 namespace Misty.Services
 {
@@ -61,7 +63,7 @@ namespace Misty.Services
         private static (string Loader, string? Version) LoaderModrinth(Dictionary<string, string> dependances)
         {
             if (dependances.TryGetValue("fabric-loader", out var v)) return (ModLoaderService.Fabric, v);
-            if (dependances.TryGetValue("quilt-loader", out v)) return (ModLoaderService.Quilt, v);
+            //if (dependances.TryGetValue("quilt-loader", out v)) return (ModLoaderService.Quilt, v);
             if (dependances.TryGetValue("neoforge", out v)) return (ModLoaderService.NeoForge, v);
             if (dependances.TryGetValue("forge", out v)) return (ModLoaderService.Forge, v);
             return (ModLoaderService.Vanilla, null);
@@ -170,7 +172,7 @@ namespace Misty.Services
                 "forge" => (ModLoaderService.Forge, version),
                 "neoforge" => (ModLoaderService.NeoForge, version),
                 "fabric" => (ModLoaderService.Fabric, version),
-                "quilt" => (ModLoaderService.Quilt, version),
+                //"quilt" => (ModLoaderService.Quilt, version),
                 _ => throw new InvalidDataException($"Mod loader non pris en charge : {principal.Id}"),
             };
         }
@@ -192,6 +194,7 @@ namespace Misty.Services
                 await Telechargement.FichierAsync(url, temporaire, sha1);
 
                 using var zip = ZipFile.OpenRead(temporaire);
+
                 return await installer(zip, (versionMc, loader, versionLoader, versionPack) =>
                 {
                     instance = InstanceStore.Creer(projet.Titre, versionMc, loader, versionLoader);

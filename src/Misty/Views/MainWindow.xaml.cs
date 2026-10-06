@@ -19,6 +19,7 @@ namespace Misty.Views
         private readonly SettingsView options;
         private readonly ChangelogView notes;
         private readonly ProfilesView profils;
+        private readonly SoonView soon;
         private readonly InstanceView instanceVue;
 
         private TaskCompletionSource<string?>? dialogEnCours;
@@ -37,6 +38,7 @@ namespace Misty.Views
             options = new SettingsView();
             notes = new ChangelogView();
             profils = new ProfilesView();
+            soon = new SoonView();
             instanceVue = new InstanceView();
 
             profils.OuvrirDemande += OuvrirProfil;
@@ -149,6 +151,7 @@ namespace Misty.Views
             UserControl page = sender == NavOptions ? options
                              : sender == NavNotes ? notes
                              : sender == NavProfils ? profils
+                             : sender == NavSoon ? soon
                              : accueil;
 
             if (page == accueil)

@@ -9,7 +9,7 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <controls:OutlinedText Text="NOTES DE VERSION" FontFamily="{StaticResource PixelFont}" FontSize="48"
+        <controls:OutlinedText Text="SOON" FontFamily="{StaticResource PixelFont}" FontSize="48"
                                Fill="White" Stroke="{StaticResource SlateBrush}" StrokeThickness="4"
                                ShadowBrush="{StaticResource SlateDarkBrush}" ShadowDepth="5" Margin="6,0,0,18" />
 

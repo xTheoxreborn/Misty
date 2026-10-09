@@ -8,10 +8,15 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-
-        <controls:OutlinedText Text="SOON" FontFamily="{StaticResource PixelFont}" FontSize="48"
+        <DockPanel Margin="6,0,0,18">
+            <controls:OutlinedText Text="SOON" FontFamily="{StaticResource PixelFont}" FontSize="48"
                                Fill="White" Stroke="{StaticResource SlateBrush}" StrokeThickness="4"
                                ShadowBrush="{StaticResource SlateDarkBrush}" ShadowDepth="5" Margin="6,0,0,18" />
+
+            <Button x:Name="BtnCreerPack" Style="{StaticResource PrimaryButton}"
+Content="+ Créer son pack"
+Click="BtnCreerPack_Click" Margin="0,0,0,18" Height="44" Width="144" />
+        </DockPanel>
 
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,10,0">
             <Grid>
@@ -23,15 +28,77 @@
 
                 <!-- ═══ Colonne gauche ═══ -->
                 <StackPanel Grid.Column="0">
-                   
 
+
+                    <TextBlock x:Name="TxtAucunPack" Style="{StaticResource BodyText}"
+               Text="Aucun pack pour l'instant. Crée le premier !" />
+
+                    <ItemsControl x:Name="ListePacks">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Style="{StaticResource GlassCard}" Margin="0,0,0,12">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <StackPanel>
+                                            <TextBlock Style="{StaticResource SectionTitle}" Text="{Binding Nom}" Margin="0,0,0,4" />
+                                            <TextBlock Style="{StaticResource BodyText}" Text="{Binding Description}"
+               TextTrimming="CharacterEllipsis" />
+                                            <TextBlock Style="{StaticResource PixelLabel}" FontSize="10" Margin="0,6,0,0"
+               Text="{Binding VersionMc, StringFormat=MINECRAFT {0}}" />
+                                            <TextBlock Style="{StaticResource BodyText}" Margin="0,4,0,0"
+               Text="{Binding NbTextures, StringFormat={}{0} texture(s) modifiée(s)}" />
+                                        </StackPanel>
+
+                                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                            <Button Style="{StaticResource GlassButton}" Content="Dossier" Margin="0,0,8,0" 
+                                            Click="BtnDossierPack_Click" Background="{DynamicResource BlueBrush}" BorderBrush="#66FFFFFF" Foreground="White" />
+                                            
+                                            <Button Style="{StaticResource GlassButton}" Content="Supprimer"
+                                    Click="BtnSupprimerPack_Click" Background="{DynamicResource DangerBrush}" BorderBrush="#66FFFFFF" Foreground="White"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
                 </StackPanel>
 
                 <!-- ═══ Colonne droite ═══ -->
-                <StackPanel Grid.Column="2">
-
-                </StackPanel>
+                <StackPanel Grid.Column="2" />
             </Grid>
         </ScrollViewer>
+
+        <!-- ═══ Menu de création du pack de textures ═══ -->
+        <Grid x:Name="PanneauPack" Grid.RowSpan="2" Visibility="Collapsed">
+            <Rectangle Fill="#661C2335" MouseLeftButtonDown="FondPack_Click" />
+
+            <Border Width="460" HorizontalAlignment="Center" VerticalAlignment="Center" CornerRadius="24"
+                    Background="#F2F6FAFF" BorderBrush="White" BorderThickness="2" Padding="28,26"
+                    Effect="{StaticResource SoftShadow}">
+                <StackPanel>
+                    <TextBlock Style="{StaticResource SectionTitle}" Text="NOUVEAU PACK DE TEXTURES" Margin="0,0,0,18" />
+
+                    <TextBlock Style="{StaticResource PixelLabel}" FontSize="10" Text="NOM" Margin="4,0,0,6" />
+                    <TextBox x:Name="TxtNomPack" Style="{StaticResource GlassTextBox}" MaxLength="40" Margin="0,0,0,14" />
+
+                    <TextBlock Style="{StaticResource PixelLabel}" FontSize="10" Text="DESCRIPTION" Margin="4,0,0,6" />
+                    <TextBox x:Name="TxtDescriptionPack" Style="{StaticResource GlassTextBox}" MaxLength="120" Margin="0,0,0,14" />
+
+                    <TextBlock Style="{StaticResource PixelLabel}" FontSize="10" Text="VERSION DE MINECRAFT" Margin="4,0,0,6" />
+                    <ComboBox x:Name="CmbVersion" Style="{StaticResource GlassCombo}" SelectionChanged="CmbVersion_SelectionChanged" />
+
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,22,0,0">
+
+                        <Button Style="{StaticResource GlassButton}" Content="Annuler" Margin="0,0,10,0"
+                                Click="BtnAnnulerPack_Click" />
+                        <Button x:Name="BtnValiderPack" Style="{StaticResource PrimaryButton}" Content="Créer le pack" Click="BtnValiderPack_Click" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </Grid>
     </Grid>
 </UserControl>

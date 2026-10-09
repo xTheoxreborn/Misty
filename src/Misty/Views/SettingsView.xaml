@@ -1,7 +1,8 @@
-<UserControl x:Class="Misty.Views.SettingsView"
+<UserControl
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:controls="clr-namespace:Misty.Controls">
+             xmlns:controls="clr-namespace:Misty.Controls" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d" x:Class="Misty.Views.SettingsView"
+             >
 
     <Grid Margin="26,0,30,26">
         <Grid.RowDefinitions>
@@ -78,7 +79,7 @@
                     </Border>
 
                     <!-- Raccourci -->
-                    <Border Style="{StaticResource GlassCard}">
+                    <Border Style="{StaticResource GlassCard}" Margin="0,0,0,18">
                         <StackPanel>
                             <CheckBox x:Name="ChkRaccourci" Style="{StaticResource ToggleSwitch}" Checked="ChkRaccourci_Changed" Unchecked="ChkRaccourci_Changed">
                                 <StackPanel>
@@ -90,6 +91,26 @@
                                 <Border CornerRadius="10" Background="#40FFFFFF" Padding="12,8" Margin="0,0,0,10">
                                     <TextBlock x:Name="TxtCheminRaccourci" Style="{StaticResource BodyText}" Foreground="{StaticResource Navy2Brush}"
                                                TextTrimming="CharacterEllipsis" TextWrapping="NoWrap" Text="Aucun dossier choisi" />
+                                </Border>
+                                <StackPanel Orientation="Horizontal">
+                                    <Button Style="{StaticResource GlassButton}" Content="Choisir le dossier…" Margin="0,0,10,0" Click="BtnChoisirRaccourci_Click" />
+                                    <Button Style="{StaticResource GlassButton}" Content="Recréer" Click="BtnRecreerRaccourci_Click" />
+                                </StackPanel>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource GlassCard}">
+                        <StackPanel>                            
+                            <StackPanel>
+                                <TextBlock Style="{StaticResource SectionTitle}" Text="Langue" />
+                                <TextBlock Style="{StaticResource BodyText}" FontWeight="Normal" Text="Choisi la langue du launcher" Margin="0,0,0,10"/>
+                                <ComboBox x:Name="CmbProfil" Style="{StaticResource GlassCombo}" Width="235" HorizontalAlignment="Left" SelectedItem="Français" SelectionChanged="CmbProfil_SelectionChanged"/>
+                            </StackPanel>
+                            
+                            <StackPanel x:Name="PanneauRaccourci1" Margin="0,14,0,0" Visibility="Collapsed">
+                                <Border CornerRadius="10" Background="#40FFFFFF" Padding="12,8" Margin="0,0,0,10">
+                                    <TextBlock x:Name="TxtCheminRaccourci1" Style="{StaticResource BodyText}" Foreground="{StaticResource Navy2Brush}"
+                                        TextTrimming="CharacterEllipsis" TextWrapping="NoWrap" Text="Aucun dossier choisi" />
                                 </Border>
                                 <StackPanel Orientation="Horizontal">
                                     <Button Style="{StaticResource GlassButton}" Content="Choisir le dossier…" Margin="0,0,10,0" Click="BtnChoisirRaccourci_Click" />

@@ -25,6 +25,10 @@ namespace Misty.Views
 
             AccountService.SessionChanged += () => Dispatcher.Invoke(MajMicrosoft);
             chargement = false;
+
+
+            CmbProfil.ItemsSource = new List<string> { "Français"/*, "English", "Español" */};
+
         }
 
         /// <summary>Recharge l'affichage depuis les fichiers de config (appelé à chaque ouverture de la page).</summary>
@@ -282,6 +286,12 @@ namespace Misty.Views
         private void BtnGitHub_Click(object sender, RoutedEventArgs e)
         {
             Process.Start(new ProcessStartInfo($"https://github.com/{AppInfo.GitHubRepo}") { UseShellExecute = true });
+        }
+
+        private void CmbProfil_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            
+            
         }
     }
 }

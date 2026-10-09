@@ -28,9 +28,7 @@
 
   <ItemGroup>
     <Resource Include="Assets\icone.ico" />
-    <Resource Include="Views\model-ai.png" />
     <Resource Include="Assets\Fonts\*.ttf" />
-    <None Remove="Views\model-ai.png" />
     <!-- Notes de version affichées dans l'app -->
     <EmbeddedResource Include="..\..\CHANGELOG.md" LogicalName="Misty.CHANGELOG.md" Link="CHANGELOG.md" />
     <!-- Clé API CurseForge : fichier privé ignoré par git (voir CurseForgeApi) -->

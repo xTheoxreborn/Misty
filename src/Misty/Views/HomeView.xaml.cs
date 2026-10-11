@@ -434,13 +434,15 @@ namespace Misty.Views
                 process.Exited += (s, args) => Dispatcher.Invoke(() =>
                 {
                     jeuEnCours = false;
-                    string richPresence = SettingsStore.GetBool(SettingsStore.RichPresence).ToString().ToLower();
+
+                    /*
+                    string richPresence = SettingsStore.GetBool(SettingsStore.RichPresence, true).ToString().ToLower();
 
                     if (richPresence == "true")
                         discord.DansLeLauncher();
                     else
                         discord.FermerRichPresence();
-
+                    */
                     Statut("Prêt à jouer");
                     if (profil != null) TxtResumeProfil.Text = ResumeContenu(profil);
                 });

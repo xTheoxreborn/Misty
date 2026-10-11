@@ -165,5 +165,38 @@ namespace Misty.Services
             return liste.OrderBy(p => p.Nom).ToList();
         }
 
+
+
+
+
+
+
+
+
+
+
+        private static string FichierEditeur => Path.Combine(AppPaths.DataDir, "editeur.txt");
+
+        /// <summary>Chemin de l'éditeur d'images choisi (ex. paintdotnet.exe), ou null.</summary>
+        public static string? Editeur
+        {
+            get => File.Exists(FichierEditeur) ? File.ReadAllText(FichierEditeur).Trim() : null;
+            set => File.WriteAllText(FichierEditeur, value ?? "");
+        }
+
+        public const string RacineTextures = "assets/minecraft/textures/";
+
+        /// <summary>Toutes les textures PNG du template, ex. "block/stone.png".</summary>
+        public static List<string> ListerTextures(string dossierTemplate)
+        {
+            string racine = Path.Combine(dossierTemplate, "assets", "minecraft", "textures");
+            if (!Directory.Exists(racine)) return new();
+
+            return Directory.GetFiles(racine, "*.png", SearchOption.AllDirectories)
+                .Select(f => Path.GetRelativePath(racine, f).Replace('\\', '/'))
+                .OrderBy(f => f)
+                .ToList();
+        }
+
     }
 }

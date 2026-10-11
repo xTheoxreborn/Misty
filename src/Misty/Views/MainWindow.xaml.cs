@@ -34,7 +34,7 @@ namespace Misty.Views
 
             discord = new DiscordPresenceService();
 
-            string richPresence = SettingsStore.GetBool(SettingsStore.RichPresence).ToString().ToLower();
+            string richPresence = SettingsStore.GetBool(SettingsStore.RichPresence, true).ToString().ToLower();
             if (richPresence == "true")
                 discord.DansLeLauncher();
             else
@@ -152,7 +152,7 @@ namespace Misty.Views
 
         // ───────────────────────── Navigation ─────────────────────────
 
-        private void Nav_Checked(object sender, RoutedEventArgs e)
+        private async void Nav_Checked(object sender, RoutedEventArgs e)
         {
             if (PageHost == null) return; // pendant InitializeComponent
 
@@ -171,15 +171,28 @@ namespace Misty.Views
 
             Naviguer(page);
 
-            string richPresence = SettingsStore.GetBool(SettingsStore.RichPresence).ToString().ToLower();
-
+            string richPresence = SettingsStore.GetBool(SettingsStore.RichPresence, true).ToString().ToLower();
 
             if (NavSoon.IsChecked == true && richPresence == "true")
+            {
                 discord.EditRessourcePack();
+
+            }
             else if (NavSoon.IsChecked == false && richPresence == "true")
+            {
                 discord.DansLeLauncher();
+
+            }
+            
             else
                 discord.FermerRichPresence();
+
+
+            if (NavSoon.IsChecked == true)
+            {
+                await Dialogs.InfoAsync("Fonction expérimentale",
+"La modification des packs de textures est expérimentale. Des bugs peuvent apparaître.");
+            }
         }
         
         private void OuvrirProfil(Misty.Models.Instance instance)

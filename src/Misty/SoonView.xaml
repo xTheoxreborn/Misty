@@ -54,6 +54,10 @@ Click="BtnCreerPack_Click" Margin="0,0,0,18" Height="44" Width="144" />
                                         </StackPanel>
 
                                         <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                            <Button Style="{StaticResource GlassButton}" Content="Textures" Margin="0,0,8,0"
+                                                Click="BtnTextures_Click" Background="{DynamicResource BlueBrush}"
+                                                BorderBrush="#66FFFFFF" Foreground="White" />           
+
                                             <Button Style="{StaticResource GlassButton}" Content="Dossier" Margin="0,0,8,0" 
                                             Click="BtnDossierPack_Click" Background="{DynamicResource BlueBrush}" BorderBrush="#66FFFFFF" Foreground="White" />
                                             
@@ -96,6 +100,36 @@ Click="BtnCreerPack_Click" Margin="0,0,0,18" Height="44" Width="144" />
                         <Button Style="{StaticResource GlassButton}" Content="Annuler" Margin="0,0,10,0"
                                 Click="BtnAnnulerPack_Click" />
                         <Button x:Name="BtnValiderPack" Style="{StaticResource PrimaryButton}" Content="Créer le pack" Click="BtnValiderPack_Click" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+            
+        </Grid>
+        <!-- ═══ Modifier les textures d'un pack ═══ -->
+        <Grid x:Name="PanneauTextures" Grid.RowSpan="2" Visibility="Collapsed">
+            <Rectangle Fill="#661C2335" MouseLeftButtonDown="FondTextures_Click" />
+
+            <Border Width="500" HorizontalAlignment="Center" VerticalAlignment="Center" CornerRadius="24"
+                    Background="#F2F6FAFF" BorderBrush="White" BorderThickness="2" Padding="28,26"
+                    Effect="{StaticResource SoftShadow}">
+                <StackPanel>
+                    <TextBlock x:Name="TxtTitreTextures" Style="{StaticResource SectionTitle}" Margin="0,0,0,18" />
+
+                    <TextBlock Style="{StaticResource PixelLabel}" FontSize="10" Text="RECHERCHER" Margin="4,0,0,6" />
+                    <TextBox x:Name="TxtFiltreTexture" Style="{StaticResource GlassTextBox}" Margin="0,0,0,14"
+                             TextChanged="TxtFiltreTexture_TextChanged" />
+
+                    <TextBlock Style="{StaticResource PixelLabel}" FontSize="10" Text="TEXTURE À MODIFIER" Margin="4,0,0,6" />
+                    <ComboBox x:Name="CmbTexture" Style="{StaticResource GlassCombo}"
+                              SelectionChanged="CmbTexture_SelectionChanged" />
+
+                    <TextBlock x:Name="TxtInfoTextures" Style="{StaticResource BodyText}" Margin="2,12,0,0"
+                               TextWrapping="Wrap" />
+
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,22,0,0">
+                        <Button Style="{StaticResource GlassButton}" Content="Choisir l'éditeur…" Margin="0,0,10,0"
+                                Click="BtnEditeur_Click" />
+                        <Button Style="{StaticResource PrimaryButton}" Content="Fermer" Click="BtnFermerTextures_Click" />
                     </StackPanel>
                 </StackPanel>
             </Border>

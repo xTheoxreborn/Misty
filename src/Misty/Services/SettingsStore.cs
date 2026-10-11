@@ -36,7 +36,13 @@ namespace Misty.Services
             return valeur;
         }
 
-        public static bool GetBool(string cle) => Get(cle).Equals("true", StringComparison.OrdinalIgnoreCase);
+        public static bool GetBool(string cle, bool defaut = false)
+        {
+            string valeur = Get(cle);
+            return string.IsNullOrWhiteSpace(valeur)
+                ? defaut
+                : valeur.Equals("true", StringComparison.OrdinalIgnoreCase);
+        }
 
         /// <summary>Modifie une clé. Ne fait rien si data.txt n'existe pas.</summary>
         public static void Set(string cle, string valeur)

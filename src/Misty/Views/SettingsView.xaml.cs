@@ -27,7 +27,6 @@ namespace Misty.Views
             AccountService.SessionChanged += () => Dispatcher.Invoke(MajMicrosoft);
             chargement = false;
 
-
             CmbProfil.ItemsSource = new List<string> { "Français"/*, "English", "Español" */};
 
             discord = new DiscordPresenceService();
@@ -58,7 +57,7 @@ namespace Misty.Views
                 TxtCheminRaccourci.Text = string.IsNullOrEmpty(raccourci) ? "Aucun dossier choisi" : raccourci;
                 ChkRaccourci.IsChecked = !string.IsNullOrEmpty(raccourci);
                 PanneauRaccourci.Visibility = ChkRaccourci.IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
-                Discordrichpresence1.IsChecked = SettingsStore.GetBool(SettingsStore.RichPresence);
+                Discordrichpresence1.IsChecked = SettingsStore.GetBool(SettingsStore.RichPresence, true);
             }
             finally
             {
@@ -187,7 +186,7 @@ namespace Misty.Views
         {
             SettingsStore.SetBool(SettingsStore.RichPresence, Discordrichpresence1.IsChecked == true);
 
-            string richPresence = SettingsStore.GetBool(SettingsStore.RichPresence).ToString().ToLower();
+            string richPresence = SettingsStore.GetBool(SettingsStore.RichPresence, true).ToString().ToLower();
 
             if (richPresence == "true")
                 discord.DansLeLauncher();

@@ -1,5 +1,9 @@
-﻿using System;
+﻿using Misty.Models;
+using Misty.Services;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -10,9 +14,6 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using Misty.Models;
-using Misty.Services;
-using System.Diagnostics;
 
 namespace Misty
 {
@@ -32,6 +33,8 @@ namespace Misty
 
 
             //discord.EditRessourcePack();
+
+            
         }
 
         private void BtnConnexion_Click(object sender, RoutedEventArgs e)
@@ -153,6 +156,118 @@ namespace Misty
                 RafraichirPacks();
             }
         }
+
+
+
+
+
+
+
+
+
+
+
+
+
+        private PackService.PackInfo? packEnEdition;
+        private string? dossierTemplate;
+        private ICollectionView? vueTextures;
+
+        private async void BtnTextures_Click(object sender, RoutedEventArgs e)
+        {
+            if ((sender as FrameworkElement)?.DataContext is not PackService.PackInfo pack) return;
+
+            if (string.IsNullOrEmpty(pack.VersionMc))
+            {
+                await Dialogs.ErreurAsync("Version inconnue",
+                    "Ce pack n'a pas de version enregistrée. Recrée-le ou ajoute un fichier misty.json.");
+                return;
+            }
+
+            packEnEdition = pack;
+            TxtTitreTextures.Text = pack.Nom.ToUpperInvariant();
+            TxtInfoTextures.Text = "Chargement des textures…";
+            TxtFiltreTexture.Text = "";
+            CmbTexture.ItemsSource = null;
+            PanneauTextures.Visibility = Visibility.Visible;
+
+            try
+            {
+                var progression = new Progress<string>(m => TxtInfoTextures.Text = m);
+                var (dossier, _) = await PackService.TemplateAsync(pack.VersionMc, progression);
+                dossierTemplate = dossier;
+
+                var textures = PackService.ListerTextures(dossier);
+                CmbTexture.ItemsSource = textures;
+                vueTextures = CollectionViewSource.GetDefaultView(textures);
+                TxtInfoTextures.Text = $"{textures.Count} textures disponibles. Choisis-en une : elle est copiée dans le pack puis ouverte.";
+            }
+            catch (Exception ex)
+            {
+                PanneauTextures.Visibility = Visibility.Collapsed;
+                await Dialogs.ErreurAsync("Template indisponible", ex.Message);
+            }
+        }
+
+        private void TxtFiltreTexture_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (vueTextures == null) return;
+
+            string filtre = TxtFiltreTexture.Text.Trim();
+            vueTextures.Filter = string.IsNullOrEmpty(filtre)
+                ? null
+                : o => ((string)o).Contains(filtre, StringComparison.OrdinalIgnoreCase);
+
+            CmbTexture.IsDropDownOpen = !string.IsNullOrEmpty(filtre);
+        }
+
+        private async void CmbTexture_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (CmbTexture.SelectedItem is not string texture || packEnEdition == null || dossierTemplate == null) return;
+
+            // Première fois : on demande où se trouve Paint.NET (portable ou non)
+            string? editeur = PackService.Editeur;
+            if (string.IsNullOrWhiteSpace(editeur) || !File.Exists(editeur))
+            {
+                editeur = ChoisirEditeur();
+                if (editeur == null) { CmbTexture.SelectedIndex = -1; return; }
+            }
+
+            try
+            {
+                PackService.ModifierTexture(packEnEdition.Dossier, dossierTemplate,
+                    PackService.RacineTextures + texture, editeur);
+                TxtInfoTextures.Text = $"« {texture} » copiée dans le pack et ouverte dans l'éditeur. Enregistre dans l'éditeur pour appliquer.";
+                RafraichirPacks();
+            }
+            catch (Exception ex)
+            {
+                await Dialogs.ErreurAsync("Ouverture impossible", ex.Message);
+            }
+
+            CmbTexture.SelectedIndex = -1; // permet de re-choisir la même texture
+        }
+
+        private string? ChoisirEditeur()
+        {
+            var dialogue = new Microsoft.Win32.OpenFileDialog
+            {
+                Title = "Choisis ton éditeur d'images (ex. paintdotnet.exe)",
+                Filter = "Programme (*.exe)|*.exe",
+            };
+            if (dialogue.ShowDialog() != true) return null;
+
+            PackService.Editeur = dialogue.FileName;
+            return dialogue.FileName;
+        }
+
+        private void BtnEditeur_Click(object sender, RoutedEventArgs e) => ChoisirEditeur();
+
+        private void BtnFermerTextures_Click(object sender, RoutedEventArgs e) =>
+            PanneauTextures.Visibility = Visibility.Collapsed;
+
+        private void FondTextures_Click(object sender, MouseButtonEventArgs e) =>
+            PanneauTextures.Visibility = Visibility.Collapsed;
 
     }
 }

@@ -8,6 +8,7 @@ namespace Misty.Services
     internal sealed class DiscordPresenceService : IDisposable
     {
         private readonly DiscordRpcClient client;
+        private readonly Timestamps debut = Timestamps.Now;
 
         public DiscordPresenceService()
         {
@@ -20,7 +21,7 @@ namespace Misty.Services
             {
                 //Details = "Édite un pack de ressources",
                 State = "Dans le launcher",
-                Timestamps = Timestamps.Now,
+                Timestamps = debut,
             });
         }
         public void FermerRichPresence()
@@ -34,7 +35,7 @@ namespace Misty.Services
             {
                 State = "Édite un pack de ressources",
                 //State = $"{version} {mode}",
-                Timestamps = Timestamps.Now,
+                Timestamps = debut,
             });
         }
         public void EnJeu(string version, string mode)
@@ -43,7 +44,7 @@ namespace Misty.Services
             {
                 Details = "Joue à Minecraft",
                 State = $"{version} {mode}",
-                Timestamps = Timestamps.Now,
+                Timestamps = debut,
             });
         }
         public void Dispose() => client.Dispose();

@@ -13,10 +13,6 @@ using System.Windows.Shapes;
 using Misty.Models;
 using Misty.Services;
 using System.Diagnostics;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
-using Misty.Services;
 
 namespace Misty
 {
@@ -25,10 +21,17 @@ namespace Misty
     /// </summary>
     public partial class SoonView : UserControl
     {
+        private readonly DiscordPresenceService discord;
+
         public SoonView()
         {
             InitializeComponent();
             Loaded += (_, _) => RafraichirPacks();
+
+            discord = new DiscordPresenceService();
+
+
+            //discord.EditRessourcePack();
         }
 
         private void BtnConnexion_Click(object sender, RoutedEventArgs e)

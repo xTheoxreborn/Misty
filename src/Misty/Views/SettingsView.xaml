@@ -119,6 +119,7 @@
                             </StackPanel>
                         </StackPanel>
                     </Border>
+                    
                 </StackPanel>
 
                 <!-- ═══ Colonne droite ═══ -->
@@ -162,6 +163,27 @@
                             <StackPanel Orientation="Horizontal">
                                 <Button Style="{StaticResource GlassButton}" Content="Ouvrir le dossier" Margin="0,0,10,0" Click="BtnOuvrirDossier_Click" />
                                 <Button Style="{StaticResource DangerButton}" Content="Tout supprimer" Click="BtnToutSupprimer_Click" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+
+                    <Border Style="{StaticResource GlassCard}" Margin="0,0,0,18">
+                        <StackPanel>
+                            <CheckBox x:Name="Discordrichpresence1" Style="{StaticResource ToggleSwitch}" Checked="Chkrich" Unchecked="Chkrich" >
+                                <StackPanel>
+                                    <TextBlock Style="{StaticResource SectionTitle}" Text="Rich Presence Discord" />
+                                    <TextBlock Style="{StaticResource BodyText}" FontWeight="Normal" Text="Affiche Misty comme activité Discord" />
+                                </StackPanel>
+                            </CheckBox>
+                            <StackPanel x:Name="Discordrichpresence2" Margin="0,14,0,0" Visibility="Collapsed">
+                                <Border CornerRadius="10" Background="#40FFFFFF" Padding="12,8" Margin="0,0,0,10">
+                                    <TextBlock x:Name="TxtCheminRaccourci2" Style="{StaticResource BodyText}" Foreground="{StaticResource Navy2Brush}" TextTrimming="CharacterEllipsis" TextWrapping="NoWrap" Text="Aucun dossier choisi" />
+                                </Border>
+                                <StackPanel Orientation="Horizontal">
+                                    <Button Style="{StaticResource GlassButton}" Content="Choisir le dossier…" Margin="0,0,10,0" Click="BtnChoisirRaccourci_Click" />
+                                    <Button Style="{StaticResource GlassButton}" Content="Recréer" Click="BtnRecreerRaccourci_Click" />
+                                </StackPanel>
                             </StackPanel>
                         </StackPanel>
                     </Border>

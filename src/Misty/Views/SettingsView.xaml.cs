@@ -15,6 +15,7 @@ namespace Misty.Views
         // true pendant qu'on remplit les contrôles : les événements ne doivent rien enregistrer
         private bool chargement = true;
         private bool typesVersionsModifies;
+        private readonly DiscordPresenceService discord;
 
         public SettingsView()
         {
@@ -29,6 +30,7 @@ namespace Misty.Views
 
             CmbProfil.ItemsSource = new List<string> { "Français"/*, "English", "Español" */};
 
+            discord = new DiscordPresenceService();
         }
 
         /// <summary>Recharge l'affichage depuis les fichiers de config (appelé à chaque ouverture de la page).</summary>
@@ -56,6 +58,7 @@ namespace Misty.Views
                 TxtCheminRaccourci.Text = string.IsNullOrEmpty(raccourci) ? "Aucun dossier choisi" : raccourci;
                 ChkRaccourci.IsChecked = !string.IsNullOrEmpty(raccourci);
                 PanneauRaccourci.Visibility = ChkRaccourci.IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
+                Discordrichpresence1.IsChecked = SettingsStore.GetBool(SettingsStore.RichPresence);
             }
             finally
             {
@@ -167,10 +170,31 @@ namespace Misty.Views
 
         private void ChkTypes_Click(object sender, RoutedEventArgs e)
         {
+
             SettingsStore.SetBool(SettingsStore.Snapshot, ChkSnapshot.IsChecked == true);
             SettingsStore.SetBool(SettingsStore.Beta, ChkBeta.IsChecked == true);
             SettingsStore.SetBool(SettingsStore.Alpha, ChkAlpha.IsChecked == true);
             typesVersionsModifies = true;
+        }
+
+        // ───────────────────────── Rich Presence Discord ─────────────────────────
+        /*
+        private async void BtnActiverDiscord_Click(object sender, RoutedEventArgs e)
+        {
+            SettingsStore.SetBool(SettingsStore.RichPresence, Discordrichpresence1.IsChecked == true);
+        }*/
+        private async void Chkrich(object sender, RoutedEventArgs e)
+        {
+            SettingsStore.SetBool(SettingsStore.RichPresence, Discordrichpresence1.IsChecked == true);
+
+            string richPresence = SettingsStore.GetBool(SettingsStore.RichPresence).ToString().ToLower();
+
+            if (richPresence == "true")
+                discord.DansLeLauncher();
+
+            else if (Discordrichpresence1.IsChecked == false)
+                discord.FermerRichPresence();
+            
         }
 
         // ───────────────────────── Raccourci ─────────────────────────
@@ -239,6 +263,7 @@ namespace Misty.Views
                 await Dialogs.ErreurAsync("Raccourci", "Erreur lors de la création du raccourci : " + ex.Message);
             }
         }
+
 
         // ───────────────────────── Stockage ─────────────────────────
 

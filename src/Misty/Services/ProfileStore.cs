@@ -5,6 +5,7 @@ namespace Misty.Services
     /// </summary>
     internal static class ProfileStore
     {
+         
         private const string Cle = "listpseudo=";
 
         public static void Initialiser()
@@ -12,6 +13,7 @@ namespace Misty.Services
             Directory.CreateDirectory(AppPaths.DataDir);
             if (!File.Exists(AppPaths.ProfilesFile))
                 File.WriteAllLines(AppPaths.ProfilesFile, new[] { Cle + "PseudoTest" });
+
         }
 
         public static List<string> Lire()

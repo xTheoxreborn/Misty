@@ -1,3 +1,4 @@
+using DiscordRPC;
 using Misty.Services;
 using System.Diagnostics;
 using System.Windows;
@@ -32,7 +33,14 @@ namespace Misty.Views
             TxtVersionApp.Text = "v" + AppInfo.Version;
 
             discord = new DiscordPresenceService();
-            discord.DansLeLauncher();
+
+            string richPresence = SettingsStore.GetBool(SettingsStore.RichPresence).ToString().ToLower();
+            if (richPresence == "true")
+                discord.DansLeLauncher();
+            else
+                discord.FermerRichPresence();
+
+
 
             accueil = new HomeView(discord);
             options = new SettingsView();
@@ -162,8 +170,18 @@ namespace Misty.Views
                 profils.Rafraichir();
 
             Naviguer(page);
-        }
 
+            string richPresence = SettingsStore.GetBool(SettingsStore.RichPresence).ToString().ToLower();
+
+
+            if (NavSoon.IsChecked == true && richPresence == "true")
+                discord.EditRessourcePack();
+            else if (NavSoon.IsChecked == false && richPresence == "true")
+                discord.DansLeLauncher();
+            else
+                discord.FermerRichPresence();
+        }
+        
         private void OuvrirProfil(Misty.Models.Instance instance)
         {
             instanceVue.Charger(instance);

@@ -1,4 +1,7 @@
 # Changelog
+## New features
+- 
+
 ## 0.2.4.1
 - Possibilité de supprimer un profil directement où il y a la liste des profils
 - Fix curseforge key 

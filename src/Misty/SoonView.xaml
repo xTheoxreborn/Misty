@@ -56,7 +56,15 @@ Click="BtnCreerPack_Click" Margin="0,0,0,18" Height="44" Width="144" />
                                         <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                                             <Button Style="{StaticResource GlassButton}" Content="Textures" Margin="0,0,8,0"
                                                 Click="BtnTextures_Click" Background="{DynamicResource BlueBrush}"
-                                                BorderBrush="#66FFFFFF" Foreground="White" />           
+                                                BorderBrush="#66FFFFFF" Foreground="White" />
+
+                                            <Button Style="{StaticResource GlassButton}" Content="Gérer" Margin="0,0,8,0"
+                                                Click="BtnTextures_Click" Background="{DynamicResource BlueBrush}"
+                                                BorderBrush="#66FFFFFF" Foreground="White" />
+
+                                            <Button Style="{StaticResource GlassButton}" Content="Exporter" Margin="0,0,8,0"
+                                                Click="BtnExport_Click" Background="{DynamicResource BlueBrush}"
+                                                BorderBrush="#66FFFFFF" Foreground="White" />
 
                                             <Button Style="{StaticResource GlassButton}" Content="Dossier" Margin="0,0,8,0" 
                                             Click="BtnDossierPack_Click" Background="{DynamicResource BlueBrush}" BorderBrush="#66FFFFFF" Foreground="White" />

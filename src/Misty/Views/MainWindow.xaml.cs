@@ -176,14 +176,11 @@ namespace Misty.Views
             if (NavSoon.IsChecked == true && richPresence == "true")
             {
                 discord.EditRessourcePack();
-
             }
             else if (NavSoon.IsChecked == false && richPresence == "true")
             {
                 discord.DansLeLauncher();
-
             }
-            
             else
                 discord.FermerRichPresence();
 

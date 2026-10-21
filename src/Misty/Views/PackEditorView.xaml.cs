@@ -36,6 +36,7 @@ namespace Misty.Views
         private Outil outil = Outil.Crayon;
         private Color couleur = Colors.Black;
         private (int X, int Y) dernier = (-1, -1);
+        private bool perso; // false = « Toutes les textures », true = « Mes textures »
 
         public PackEditorView()
         {
@@ -49,6 +50,10 @@ namespace Misty.Views
         internal async Task ChargerAsync(PackService.PackInfo p)
         {
             pack = p;
+            toutes = new();   // évite que Mode_Checked ne touche à l'ancienne liste
+            perso = false;
+            ModeTout.IsChecked = true;
+            TxtAucune.Visibility = Visibility.Collapsed;
             TxtPack.Text = p.Nom.ToUpperInvariant();
             FermerTexture();
             PanneauCategories.Children.Clear();
@@ -76,36 +81,58 @@ namespace Misty.Views
             }
         }
 
-        private void MajInfo() =>
-            TxtInfo.Text = $"MINECRAFT {pack?.VersionMc} · {toutes.Count} textures · {toutes.Count(t => t.Modifiee)} modifiée(s)";
+        private void MajInfo()
+        {
+            int modifiees = toutes.Count(t => t.Modifiee);
+            ModePerso.Content = $"Mes textures ({modifiees})";
+            TxtInfo.Text = $"MINECRAFT {pack?.VersionMc} · {toutes.Count} textures · {modifiees} modifiée(s)";
+        }
+        private void Mode_Checked(object sender, RoutedEventArgs e)
+        {
+            perso = (string)((RadioButton)sender).Tag == "perso";
+            if (toutes.Count == 0) return; // pendant InitializeComponent ou avant le chargement
+
+            TxtAucune.Visibility = Visibility.Collapsed;
+            ConstruireCategories();
+        }
 
         private void ConstruireCategories()
         {
             PanneauCategories.Children.Clear();
-            bool premiere = true;
 
+            var source = perso ? toutes.Where(t => t.Modifiee).ToList() : toutes;
+
+            // (étiquette technique, texte affiché). "" = toutes les catégories (mode perso uniquement)
+            var entrees = new List<(string Tag, string Libelle)>();
+            if (perso) entrees.Add(("", $"Toutes ({source.Count})"));
             foreach (var nom in TextureCategories.Ordre)
             {
-                int n = toutes.Count(t => t.Categorie == nom);
-                if (n == 0) continue;
+                int n = source.Count(t => t.Categorie == nom);
+                if (n > 0) entrees.Add((nom, $"{nom} ({n})"));
+            }
+            if (entrees.Count == 0) return;
 
+            // On garde la catégorie en cours si elle existe encore dans ce mode
+            string cible = entrees.Any(x => x.Tag == categorie) ? categorie : entrees[0].Tag;
+
+            foreach (var (tag, libelle) in entrees)
+            {
                 var onglet = new RadioButton
                 {
                     Style = (Style)FindResource("TabPill"),
-                    Content = $"{nom} ({n})",
-                    Tag = nom,
+                    Content = libelle,
                     GroupName = "categories",
                     Margin = new Thickness(0, 0, 0, 6),
                 };
-                onglet.Checked += (s, _) =>
+                onglet.Checked += (_, _) =>
                 {
-                    categorie = (string)((RadioButton)s).Tag;
+                    categorie = tag;
                     if (TxtRecherche.Text.Length > 0) TxtRecherche.Text = ""; // relance l'affichage via TextChanged
                     else AfficherTextures();
                 };
                 PanneauCategories.Children.Add(onglet);
 
-                if (premiere) { onglet.IsChecked = true; premiere = false; }
+                if (tag == cible) onglet.IsChecked = true;
             }
         }
 
@@ -117,10 +144,14 @@ namespace Misty.Views
         private void AfficherTextures()
         {
             string filtre = TxtRecherche.Text.Trim();
+            var source = perso ? toutes.Where(t => t.Modifiee) : toutes;
+
             var liste = (string.IsNullOrEmpty(filtre)
-                    ? toutes.Where(t => t.Categorie == categorie)
-                    : toutes.Where(t => t.Chemin.Contains(filtre, StringComparison.OrdinalIgnoreCase)).Take(400))
+                    ? source.Where(t => categorie == "" || t.Categorie == categorie)
+                    : source.Where(t => t.Chemin.Contains(filtre, StringComparison.OrdinalIgnoreCase)).Take(400))
                 .ToList();
+
+            TxtAucune.Visibility = perso && liste.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
 
             ListeTextures.ItemsSource = liste;
             DefilementTextures.ScrollToTop();
@@ -504,6 +535,7 @@ namespace Misty.Views
             courante.Miniature = ChargerImage(courante.Fichier);
             OuvrirTexture(courante);
             MajInfo();
+            if (perso) ConstruireCategories();
         }
 
         /// <summary>Ouvre la texture dans Paint.NET (ou l'éditeur choisi). On la rouvre ensuite en cliquant dessus.</summary>
@@ -529,7 +561,7 @@ namespace Misty.Views
                 PackService.ModifierTexture(pack.Dossier, dossierTemplate, PackService.RacineTextures + courante.Chemin, editeur);
                 courante.Modifiee = true;
                 await Dialogs.InfoAsync("Éditeur externe",
-                    "Enregistre dans ton éditeur, puis clique à nouveau sur la texture pour la recharger ici.");
+                    "Afin d'enregistrer les modifications, enrigistre dans ton éditeur uniquement, pas besoin de cliquer sur enregistrer dans Misty.");
             }
             catch (Exception ex)
             {

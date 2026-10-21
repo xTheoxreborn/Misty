@@ -118,6 +118,29 @@ namespace Misty.Services
             string copie = Path.Combine(dossierPack, cheminRelatif);
             if (File.Exists(copie)) File.Delete(copie);
         }
+        /// <summary>Zippe le pack (pack.mcmeta à la racine du zip, comme Minecraft l'attend). misty.json est exclu.</summary>
+        public static void Exporter(PackInfo pack, string destination)
+        {
+            if (File.Exists(destination)) File.Delete(destination); // l'utilisateur a déjà confirmé l'écrasement
+
+            using var zip = ZipFile.Open(destination, ZipArchiveMode.Create);
+
+            foreach (var fichier in Directory.EnumerateFiles(pack.Dossier, "*", SearchOption.AllDirectories))
+            {
+                string relatif = Path.GetRelativePath(pack.Dossier, fichier).Replace('\\', '/');
+                if (relatif.Equals("misty.json", StringComparison.OrdinalIgnoreCase)) continue;
+
+                zip.CreateEntryFromFile(fichier, relatif, CompressionLevel.Optimal);
+            }
+
+            // Icône du pack : celle de Minecraft, si le pack n'en a pas
+            if (!File.Exists(Path.Combine(pack.Dossier, "pack.png")))
+            {
+                string icone = Path.Combine(DossierTemplates, pack.VersionMc, "pack.png");
+                if (File.Exists(icone))
+                    zip.CreateEntryFromFile(icone, "pack.png", CompressionLevel.Optimal);
+            }
+        }
         public record PackInfo(string Nom, string Description, string Dossier, int NbTextures, string VersionMc);
 
         public static List<PackInfo> Lister()

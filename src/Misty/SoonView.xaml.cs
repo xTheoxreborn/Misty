@@ -14,6 +14,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Microsoft.Win32;
 
 namespace Misty
 {
@@ -31,10 +32,7 @@ namespace Misty
 
             discord = new DiscordPresenceService();
 
-
             //discord.EditRessourcePack();
-
-            
         }
 
         private void BtnConnexion_Click(object sender, RoutedEventArgs e)
@@ -122,12 +120,6 @@ namespace Misty
         private void FondPack_Click(object sender, MouseButtonEventArgs e) =>
             PanneauPack.Visibility = Visibility.Collapsed;
 
-        private void BtnExport_Click(object sender, RoutedEventArgs e)
-        {
-            //if ((sender as FrameworkElement)?.DataContext is PackService.PackInfo pack)
-            //    Process.Start("explorer.exe", pack.Dossier);
-        }
-
         private void RafraichirPacks()
         {
             var packs = PackService.Lister();
@@ -178,6 +170,8 @@ namespace Misty
         private string? dossierTemplate;
         private ICollectionView? vueTextures;
 
+        internal event Action<PackService.PackInfo>? EditeurDemande;
+
         private async void BtnTextures_Click(object sender, RoutedEventArgs e)
         {
             if ((sender as FrameworkElement)?.DataContext is not PackService.PackInfo pack) return;
@@ -189,69 +183,11 @@ namespace Misty
                 return;
             }
 
-            packEnEdition = pack;
-            TxtTitreTextures.Text = pack.Nom.ToUpperInvariant();
-            TxtInfoTextures.Text = "Chargement des textures…";
-            TxtFiltreTexture.Text = "";
-            CmbTexture.ItemsSource = null;
-            PanneauTextures.Visibility = Visibility.Visible;
+            // (garde ici ton avertissement « expérimental » s'il est déjà en place)
 
-            try
-            {
-                var progression = new Progress<string>(m => TxtInfoTextures.Text = m);
-                var (dossier, _) = await PackService.TemplateAsync(pack.VersionMc, progression);
-                dossierTemplate = dossier;
-
-                var textures = PackService.ListerTextures(dossier);
-                CmbTexture.ItemsSource = textures;
-                vueTextures = CollectionViewSource.GetDefaultView(textures);
-                TxtInfoTextures.Text = $"{textures.Count} textures disponibles. Choisis-en une : elle est copiée dans le pack puis ouverte.";
-            }
-            catch (Exception ex)
-            {
-                PanneauTextures.Visibility = Visibility.Collapsed;
-                await Dialogs.ErreurAsync("Template indisponible", ex.Message);
-            }
+            EditeurDemande?.Invoke(pack);
         }
 
-        private void TxtFiltreTexture_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            if (vueTextures == null) return;
-
-            string filtre = TxtFiltreTexture.Text.Trim();
-            vueTextures.Filter = string.IsNullOrEmpty(filtre)
-                ? null
-                : o => ((string)o).Contains(filtre, StringComparison.OrdinalIgnoreCase);
-
-            CmbTexture.IsDropDownOpen = !string.IsNullOrEmpty(filtre);
-        }
-
-        private async void CmbTexture_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (CmbTexture.SelectedItem is not string texture || packEnEdition == null || dossierTemplate == null) return;
-
-            // Première fois : on demande où se trouve Paint.NET (portable ou non)
-            string? editeur = PackService.Editeur;
-            if (string.IsNullOrWhiteSpace(editeur) || !File.Exists(editeur))
-            {
-                editeur = ChoisirEditeur();
-                if (editeur == null) { CmbTexture.SelectedIndex = -1; return; }
-            }
-
-            try
-            {
-                PackService.ModifierTexture(packEnEdition.Dossier, dossierTemplate,
-                    PackService.RacineTextures + texture, editeur);
-                TxtInfoTextures.Text = $"« {texture} » copiée dans le pack et ouverte dans l'éditeur. Enregistre dans l'éditeur pour appliquer.";
-                RafraichirPacks();
-            }
-            catch (Exception ex)
-            {
-                await Dialogs.ErreurAsync("Ouverture impossible", ex.Message);
-            }
-
-            CmbTexture.SelectedIndex = -1; // permet de re-choisir la même texture
-        }
 
         private string? ChoisirEditeur()
         {
@@ -267,12 +203,43 @@ namespace Misty
         }
 
         private void BtnEditeur_Click(object sender, RoutedEventArgs e) => ChoisirEditeur();
+        private async void BtnExport_Click(object sender, RoutedEventArgs e)
+        {
+            if ((sender as FrameworkElement)?.DataContext is not PackService.PackInfo pack) return;
 
-        private void BtnFermerTextures_Click(object sender, RoutedEventArgs e) =>
-            PanneauTextures.Visibility = Visibility.Collapsed;
+            var dialogue = new SaveFileDialog
+            {
+                Title = "Exporter le pack de textures",
+                Filter = "Pack de ressources (*.zip)|*.zip",
+                FileName = pack.Nom + ".zip",
+                DefaultExt = ".zip",
+                AddExtension = true,
+                OverwritePrompt = true,
+            };
+            if (dialogue.ShowDialog() != true) return;
 
-        private void FondTextures_Click(object sender, MouseButtonEventArgs e) =>
-            PanneauTextures.Visibility = Visibility.Collapsed;
+            var bouton = (Button)sender;
+            bouton.IsEnabled = false;
+            try
+            {
+                await Task.Run(() => PackService.Exporter(pack, dialogue.FileName));
 
+                bool ouvrir = await Dialogs.ConfirmerAsync("Pack exporté",
+                    $"« {pack.Nom} » a été exporté :\n\n{dialogue.FileName}\n\n" +
+                    "Pour l'utiliser, place le zip dans le dossier resourcepacks d'un profil.",
+                    "Ouvrir le dossier", "Fermer");
+
+                if (ouvrir)
+                    Process.Start("explorer.exe", $"/select,\"{dialogue.FileName}\"");
+            }
+            catch (Exception ex)
+            {
+                await Dialogs.ErreurAsync("Export impossible", ex.Message);
+            }
+            finally
+            {
+                bouton.IsEnabled = true;
+            }
+        }
     }
 }

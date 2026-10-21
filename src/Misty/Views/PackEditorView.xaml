@@ -1,0 +1,162 @@
+﻿<UserControl x:Class="Misty.Views.PackEditorView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             PreviewKeyDown="Vue_PreviewKeyDown">
+
+    <Grid Margin="26,0,30,26">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- ═══ En-tête ═══ -->
+        <DockPanel Margin="6,0,0,14">
+            <Button DockPanel.Dock="Left" Style="{StaticResource GlassButton}" Content="← Retour"
+                    Click="BtnRetour_Click" Margin="0,0,16,0" VerticalAlignment="Center" />
+            <TextBox DockPanel.Dock="Right" x:Name="TxtRecherche" Style="{StaticResource GlassTextBox}"
+                     Width="260" VerticalAlignment="Center" TextChanged="TxtRecherche_TextChanged" />
+            <StackPanel VerticalAlignment="Center">
+                <TextBlock x:Name="TxtPack" Style="{StaticResource SectionTitle}" Margin="0,0,0,2" />
+                <TextBlock x:Name="TxtInfo" Style="{StaticResource BodyText}" />
+            </StackPanel>
+        </DockPanel>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="190" />
+                <ColumnDefinition Width="14" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="14" />
+                <ColumnDefinition Width="340" />
+            </Grid.ColumnDefinitions>
+
+            <!-- ═══ Catégories ═══ -->
+            <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto">
+                <StackPanel x:Name="PanneauCategories" />
+            </ScrollViewer>
+
+            <!-- ═══ Grille de textures ═══ -->
+            <ScrollViewer Grid.Column="2" x:Name="DefilementTextures" VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Disabled">
+                <ItemsControl x:Name="ListeTextures">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Width="64" Height="64" Margin="0,0,8,8" CornerRadius="12" Background="#33FFFFFF"
+                                    Cursor="Hand" ToolTip="{Binding Chemin}" MouseLeftButtonDown="Tuile_Click">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Setter Property="BorderBrush" Value="#40FFFFFF" />
+                                        <Setter Property="BorderThickness" Value="2" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Selectionnee}" Value="True">
+                                                <Setter Property="BorderBrush" Value="{DynamicResource BlueBrush}" />
+                                                <Setter Property="BorderThickness" Value="3" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+                                <Grid>
+                                    <Image Source="{Binding Miniature}" Margin="8"
+                                           RenderOptions.BitmapScalingMode="NearestNeighbor" />
+                                    <Ellipse Width="9" Height="9" Fill="#FF2ECC71" Stroke="White" StrokeThickness="1"
+                                             HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,5,5,0">
+                                        <Ellipse.Style>
+                                            <Style TargetType="Ellipse">
+                                                <Setter Property="Visibility" Value="Collapsed" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Modifiee}" Value="True">
+                                                        <Setter Property="Visibility" Value="Visible" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Ellipse.Style>
+                                    </Ellipse>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+
+            <!-- ═══ Éditeur intégré ═══ -->
+            <Border Grid.Column="4" Style="{StaticResource GlassCard}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <Grid>
+                        <TextBlock x:Name="TxtVide" Style="{StaticResource BodyText}" TextWrapping="Wrap"
+                                   Text="Choisis une texture dans la grille pour la modifier." />
+
+                        <StackPanel x:Name="PanneauEditeur" Visibility="Collapsed">
+                            <TextBlock x:Name="TxtTexture" Style="{StaticResource PixelLabel}" FontSize="10"
+                                       TextWrapping="Wrap" Margin="0,0,0,8" />
+
+                            <!-- zone de dessin -->
+                            <Border Height="300" CornerRadius="12" ClipToBounds="True" Background="#22000000">
+                                <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+                                    <Grid x:Name="Plateau" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <Rectangle x:Name="Damier" />
+                                        <Image x:Name="ImgPixels" Stretch="Fill"
+                                               RenderOptions.BitmapScalingMode="NearestNeighbor" />
+                                        <Rectangle x:Name="Grille" IsHitTestVisible="False" />
+                                        <Rectangle x:Name="Zone" Fill="Transparent" Cursor="Cross"
+                                                   MouseLeftButtonDown="Zone_Down" MouseMove="Zone_Move"
+                                                   MouseLeftButtonUp="Zone_Up" MouseRightButtonDown="Zone_Droit" />
+                                    </Grid>
+                                </ScrollViewer>
+                            </Border>
+
+                            <!-- zoom + grille -->
+                            <DockPanel Margin="0,8,0,0">
+                                <CheckBox x:Name="ChkGrille" DockPanel.Dock="Right" Content="Grille" IsChecked="True"
+                                          VerticalAlignment="Center" Margin="10,0,0,0" Click="ChkGrille_Click" />
+                                <Slider x:Name="SldZoom" Minimum="1" Maximum="40" Value="10" TickFrequency="1"
+                                        IsSnapToTickEnabled="True" VerticalAlignment="Center"
+                                        ValueChanged="Zoom_Changed" />
+                            </DockPanel>
+
+                            <!-- outils -->
+                            <WrapPanel Margin="0,12,0,0">
+                                <RadioButton x:Name="OutilCrayon" Style="{StaticResource TabPill}" Content="Crayon" Tag="Crayon"
+                                             IsChecked="True" Checked="Outil_Checked" Margin="0,0,6,6" />
+                                <RadioButton Style="{StaticResource TabPill}" Content="Gomme" Tag="Gomme"
+                                             Checked="Outil_Checked" Margin="0,0,6,6" />
+                                <RadioButton Style="{StaticResource TabPill}" Content="Pot" Tag="Pot"
+                                             Checked="Outil_Checked" Margin="0,0,6,6" />
+                                <RadioButton Style="{StaticResource TabPill}" Content="Pipette" Tag="Pipette"
+                                             Checked="Outil_Checked" Margin="0,0,6,6" />
+                            </WrapPanel>
+
+                            <!-- couleur -->
+                            <StackPanel Orientation="Horizontal" Margin="0,6,0,8">
+                                <Border x:Name="Echantillon" Width="36" Height="36" CornerRadius="10"
+                                        BorderBrush="#66000000" BorderThickness="1" Margin="0,0,10,0" />
+                                <TextBox x:Name="TxtHex" Style="{StaticResource GlassTextBox}" Width="110" MaxLength="7"
+                                         VerticalAlignment="Center" TextChanged="Hex_Changed" />
+                            </StackPanel>
+                            <Slider x:Name="SldR" Minimum="0" Maximum="255" ValueChanged="Couleur_Changed" Margin="0,0,0,2" />
+                            <Slider x:Name="SldG" Minimum="0" Maximum="255" ValueChanged="Couleur_Changed" Margin="0,0,0,2" />
+                            <Slider x:Name="SldB" Minimum="0" Maximum="255" ValueChanged="Couleur_Changed" Margin="0,0,0,8" />
+
+                            <TextBlock Style="{StaticResource PixelLabel}" FontSize="10" Text="COULEURS DE LA TEXTURE"
+                                       Margin="2,4,0,6" />
+                            <WrapPanel x:Name="Palette" />
+
+                            <!-- actions -->
+                            <WrapPanel Margin="0,14,0,0">
+                                <Button Style="{StaticResource GlassButton}" Content="Annuler" Margin="0,0,6,6" Click="BtnAnnuler_Click" />
+                                <Button Style="{StaticResource GlassButton}" Content="Rétablir" Margin="0,0,6,6" Click="BtnRetablir_Click" />
+                                <Button Style="{StaticResource PrimaryButton}" Content="Enregistrer" Margin="0,0,6,6" Click="BtnEnregistrer_Click" />
+                                <Button Style="{StaticResource GlassButton}" Content="Paint.NET" Margin="0,0,6,6" Click="BtnPaint_Click" />
+                                <Button Style="{StaticResource DangerButton}" Content="Réinitialiser" Margin="0,0,6,6" Click="BtnReinitialiser_Click" />
+                            </WrapPanel>
+                        </StackPanel>
+                    </Grid>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

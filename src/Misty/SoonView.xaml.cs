@@ -122,7 +122,12 @@ namespace Misty
         private void FondPack_Click(object sender, MouseButtonEventArgs e) =>
             PanneauPack.Visibility = Visibility.Collapsed;
 
-        
+        private void BtnExport_Click(object sender, RoutedEventArgs e)
+        {
+            //if ((sender as FrameworkElement)?.DataContext is PackService.PackInfo pack)
+            //    Process.Start("explorer.exe", pack.Dossier);
+        }
+
         private void RafraichirPacks()
         {
             var packs = PackService.Lister();
@@ -130,7 +135,7 @@ namespace Misty
             TxtAucunPack.Visibility = packs.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
         }
 
-        private void BtnDossierPack_Click(object sender, RoutedEventArgs e)
+        private void BtnDossierPack_Click(object sender, RoutedEventArgs e) 
         {
             if ((sender as FrameworkElement)?.DataContext is PackService.PackInfo pack)
                 Process.Start("explorer.exe", pack.Dossier);

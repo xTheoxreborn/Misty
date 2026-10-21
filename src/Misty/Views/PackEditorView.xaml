@@ -31,9 +31,19 @@
             </Grid.ColumnDefinitions>
 
             <!-- ═══ Catégories ═══ -->
-            <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto">
-                <StackPanel x:Name="PanneauCategories" />
-            </ScrollViewer>
+            <!-- ═══ Modes + catégories ═══ -->
+            <DockPanel Grid.Column="0">
+                <StackPanel DockPanel.Dock="Top" Margin="0,0,0,14">
+                    <RadioButton x:Name="ModeTout" Style="{StaticResource TabPill}" Content="Toutes les textures"
+                     Tag="tout" GroupName="mode" IsChecked="True" Checked="Mode_Checked" Margin="0,0,0,6" />
+                    <RadioButton x:Name="ModePerso" Style="{StaticResource TabPill}" Content="Mes textures"
+                     Tag="perso" GroupName="mode" Checked="Mode_Checked" />
+                </StackPanel>
+
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel x:Name="PanneauCategories" />
+                </ScrollViewer>
+            </DockPanel>
 
             <!-- ═══ Grille de textures ═══ -->
             <ScrollViewer Grid.Column="2" x:Name="DefilementTextures" VerticalScrollBarVisibility="Auto"
@@ -83,6 +93,9 @@
                 </ItemsControl>
             </ScrollViewer>
 
+            <TextBlock x:Name="TxtAucune" Grid.Column="2" Style="{StaticResource BodyText}" TextWrapping="Wrap"
+           Visibility="Collapsed" VerticalAlignment="Top" Margin="4,8,0,0"
+           Text="Tu n'as encore modifié aucune texture. Va dans « Toutes les textures », clique sur une texture et dessine : elle apparaîtra ici dès que tu l'enregistres." />
             <!-- ═══ Éditeur intégré ═══ -->
             <Border Grid.Column="4" Style="{StaticResource GlassCard}">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">

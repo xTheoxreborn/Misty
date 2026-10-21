@@ -1,6 +1,9 @@
 # Changelog
-## New features
-- 
+## 0.2.4.3
+- Séparer les textures modifié avec le template
+
+## 0.2.4.2
+- Amélioration du modificateur de pack de textures
 
 ## 0.2.4.1
 - Possibilité de supprimer un profil directement où il y a la liste des profils

@@ -22,6 +22,7 @@ namespace Misty.Views
         private readonly ProfilesView profils;
         private readonly SoonView soon;
         private readonly InstanceView instanceVue;
+        private readonly PackEditorView packEditeur;
 
         private TaskCompletionSource<string?>? dialogEnCours;
 
@@ -48,6 +49,16 @@ namespace Misty.Views
             profils = new ProfilesView();
             soon = new SoonView();
             instanceVue = new InstanceView();
+            packEditeur = new PackEditorView();
+
+            soon.EditeurDemande += async pack =>
+            {
+                Naviguer(packEditeur);
+                await packEditeur.ChargerAsync(pack);
+            };
+            packEditeur.RetourDemande += () => Naviguer(soon);
+
+
 
             profils.OuvrirDemande += OuvrirProfil;
             profils.JouerDemande += JouerProfil;

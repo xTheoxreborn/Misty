@@ -33,7 +33,7 @@ namespace Misty.Services
         {
             client.SetPresence(new RichPresence
             {
-                State = "Édite un pack de ressources",
+                State = "Édite un pack de ressources (Experimentale)",
                 //State = $"{version} {mode}",
                 Timestamps = debut,
             });

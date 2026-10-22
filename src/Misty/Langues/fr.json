@@ -1,0 +1,76 @@
+{
+  "_nom": "Français",
+  "_drapeau": "fr",
+
+
+  "Nav_Jouer": "Jouer",
+  "Nav_Profils": "Profils, mods et modpacks",
+  "Nav_Options": "Options",
+  "Nav_Notes": "Notes de version",
+  "Nav_Soon": "Fonctionnalités à venir",
+
+
+  "Commun_Annuler": "Annuler",
+  "Commun_Fermer": "Fermer",
+
+
+  "Options_hors_ligne": "Compte hors ligne",
+  "Options_hors_ligne_text": "Pseudos utilisables sans compte Microsoft.",
+  "Options_Compte_Microsoft": "Compte Microsoft",
+  "Options_Raccourci": "Raccourci",
+  "Options_Langue": "LANGUE",
+
+  "Options_Ram": "Mémoire",
+  "Options_Versions": "Version affiché",
+  "Options_indev": "Alphas et Indev",
+
+
+  "Soon_CreerPack": "+ Créer son pack",
+  "Soon_Aucun": "Aucun pack pour l'instant. Crée le premier !",
+  "Pack_Textures": "Textures",
+  "Pack_Exporter": "Exporter",
+  "Pack_Dossier": "Dossier",
+  "Pack_Supprimer": "Supprimer",
+  "Pack_Nouveau": "NOUVEAU PACK DE TEXTURES",
+  "Pack_Nom": "NOM",
+  "Pack_Description": "DESCRIPTION",
+  "Pack_Version": "VERSION DE MINECRAFT",
+  "Pack_Creer": "Créer le pack",
+  "Pack_Exporte": "« {0} » a été exporté :\n\n{1}\n\nPour l'utiliser, place le zip dans le dossier resourcepacks d'un profil.",
+  "Pack_ExportTitre": "Pack exporté",
+  "Pack_ExportImpossible": "Export impossible",
+
+  "Editeur_Retour": "← Retour",
+  "Editeur_Tout": "Toutes les textures",
+  "Editeur_Perso": "Mes textures",
+  "Editeur_Aucune": "Tu n'as encore modifié aucune texture. Va dans « Toutes les textures », clique sur une texture et dessine : elle apparaîtra ici dès que tu l'enregistres.",
+  "Editeur_Vide": "Choisis une texture dans la grille pour la modifier.",
+  "Editeur_Grille": "Grille",
+  "Editeur_Crayon": "Crayon",
+  "Editeur_Gomme": "Gomme",
+  "Editeur_Pot": "Pot",
+  "Editeur_Pipette": "Pipette",
+  "Editeur_Couleurs": "COULEURS DE LA TEXTURE",
+  "Editeur_Retablir": "Rétablir",
+  "Editeur_Enregistrer": "Enregistrer",
+  "Editeur_Reinitialiser": "Réinitialiser",
+
+  "Cat_Blocs de construction": "Blocs de construction",
+  "Cat_Blocs colorés": "Blocs colorés",
+  "Cat_Blocs naturels": "Blocs naturels",
+  "Cat_Blocs fonctionnels": "Blocs fonctionnels",
+  "Cat_Redstone": "Redstone",
+  "Cat_Outils et utilitaires": "Outils et utilitaires",
+  "Cat_Combat": "Combat",
+  "Cat_Nourriture et boissons": "Nourriture et boissons",
+  "Cat_Ingrédients": "Ingrédients",
+  "Cat_Œufs d'apparition": "Œufs d'apparition",
+  "Cat_Potions": "Potions",
+  "Cat_Disques": "Disques",
+  "Cat_Objets divers": "Objets divers",
+  "Cat_Entités": "Entités",
+  "Cat_Interface": "Interface",
+  "Cat_Environnement": "Environnement",
+  "Cat_Particules": "Particules",
+  "Cat_Autres": "Autres"
+}

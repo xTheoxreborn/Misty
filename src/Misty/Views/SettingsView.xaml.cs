@@ -16,6 +16,7 @@ namespace Misty.Views
         private bool chargement = true;
         private bool typesVersionsModifies;
         private readonly DiscordPresenceService discord;
+        private bool chargementLangue;
 
         public SettingsView()
         {
@@ -27,14 +28,33 @@ namespace Misty.Views
             AccountService.SessionChanged += () => Dispatcher.Invoke(MajMicrosoft);
             chargement = false;
 
-            CmbProfil.ItemsSource = new List<string> { "Français"/*, "English", "Español" */};
+            //CmbProfil.ItemsSource = new List<string> { "Français"/*, "English", "Español" */};
 
             discord = new DiscordPresenceService();
+
+            
+
+        }
+        private void InitLangues()
+        {
+            chargementLangue = true;
+            CmbLangue.ItemsSource = Loc.Disponibles();
+            CmbLangue.SelectedValue = Loc.Instance.Code;
+            chargementLangue = false;
         }
 
+        private void CmbLangue_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (chargementLangue || CmbLangue.SelectedValue is not string code) return;
+
+            SettingsStore.Set(SettingsStore.Langue, code);
+            Loc.Instance.Charger(code);
+        }
         /// <summary>Recharge l'affichage depuis les fichiers de config (appelé à chaque ouverture de la page).</summary>
         public void Rafraichir()
         {
+            InitLangues();
+
             chargement = true;
             try
             {

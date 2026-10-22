@@ -11,7 +11,7 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <controls:OutlinedText Text="OPTIONS" FontFamily="{StaticResource PixelFont}" FontSize="48"
+        <controls:OutlinedText Text="{loc:Tr Options_Title}" FontFamily="{StaticResource PixelFont}" FontSize="48"
                                Fill="White" Stroke="{StaticResource SlateBrush}" StrokeThickness="4"
                                ShadowBrush="{StaticResource SlateDarkBrush}" ShadowDepth="5" Margin="6,0,0,18" />
 
@@ -30,7 +30,7 @@
                     <Border Style="{StaticResource GlassCard}" Margin="0,0,0,18">
                         <StackPanel>
                             <TextBlock Style="{StaticResource SectionTitle}" Text="{loc:Tr Options_hors_ligne}" />
-                            <TextBlock Style="{StaticResource BodyText}" Text="Pseudos utilisables sans compte Microsoft." Margin="0,0,0,14" />
+                            <TextBlock Style="{StaticResource BodyText}" Text="{loc:Tr Options_hors_ligne_text}" Margin="0,0,0,14" />
 
                             <ItemsControl x:Name="ListeProfils">
                                 <ItemsControl.ItemsPanel>
@@ -57,7 +57,7 @@
                                 <Button DockPanel.Dock="Right" Style="{StaticResource PrimaryButton}" Margin="10,0,0,0" Click="BtnAjouterProfil_Click">
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Style="{StaticResource Icon}" Text="&#xE710;" FontSize="12" Margin="0,0,8,0" Foreground="White" />
-                                        <TextBlock Text="Ajouter" />
+                                        <TextBlock Text="{loc:Tr Options_bouton_ajout}" />
                                     </StackPanel>
                                 </Button>
                                 <TextBox x:Name="TxtNouveauProfil" Style="{StaticResource GlassTextBox}" MaxLength="16" KeyDown="TxtNouveauProfil_KeyDown" />

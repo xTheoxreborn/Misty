@@ -1,6 +1,7 @@
 # Changelog
 ## 0.2.4.3
 - Séparer les textures modifié avec le template
+- Ajout du sélecteur des langues
 
 ## 0.2.4.2
 - Amélioration du modificateur de pack de textures

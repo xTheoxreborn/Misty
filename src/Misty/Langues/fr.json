@@ -9,19 +9,27 @@
   "Nav_Notes": "Notes de version",
   "Nav_Soon": "Fonctionnalités à venir",
 
+  "Home_Bouton_Jouer": "Jouer",
+  "Home_Chargement": "Chargement…",
+  "Home_Compte": "Compte",
+  "Home_Version_Selected": "Version Sélectionnée",
+
+
 
   "Commun_Annuler": "Annuler",
   "Commun_Fermer": "Fermer",
 
 
+  "Options_Title": "Options",
   "Options_hors_ligne": "Compte hors ligne",
+  "Options_bouton_ajout": "Ajouter",
   "Options_hors_ligne_text": "Pseudos utilisables sans compte Microsoft.",
   "Options_Compte_Microsoft": "Compte Microsoft",
   "Options_Raccourci": "Raccourci",
   "Options_Langue": "LANGUE",
 
   "Options_Ram": "Mémoire",
-  "Options_Versions": "Version affiché",
+  "Options_Versions": "Version affichée",
   "Options_indev": "Alphas et Indev",
 
 
@@ -72,5 +80,16 @@
   "Cat_Interface": "Interface",
   "Cat_Environnement": "Environnement",
   "Cat_Particules": "Particules",
-  "Cat_Autres": "Autres"
+  "Cat_Autres": "Autres",
+
+
+
+
+
+
+
+
+
+
+  "Home_txt-1": "Toutes les versions, tous les mod loaders."
 }

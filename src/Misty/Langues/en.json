@@ -8,12 +8,20 @@
   "Nav_Notes": "Release notes",
   "Nav_Soon": "Upcoming features",
 
+  "Home_Bouton_Jouer": "Play",
+  "Home_Chargement": "Loading…",
+  "Home_Compte": "Account",
+  "Home_Version_Selected": "Selected Version",
+
+
   "Commun_Annuler": "Cancel",
   "Commun_Fermer": "Close",
 
 
+  "Options_Title": "Settings",
   "Options_hors_ligne": "Offline Account",
-  "Options_hors_ligne_text": "Pseudos utilisables sans compte Microsoft.",
+  "Options_bouton_ajout": "Add",
+  "Options_hors_ligne_text": "Usernames that can be used without a Microsoft account.",
   "Options_Compte_Microsoft": "Microsoft Account",
   "Options_Raccourci": "Shortcut",
   "Options_Langue": "LANGUAGE",

@@ -1,7 +1,8 @@
 ﻿<UserControl x:Class="Misty.SoonView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:controls="clr-namespace:Misty.Controls">
+             xmlns:controls="clr-namespace:Misty.Controls"
+             xmlns:loc="clr-namespace:Misty.Services">
 
     <Grid Margin="26,0,30,26">
         <Grid.RowDefinitions>
@@ -14,14 +15,14 @@
                                    Fill="White" Stroke="{StaticResource SlateBrush}" StrokeThickness="4"
                                    ShadowBrush="{StaticResource SlateDarkBrush}" ShadowDepth="5" Margin="6,0,0,18" />
 
-            <Button x:Name="BtnCreerPack" Style="{StaticResource PrimaryButton}" Content="+ Créer son pack"
+            <Button x:Name="BtnCreerPack" Style="{StaticResource PrimaryButton}" Content="{loc:Tr Soon_CreerPack}"
                     Click="BtnCreerPack_Click" Margin="0,0,0,18" Height="44" Width="144" />
         </DockPanel>
 
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,10,0">
             <StackPanel>
                 <TextBlock x:Name="TxtAucunPack" Style="{StaticResource BodyText}"
-                           Text="Aucun pack pour l'instant. Crée le premier !" />
+                           Text="{loc:Tr Soon_AucunPack}" />
 
                 <ItemsControl x:Name="ListePacks">
                     <ItemsControl.ItemTemplate>

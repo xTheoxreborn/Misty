@@ -28,6 +28,7 @@ namespace Misty.Views
 
         public MainWindow()
         {
+            Loc.Initialiser();
             InitializeComponent();
 
             Dialogs.Host = this;

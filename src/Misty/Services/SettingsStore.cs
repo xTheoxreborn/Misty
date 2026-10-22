@@ -17,11 +17,11 @@ namespace Misty.Services
         public const string Suppr = "Suppr";
         public const string DernierProfil = "lastprofil";
         public const string RichPresence = "richpresence";
-
+        public const string Langue = "langue";
 
         // Ordre des clés dans le fichier
         private static readonly string[] Cles =
-            { VersionData, LastPseudo, LastVersion, Ram, Premium, Raccourci, Snapshot, Beta, Alpha, Suppr, DernierProfil, RichPresence };
+            { VersionData, LastPseudo, LastVersion, Ram, Premium, Raccourci, Snapshot, Beta, Alpha, Suppr, DernierProfil, RichPresence, Langue };
 
         public static string Get(string cle)
         {

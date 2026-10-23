@@ -45,7 +45,7 @@ namespace Misty.Models
                 var morceaux = new List<string> { ContentService.LibelleType(Type) };
                 if (Meta?.VersionNom is { Length: > 0 } v) morceaux.Add(v);
                 if (Meta?.Source == Sources.CurseForge) morceaux.Add("CurseForge");
-                if (Monde != null) morceaux.Add("monde « " + Monde + " »");
+                if (Monde != null) morceaux.Add(Loc.T("Contenu_Monde", Monde));
                 if (Meta?.ProjectId == null) morceaux.Add(NomFichier);
                 return string.Join(" · ", morceaux);
             }

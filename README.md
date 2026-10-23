@@ -20,11 +20,15 @@ Interface « verre dépoli » sur fond ciel, titres en police pixel, animations 
 
 ## Installation (utilisateur)
 
-1. Télécharger le zip de la [dernière release](https://github.com/xTheoxreborn/Misty/releases/latest).
-2. L'extraire. Il contient un dossier `Misty-<version>`.
-3. Lancer `Misty-<version>/Misty.exe`.
+**Recommandé :** télécharger `Misty-Setup-<version>.exe` depuis la [dernière release](https://github.com/xTheoxreborn/Misty/releases/latest) et le lancer.
 
-Les mises à jour suivantes s'installent toutes seules à côté de ce dossier.
+- Pas besoin de droits administrateur : Misty s'installe dans `%LOCALAPPDATA%\Programs\Misty`.
+- Le runtime .NET 10 (Windows Desktop) est téléchargé et installé automatiquement s'il manque.
+- Raccourci dans le menu Démarrer (et sur le bureau en option), désinstallation depuis « Applications installées ». Les données de jeu ne sont supprimées que si tu le demandes.
+
+**Version portable :** télécharger le zip, l'extraire et lancer `Misty-<version>/Misty.exe` (nécessite le [runtime .NET 10 Desktop](https://dotnet.microsoft.com/download/dotnet/10.0)).
+
+Dans les deux cas, les mises à jour suivantes s'installent toutes seules.
 
 ## Développement
 
@@ -53,15 +57,19 @@ dotnet run --project src/Misty
 
 ### Publier une release
 
-```powershell
-dotnet publish src/Misty -c Release -r win-x64 --self-contained false -o publish/Misty-<version>
-```
-
-Puis :
-
 1. Mettre à jour `AppInfo.Version` dans [src/Misty/AppInfo.cs](src/Misty/AppInfo.cs) et ajouter l'entrée dans [CHANGELOG.md](CHANGELOG.md). Ce fichier est intégré à l'exe et affiché dans la page « Notes de version ».
-2. Zipper le dossier `Misty-<version>` : le zip doit contenir ce dossier à sa racine, c'est ce qu'attend le système de mise à jour.
-3. Créer une release GitHub avec le tag `v<version>` et le zip comme **premier** asset.
+2. Lancer le script de release (il faut [Inno Setup 6](https://jrsoftware.org/isdl.php) : `winget install JRSoftware.InnoSetup`) :
+
+   ```powershell
+   powershell -ExecutionPolicy Bypass -File installer\build.ps1
+   ```
+
+   Il produit dans `publish\` :
+   - `Misty-<version>.zip` : le dossier `Misty-<version>` à sa racine, c'est ce qu'attend le système de mise à jour ;
+   - `Misty-Setup-<version>.exe` : l'installateur (script : [installer/Misty.iss](installer/Misty.iss)).
+
+   `-SansInstallateur` ne génère que le zip.
+3. Créer une release GitHub avec le tag `<version>` et y joindre **le zip et l'installateur** (la mise à jour automatique prend le `.zip`).
 
 > ⚠️ `AppInfo.Version`, le tag GitHub (sans le `v`) et le nom du dossier `Misty-<version>` doivent être identiques. Sinon le launcher reproposera la mise à jour en boucle.
 
@@ -71,6 +79,7 @@ Puis :
 Misty.slnx
 src/Misty/
 ├── App.xaml                    Point d'entrée, charge le thème
+├── Langues/                    Traductions (fr.json, en.json) : une clé par texte, voir Services/Loc.cs
 ├── AppInfo.cs                  Version de l'app, version de data.txt, IDs (GitHub, Discord)
 ├── Assets/
 │   ├── icone.ico               Icône de l'exécutable

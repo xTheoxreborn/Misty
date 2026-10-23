@@ -4,91 +4,147 @@
              xmlns:controls="clr-namespace:Misty.Controls"
              xmlns:loc="clr-namespace:Misty.Services">
 
+    <UserControl.Resources>
+        <!-- Carte de pack : verre qui s'éclaircit au survol -->
+        <Style x:Key="CartePack" TargetType="Border" BasedOn="{StaticResource GlassCard}">
+            <Setter Property="Padding" Value="16" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="{StaticResource GlassHoverBrush}" />
+                    <Setter Property="BorderBrush" Value="White" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+
     <Grid Margin="26,0,30,26">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
+        <!-- ═══ En-tête ═══ -->
         <DockPanel Margin="6,0,0,18">
-            <controls:OutlinedText Text="SOON" FontFamily="{StaticResource PixelFont}" FontSize="48"
-                                   Fill="White" Stroke="{StaticResource SlateBrush}" StrokeThickness="4"
-                                   ShadowBrush="{StaticResource SlateDarkBrush}" ShadowDepth="5" Margin="6,0,0,18" />
-
-            <Button x:Name="BtnCreerPack" Style="{StaticResource PrimaryButton}" Content="{loc:Tr Soon_CreerPack}"
-                    Click="BtnCreerPack_Click" Margin="0,0,0,18" Height="44" Width="144" />
+            <Button DockPanel.Dock="Right" x:Name="BtnCreerPack" Style="{StaticResource PrimaryButton}"
+                    Click="BtnCreerPack_Click" VerticalAlignment="Center">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Style="{StaticResource Icon}" Text="&#xE710;" FontSize="12" Margin="0,0,8,0" Foreground="White" />
+                    <TextBlock Text="{loc:Tr Soon_CreerPack}" />
+                </StackPanel>
+            </Button>
+            <StackPanel>
+                <controls:OutlinedText Text="{loc:Tr Pack_Titre}" FontFamily="{StaticResource PixelFont}" FontSize="40"
+                                       Fill="White" Stroke="{StaticResource SlateBrush}" StrokeThickness="4"
+                                       ShadowBrush="{StaticResource SlateDarkBrush}" ShadowDepth="5" HorizontalAlignment="Left" />
+                <TextBlock Style="{StaticResource BodyText}" Text="{loc:Tr Pack_SousTitre}" Margin="4,6,0,0" />
+            </StackPanel>
         </DockPanel>
 
-        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,10,0">
+        <!-- ═══ Liste des packs ═══ -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,8,0">
             <StackPanel>
-                <TextBlock x:Name="TxtAucunPack" Style="{StaticResource BodyText}"
-                           Text="{loc:Tr Soon_AucunPack}" />
-
                 <ItemsControl x:Name="ListePacks">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <Border Style="{StaticResource GlassCard}" Margin="0,0,0,12">
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
+                            <Border Style="{StaticResource CartePack}" Width="316" Margin="0,0,16,16" MouseLeftButtonUp="Carte_Click">
+                                <StackPanel>
+                                    <DockPanel>
+                                        <Border DockPanel.Dock="Left" Width="72" Height="72" CornerRadius="18" Background="#1C2335"
+                                                BorderBrush="White" BorderThickness="2.5" ClipToBounds="True" VerticalAlignment="Top">
+                                            <Grid>
+                                                <Image Source="{x:Static controls:PixelArt.BlocHerbe}" Margin="16"
+                                                       RenderOptions.BitmapScalingMode="NearestNeighbor" />
+                                                <Image Source="{Binding Icone}" Stretch="UniformToFill"
+                                                       RenderOptions.BitmapScalingMode="NearestNeighbor" />
+                                            </Grid>
+                                        </Border>
+                                        <StackPanel Margin="14,2,0,0">
+                                            <TextBlock Text="{Binding Nom}" FontWeight="SemiBold" FontSize="16"
+                                                       Foreground="{StaticResource NavyBrush}" TextTrimming="CharacterEllipsis" />
+                                            <TextBlock Text="{Binding Description}" FontSize="12.5" Foreground="{StaticResource TextMutedBrush}"
+                                                       TextTrimming="CharacterEllipsis" Margin="0,3,0,8" />
+                                            <WrapPanel>
+                                                <Border CornerRadius="8" Background="{StaticResource NavyBrush}" Padding="8,3" Margin="0,0,6,0">
+                                                    <TextBlock Style="{StaticResource PixelLabel}" FontSize="10" Foreground="White"
+                                                               Text="{Binding VersionMc}" />
+                                                </Border>
+                                                <Border CornerRadius="8" Background="{StaticResource GreenBrush}" Padding="8,3">
+                                                    <TextBlock Style="{StaticResource PixelLabel}" FontSize="10" Foreground="White">
+                                                        <Run Text="{Binding NbTextures, Mode=OneWay}" /> <Run Text="{loc:Tr Pack_Modifiees}" />
+                                                    </TextBlock>
+                                                </Border>
+                                            </WrapPanel>
+                                        </StackPanel>
+                                    </DockPanel>
 
-                                    <StackPanel>
-                                        <TextBlock Style="{StaticResource SectionTitle}" Text="{Binding Nom}" Margin="0,0,0,4" />
-                                        <TextBlock Style="{StaticResource BodyText}" Text="{Binding Description}"
-                                                   TextTrimming="CharacterEllipsis" />
-                                        <TextBlock Style="{StaticResource PixelLabel}" FontSize="10" Margin="0,6,0,0"
-                                                   Text="{Binding VersionMc, StringFormat=MINECRAFT {0}}" />
-                                        <TextBlock Style="{StaticResource BodyText}" Margin="0,4,0,0"
-                                                   Text="{Binding NbTextures, StringFormat={}{0} texture(s) modifiée(s)}" />
-                                    </StackPanel>
-
-                                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                                        <Button Style="{StaticResource GlassButton}" Content="Éditer" Margin="0,0,8,0"
-                                                Click="BtnTextures_Click" Background="{DynamicResource BlueBrush}"
-                                                BorderBrush="#66FFFFFF" Foreground="White" />
-                                        <Button Style="{StaticResource GlassButton}" Content="Exporter" Margin="0,0,8,0"
-                                                Click="BtnExport_Click" Background="{DynamicResource BlueBrush}"
-                                                BorderBrush="#66FFFFFF" Foreground="White" />
-                                        <Button Style="{StaticResource GlassButton}" Content="Dossier" Margin="0,0,8,0"
-                                                Click="BtnDossierPack_Click" Background="{DynamicResource BlueBrush}"
-                                                BorderBrush="#66FFFFFF" Foreground="White" />
-                                        <Button Style="{StaticResource GlassButton}" Content="Supprimer"
-                                                Click="BtnSupprimerPack_Click" Background="{DynamicResource DangerBrush}"
-                                                BorderBrush="#66FFFFFF" Foreground="White" />
-                                    </StackPanel>
-                                </Grid>
+                                    <DockPanel Margin="0,16,0,0">
+                                        <Button DockPanel.Dock="Right" Style="{StaticResource IconButton}" Content="&#xE74D;" Width="40" Height="40"
+                                                Background="{DynamicResource DangerBrush}" BorderBrush="#66FFFFFF" Foreground="White"
+                                                ToolTip="{loc:Tr Pack_Supprimer}" Click="BtnSupprimerPack_Click" Margin="6,0,0,0" />
+                                        <Button DockPanel.Dock="Right" Style="{StaticResource IconButton}" Content="&#xE8B7;" Width="40" Height="40"
+                                                ToolTip="{loc:Tr Pack_Dossier}" Click="BtnDossierPack_Click" Margin="6,0,0,0" />
+                                        <Button DockPanel.Dock="Right" Style="{StaticResource IconButton}" Content="&#xE896;" Width="40" Height="40"
+                                                ToolTip="{loc:Tr Pack_Exporter}" Click="BtnExport_Click" Margin="6,0,0,0" />
+                                        <Button Style="{StaticResource PrimaryButton}" Click="BtnTextures_Click" HorizontalAlignment="Left">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Style="{StaticResource Icon}" Text="&#xE70F;" FontSize="12" Margin="0,0,8,0" Foreground="White" />
+                                                <TextBlock Text="{loc:Tr Pack_Editer}" />
+                                            </StackPanel>
+                                        </Button>
+                                    </DockPanel>
+                                </StackPanel>
                             </Border>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
+
+                <!-- État vide -->
+                <Border x:Name="PanneauVide" Style="{StaticResource GlassCard}" Padding="40" HorizontalAlignment="Left" Visibility="Collapsed">
+                    <StackPanel>
+                        <Image Source="{x:Static controls:PixelArt.BlocHerbe}" Width="64" Height="64" HorizontalAlignment="Left"
+                               RenderOptions.BitmapScalingMode="NearestNeighbor" />
+                        <TextBlock Style="{StaticResource SectionTitle}" Text="{loc:Tr Pack_AucunTitre}" Margin="0,16,0,6" />
+                        <TextBlock Style="{StaticResource BodyText}" MaxWidth="440" HorizontalAlignment="Left"
+                                   Text="{loc:Tr Soon_Aucun}" />
+                    </StackPanel>
+                </Border>
             </StackPanel>
         </ScrollViewer>
 
-        <!-- ═══ Menu de création du pack de textures ═══ -->
-        <Grid x:Name="PanneauPack" Grid.RowSpan="2" Visibility="Collapsed">
+        <!-- ═══ Création d'un pack ═══ -->
+        <Grid x:Name="PanneauPack" Grid.RowSpan="2" Margin="-26,0,-30,-26" Visibility="Collapsed">
             <Rectangle Fill="#661C2335" MouseLeftButtonDown="FondPack_Click" />
 
             <Border Width="460" HorizontalAlignment="Center" VerticalAlignment="Center" CornerRadius="24"
                     Background="#F2F6FAFF" BorderBrush="White" BorderThickness="2" Padding="28,26"
                     Effect="{StaticResource SoftShadow}">
                 <StackPanel>
-                    <TextBlock Style="{StaticResource SectionTitle}" Text="NOUVEAU PACK DE TEXTURES" Margin="0,0,0,18" />
+                    <TextBlock Style="{StaticResource SectionTitle}" Text="{loc:Tr Pack_Nouveau}" Margin="0,0,0,18" />
 
-                    <TextBlock Style="{StaticResource PixelLabel}" FontSize="10" Text="NOM" Margin="4,0,0,6" />
-                    <TextBox x:Name="TxtNomPack" Style="{StaticResource GlassTextBox}" MaxLength="40" Margin="0,0,0,14" />
+                    <TextBlock Style="{StaticResource PixelLabel}" FontSize="10" Text="{loc:Tr Pack_Nom}" Margin="4,0,0,6" />
+                    <TextBox x:Name="TxtNomPack" Style="{StaticResource GlassTextBox}" MaxLength="40" Margin="0,0,0,14"
+                             KeyDown="ChampPack_KeyDown" />
 
-                    <TextBlock Style="{StaticResource PixelLabel}" FontSize="10" Text="DESCRIPTION" Margin="4,0,0,6" />
-                    <TextBox x:Name="TxtDescriptionPack" Style="{StaticResource GlassTextBox}" MaxLength="120" Margin="0,0,0,14" />
+                    <TextBlock Style="{StaticResource PixelLabel}" FontSize="10" Text="{loc:Tr Pack_Description}" Margin="4,0,0,6" />
+                    <TextBox x:Name="TxtDescriptionPack" Style="{StaticResource GlassTextBox}" MaxLength="120" Margin="0,0,0,14"
+                             KeyDown="ChampPack_KeyDown" />
 
-                    <TextBlock Style="{StaticResource PixelLabel}" FontSize="10" Text="VERSION DE MINECRAFT" Margin="4,0,0,6" />
+                    <TextBlock Style="{StaticResource PixelLabel}" FontSize="10" Text="{loc:Tr Pack_Version}" Margin="4,0,0,6" />
                     <ComboBox x:Name="CmbVersion" Style="{StaticResource GlassCombo}" />
 
+                    <TextBlock x:Name="TxtInfoPack" Style="{StaticResource BodyText}" TextWrapping="Wrap" Margin="2,12,0,0"
+                               Text="{loc:Tr Pack_InfoTemplate}" />
+
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,22,0,0">
-                        <Button Style="{StaticResource GlassButton}" Content="Annuler" Margin="0,0,10,0"
+                        <Button Style="{StaticResource GlassButton}" Content="{loc:Tr Commun_Annuler}" Margin="0,0,10,0"
                                 Click="BtnAnnulerPack_Click" />
-                        <Button x:Name="BtnValiderPack" Style="{StaticResource PrimaryButton}" Content="Créer le pack"
+                        <Button x:Name="BtnValiderPack" Style="{StaticResource PrimaryButton}" Content="{loc:Tr Pack_Creer}"
                                 Click="BtnValiderPack_Click" />
                     </StackPanel>
                 </StackPanel>

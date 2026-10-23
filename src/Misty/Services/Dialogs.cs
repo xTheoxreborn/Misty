@@ -20,8 +20,10 @@ namespace Misty.Services
         public static Task ErreurAsync(string titre, string message) =>
             Afficher(titre, message, "OK", null, true);
 
-        public static Task<bool> ConfirmerAsync(string titre, string message, string oui = "Oui", string non = "Annuler", bool danger = false) =>
-            Afficher(titre, message, oui, non, danger);
+        /// <param name="oui">null = "Oui" traduit.</param>
+        /// <param name="non">null = "Annuler" traduit.</param>
+        public static Task<bool> ConfirmerAsync(string titre, string message, string? oui = null, string? non = null, bool danger = false) =>
+            Afficher(titre, message, oui ?? Loc.T("Commun_Oui"), non ?? Loc.T("Commun_Annuler"), danger);
 
         /// <summary>Choix dans une liste. Renvoie l'option choisie, ou null si annulé.</summary>
         public static Task<string?> ChoisirAsync(string titre, string message, IReadOnlyList<string> options) =>

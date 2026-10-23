@@ -42,6 +42,9 @@ namespace Misty.Services
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
+        /// <summary>Déclenché après un changement de langue : les textes posés en code doivent être recalculés.</summary>
+        public static event Action? Changee;
+
         public string this[string cle] => Obtenir(cle);
 
         public static string T(string cle) => Instance.Obtenir(cle);
@@ -63,8 +66,8 @@ namespace Misty.Services
 
         public void Charger(string code)
         {
-            if (!Existe(code)) code = Existe(CultureInfo.CurrentUICulture.TwoLetterISOLanguageName) ? "en" : Defaut;
-            if (!Existe(code)) code = Defaut;
+            // Langue non traduite : anglais (plus universel), sinon la langue par défaut
+            if (!Existe(code)) code = Existe("en") ? "en" : Defaut;
 
             secours = Lire(Defaut);
             textes = Lire(code);
@@ -72,7 +75,13 @@ namespace Misty.Services
 
             // "Item[]" : tous les {loc:Tr ...} du XAML se rafraîchissent
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Item[]"));
+            Changee?.Invoke();
         }
+
+        /// <summary>Lie une propriété à une traduction (équivalent code de {loc:Tr Cle}).</summary>
+        public static void Lier(System.Windows.DependencyObject cible, System.Windows.DependencyProperty propriete, string cle) =>
+            System.Windows.Data.BindingOperations.SetBinding(cible, propriete,
+                new System.Windows.Data.Binding($"[{cle}]") { Source = Instance, Mode = System.Windows.Data.BindingMode.OneWay });
 
         public static List<LangueInfo> Disponibles() =>
             Assembly.GetExecutingAssembly().GetManifestResourceNames()

@@ -1,47 +1,40 @@
-﻿using Misty.Models;
+﻿using Microsoft.Win32;
 using Misty.Services;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
-using System.Text;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using Microsoft.Win32;
 
 namespace Misty
 {
     /// <summary>
-    /// Logique d'interaction pour SoonView.xaml
+    /// Packs de textures : liste, création, export, suppression. L'édition se fait dans <see cref="Views.PackEditorView"/>.
     /// </summary>
     public partial class SoonView : UserControl
     {
-        private readonly DiscordPresenceService discord;
+        internal event Action<PackService.PackInfo>? EditeurDemande;
 
         public SoonView()
         {
             InitializeComponent();
-            Loaded += (_, _) => RafraichirPacks();
-
-            discord = new DiscordPresenceService();
-
-            //discord.EditRessourcePack();
+            Loaded += (_, _) => Rafraichir();
         }
 
-        private void BtnConnexion_Click(object sender, RoutedEventArgs e)
+        /// <summary>Recharge la liste des packs (nombre de textures modifiées, icône…).</summary>
+        public void Rafraichir()
         {
-            
+            var packs = PackService.Lister();
+            ListePacks.ItemsSource = packs;
+            PanneauVide.Visibility = packs.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
         }
+
+        // ───────────────────────── Création ─────────────────────────
 
         private async void BtnCreerPack_Click(object sender, RoutedEventArgs e)
         {
+            TxtNomPack.Text = "";
+            TxtDescriptionPack.Text = "";
+            Loc.Lier(TxtInfoPack, TextBlock.TextProperty, "Pack_InfoTemplate");
             PanneauPack.Visibility = Visibility.Visible;
             TxtNomPack.Focus();
 
@@ -55,9 +48,15 @@ namespace Misty
                 }
                 catch (Exception ex)
                 {
-                    await Dialogs.ErreurAsync("Versions introuvables", ex.Message);
+                    await Dialogs.ErreurAsync(Loc.T("Home_VersionsIndisponibles"), ex.Message);
                 }
             }
+        }
+
+        private void ChampPack_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter && BtnValiderPack.IsEnabled) BtnValiderPack_Click(sender, e);
+            if (e.Key == Key.Escape) PanneauPack.Visibility = Visibility.Collapsed;
         }
 
         private async void BtnValiderPack_Click(object sender, RoutedEventArgs e)
@@ -66,68 +65,64 @@ namespace Misty
 
             if (nom.Length == 0 || CmbVersion.SelectedItem is not string version)
             {
-                await Dialogs.ErreurAsync("Informations manquantes", "Donne un nom au pack et choisis une version.");
+                TxtInfoPack.Text = Loc.T("Pack_Manquant");
                 return;
             }
 
             BtnValiderPack.IsEnabled = false;
+            CmbVersion.IsEnabled = false;
             try
             {
-                var progression = new Progress<string>(m => BtnValiderPack.Content = m);
+                var progression = new Progress<string>(m => TxtInfoPack.Text = m);
                 var (_, format) = await PackService.TemplateAsync(version, progression);
                 string dossier = PackService.CreerPack(nom, TxtDescriptionPack.Text.Trim(), format, version);
 
-                RafraichirPacks();   // ← à ajouter
-
                 PanneauPack.Visibility = Visibility.Collapsed;
-                await Dialogs.InfoAsync("Pack créé", $"« {nom} » a été créé.\n\n{dossier}");
+                Rafraichir();
+
+                // On ouvre directement le nouveau pack dans l'éditeur
+                var pack = PackService.Lister().FirstOrDefault(p => p.Dossier == dossier);
+                if (pack != null) EditeurDemande?.Invoke(pack);
             }
             catch (Exception ex)
             {
-                await Dialogs.ErreurAsync("Création impossible", ex.Message);
+                TxtInfoPack.Text = "";
+                await Dialogs.ErreurAsync(Loc.T("Pack_CreationImpossible"), ex.Message);
             }
             finally
             {
-                BtnValiderPack.Content = "Créer le pack";
                 BtnValiderPack.IsEnabled = true;
+                CmbVersion.IsEnabled = true;
+            }
+        }
+
+        private void BtnAnnulerPack_Click(object sender, RoutedEventArgs e) => PanneauPack.Visibility = Visibility.Collapsed;
+
+        private void FondPack_Click(object sender, MouseButtonEventArgs e)
+        {
+            if (BtnValiderPack.IsEnabled) PanneauPack.Visibility = Visibility.Collapsed; // pas pendant un téléchargement
+        }
+
+        // ───────────────────────── Actions sur un pack ─────────────────────────
+
+        private void Carte_Click(object sender, MouseButtonEventArgs e) => Editer(sender);
+
+        private void BtnTextures_Click(object sender, RoutedEventArgs e) => Editer(sender);
+
+        private async void Editer(object sender)
+        {
+            if ((sender as FrameworkElement)?.DataContext is not PackService.PackInfo pack) return;
+
+            if (string.IsNullOrEmpty(pack.VersionMc))
+            {
+                await Dialogs.ErreurAsync(Loc.T("Pack_VersionManquante"), Loc.T("Pack_VersionManquante_Texte"));
+                return;
             }
 
-        }
-        private async void CmbVersion_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (CmbVersion.SelectedItem is not string version) return;
-
-            //CmbLoader.IsEnabled = false;
-            //BtnCreer.IsEnabled = false;
-            //TxtCreationInfo.Text = $"Recherche des mod loaders pour {version}…";
-
-            var modes = await MinecraftService.Loaders.ModesDisponiblesAsync(version);
-            if (CmbVersion.SelectedItem as string != version) return; // version changée entre-temps
-
-            //CmbLoader.ItemsSource = modes;
-            //// Un profil sert souvent à installer des mods : on propose Fabric par défaut s'il existe
-            //CmbLoader.SelectedItem = modes.Contains(ModLoaderService.Fabric) ? ModLoaderService.Fabric : modes[0];
-            //CmbLoader.IsEnabled = true;
-            //BtnCreer.IsEnabled = true;
-            //TxtCreationInfo.Text = "Les mods ne sont disponibles qu'avec un mod loader (Fabric, Forge, NeoForge, Quilt…).";
-        }
-        //private void BtnCreerPack_Click(object sender, RoutedEventArgs e) =>
-        //    PanneauPack.Visibility = Visibility.Visible;
-
-        private void BtnAnnulerPack_Click(object sender, RoutedEventArgs e) =>
-            PanneauPack.Visibility = Visibility.Collapsed;
-
-        private void FondPack_Click(object sender, MouseButtonEventArgs e) =>
-            PanneauPack.Visibility = Visibility.Collapsed;
-
-        private void RafraichirPacks()
-        {
-            var packs = PackService.Lister();
-            ListePacks.ItemsSource = packs;
-            TxtAucunPack.Visibility = packs.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+            EditeurDemande?.Invoke(pack);
         }
 
-        private void BtnDossierPack_Click(object sender, RoutedEventArgs e) 
+        private void BtnDossierPack_Click(object sender, RoutedEventArgs e)
         {
             if ((sender as FrameworkElement)?.DataContext is PackService.PackInfo pack)
                 Process.Start("explorer.exe", pack.Dossier);
@@ -137,80 +132,34 @@ namespace Misty
         {
             if ((sender as FrameworkElement)?.DataContext is not PackService.PackInfo pack) return;
 
-            if (!await Dialogs.ConfirmerAsync("Supprimer le pack",
-                    $"Supprimer « {pack.Nom} » ? Toutes ses textures seront effacées définitivement.",
-                    "Supprimer", danger: true))
+            if (!await Dialogs.ConfirmerAsync(Loc.T("Pack_Supprimer"), Loc.T("Pack_Supprimer_Texte", pack.Nom),
+                    Loc.T("Commun_Supprimer"), danger: true))
                 return;
 
             try
             {
                 Directory.Delete(pack.Dossier, recursive: true);
-                RafraichirPacks();
             }
             catch (Exception ex)
             {
-                await Dialogs.ErreurAsync("Suppression impossible", ex.Message);
-                RafraichirPacks();
+                await Dialogs.ErreurAsync(Loc.T("Commun_SuppressionImpossible"), ex.Message);
             }
+            Rafraichir();
         }
 
-
-
-
-
-
-
-
-
-
-
-
-
-        private PackService.PackInfo? packEnEdition;
-        private string? dossierTemplate;
-        private ICollectionView? vueTextures;
-
-        internal event Action<PackService.PackInfo>? EditeurDemande;
-
-        private async void BtnTextures_Click(object sender, RoutedEventArgs e)
-        {
-            if ((sender as FrameworkElement)?.DataContext is not PackService.PackInfo pack) return;
-
-            if (string.IsNullOrEmpty(pack.VersionMc))
-            {
-                await Dialogs.ErreurAsync("Version inconnue",
-                    "Ce pack n'a pas de version enregistrée. Recrée-le ou ajoute un fichier misty.json.");
-                return;
-            }
-
-            // (garde ici ton avertissement « expérimental » s'il est déjà en place)
-
-            EditeurDemande?.Invoke(pack);
-        }
-
-
-        private string? ChoisirEditeur()
-        {
-            var dialogue = new Microsoft.Win32.OpenFileDialog
-            {
-                Title = "Choisis ton éditeur d'images (ex. paintdotnet.exe)",
-                Filter = "Programme (*.exe)|*.exe",
-            };
-            if (dialogue.ShowDialog() != true) return null;
-
-            PackService.Editeur = dialogue.FileName;
-            return dialogue.FileName;
-        }
-
-        private void BtnEditeur_Click(object sender, RoutedEventArgs e) => ChoisirEditeur();
         private async void BtnExport_Click(object sender, RoutedEventArgs e)
         {
-            if ((sender as FrameworkElement)?.DataContext is not PackService.PackInfo pack) return;
+            if ((sender as FrameworkElement)?.DataContext is PackService.PackInfo pack)
+                await ExporterAsync(pack, (Button)sender);
+        }
 
+        /// <summary>Exporte le pack en .zip (aussi utilisé par l'éditeur).</summary>
+        internal static async Task ExporterAsync(PackService.PackInfo pack, Button? bouton = null)
+        {
             var dialogue = new SaveFileDialog
             {
-                Title = "Exporter le pack de textures",
-                Filter = "Pack de ressources (*.zip)|*.zip",
+                Title = Loc.T("Pack_ExportDialogue"),
+                Filter = Loc.T("Pack_ExportFiltre") + " (*.zip)|*.zip",
                 FileName = pack.Nom + ".zip",
                 DefaultExt = ".zip",
                 AddExtension = true,
@@ -218,27 +167,25 @@ namespace Misty
             };
             if (dialogue.ShowDialog() != true) return;
 
-            var bouton = (Button)sender;
-            bouton.IsEnabled = false;
+            if (bouton != null) bouton.IsEnabled = false;
             try
             {
                 await Task.Run(() => PackService.Exporter(pack, dialogue.FileName));
 
-                bool ouvrir = await Dialogs.ConfirmerAsync("Pack exporté",
-                    $"« {pack.Nom} » a été exporté :\n\n{dialogue.FileName}\n\n" +
-                    "Pour l'utiliser, place le zip dans le dossier resourcepacks d'un profil.",
-                    "Ouvrir le dossier", "Fermer");
+                bool ouvrir = await Dialogs.ConfirmerAsync(Loc.T("Pack_ExportTitre"),
+                    Loc.T("Pack_Exporte", pack.Nom, dialogue.FileName),
+                    Loc.T("Commun_OuvrirDossier"), Loc.T("Commun_Fermer"));
 
                 if (ouvrir)
                     Process.Start("explorer.exe", $"/select,\"{dialogue.FileName}\"");
             }
             catch (Exception ex)
             {
-                await Dialogs.ErreurAsync("Export impossible", ex.Message);
+                await Dialogs.ErreurAsync(Loc.T("Pack_ExportImpossible"), ex.Message);
             }
             finally
             {
-                bouton.IsEnabled = true;
+                if (bouton != null) bouton.IsEnabled = true;
             }
         }
     }

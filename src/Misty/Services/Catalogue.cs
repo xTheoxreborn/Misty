@@ -7,8 +7,10 @@ namespace Misty.Services
     /// </summary>
     internal static class Catalogue
     {
+        /// <summary>Tris proposés par la plateforme, libellés traduits.</summary>
         public static (string Cle, string Libelle)[] Tris(string source) =>
-            source == Sources.CurseForge ? CurseForgeApi.Tris : ModrinthApi.Tris;
+            (source == Sources.CurseForge ? CurseForgeApi.Tris : ModrinthApi.Tris)
+                .Select(t => (t.Cle, Loc.T(t.Libelle))).ToArray();
 
         /// <param name="instance">Profil cible (filtre version + loader), ou null pour les modpacks.</param>
         public static async Task<(List<ProjetDistant> Projets, int Total)> RechercherAsync(string source, string requete,

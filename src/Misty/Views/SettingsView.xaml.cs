@@ -8,14 +8,13 @@ using System.Windows.Input;
 namespace Misty.Views
 {
     /// <summary>
-    /// Options : profils, compte Microsoft, RAM, raccourci, types de versions, stockage.
+    /// Options : profils, compte Microsoft, RAM, raccourci, types de versions, stockage, langue.
     /// </summary>
     public partial class SettingsView : UserControl
     {
         // true pendant qu'on remplit les contrôles : les événements ne doivent rien enregistrer
         private bool chargement = true;
         private bool typesVersionsModifies;
-        private readonly DiscordPresenceService discord;
         private bool chargementLangue;
 
         public SettingsView()
@@ -23,18 +22,24 @@ namespace Misty.Views
             InitializeComponent();
 
             TxtDossier.Text = AppPaths.DataDir;
-            TxtAPropos.Text = $"Misty {AppInfo.Version} · licence MIT";
 
             AccountService.SessionChanged += () => Dispatcher.Invoke(MajMicrosoft);
+            Loc.Changee += MajTextes;
             chargement = false;
-
-            //CmbProfil.ItemsSource = new List<string> { "Français"/*, "English", "Español" */};
-
-            discord = new DiscordPresenceService();
-
-            
-
         }
+
+        /// <summary>Textes calculés en code (rappelé au changement de langue).</summary>
+        private void MajTextes()
+        {
+            TxtAPropos.Text = Loc.T("Options_APropos_Texte", AppInfo.Version);
+            TxtRamTotale.Text = Loc.T("Options_Ram_Texte", (SystemInfo.RamTotaleMo() / 1024.0).ToString("0.#"));
+            string raccourci = SettingsStore.Get(SettingsStore.Raccourci);
+            TxtCheminRaccourci.Text = string.IsNullOrEmpty(raccourci) ? Loc.T("Options_AucunDossier") : raccourci;
+            MajMicrosoft();
+            AfficherRam();
+            _ = CalculerTailleAsync();
+        }
+
         private void InitLangues()
         {
             chargementLangue = true;
@@ -45,11 +50,12 @@ namespace Misty.Views
 
         private void CmbLangue_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (chargementLangue || CmbLangue.SelectedValue is not string code) return;
+            if (chargementLangue || CmbLangue.SelectedValue is not string code || code == Loc.Instance.Code) return;
 
             SettingsStore.Set(SettingsStore.Langue, code);
             Loc.Instance.Charger(code);
         }
+
         /// <summary>Recharge l'affichage depuis les fichiers de config (appelé à chaque ouverture de la page).</summary>
         public void Rafraichir()
         {
@@ -59,32 +65,27 @@ namespace Misty.Views
             try
             {
                 ChargerProfils();
-                MajMicrosoft();
 
                 int ramMax = SystemInfo.RamMaxProposeeMo();
                 SliderRam.Maximum = ramMax;
-                TxtRamTotale.Text = $"RAM allouée à Minecraft (ton PC a {SystemInfo.RamTotaleMo() / 1024.0:0.#} Go).";
                 if (!int.TryParse(SettingsStore.Get(SettingsStore.Ram), out int ram))
                     ram = AppInfo.RamParDefautMo;
                 SliderRam.Value = Math.Clamp(ram, 1024, ramMax);
-                AfficherRam();
 
                 ChkSnapshot.IsChecked = SettingsStore.GetBool(SettingsStore.Snapshot);
                 ChkBeta.IsChecked = SettingsStore.GetBool(SettingsStore.Beta);
                 ChkAlpha.IsChecked = SettingsStore.GetBool(SettingsStore.Alpha);
 
-                string raccourci = SettingsStore.Get(SettingsStore.Raccourci);
-                TxtCheminRaccourci.Text = string.IsNullOrEmpty(raccourci) ? "Aucun dossier choisi" : raccourci;
-                ChkRaccourci.IsChecked = !string.IsNullOrEmpty(raccourci);
+                ChkRaccourci.IsChecked = !string.IsNullOrEmpty(SettingsStore.Get(SettingsStore.Raccourci));
                 PanneauRaccourci.Visibility = ChkRaccourci.IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
-                Discordrichpresence1.IsChecked = SettingsStore.GetBool(SettingsStore.RichPresence, true);
+                Discordrichpresence1.IsChecked = DiscordPresenceService.Active;
             }
             finally
             {
                 chargement = false;
             }
 
-            _ = CalculerTailleAsync();
+            MajTextes();
         }
 
         /// <summary>Indique (une seule fois) si les types de versions ont changé depuis le dernier appel.</summary>
@@ -121,7 +122,8 @@ namespace Misty.Views
         {
             if ((sender as FrameworkElement)?.Tag is not string pseudo) return;
 
-            if (await Dialogs.ConfirmerAsync("Supprimer le compte", $"Supprimer le compte hors-ligne « {pseudo} » ?", "Supprimer", danger: true))
+            if (await Dialogs.ConfirmerAsync(Loc.T("Options_SupprimerCompte"), Loc.T("Options_SupprimerCompte_Texte", pseudo),
+                    Loc.T("Commun_Supprimer"), danger: true))
             {
                 ProfileStore.Supprimer(pseudo);
                 ChargerProfils();
@@ -134,8 +136,8 @@ namespace Misty.Views
         {
             var session = AccountService.Session;
             TxtEtatMicrosoft.Text = session != null
-                ? $"Connecté en tant que {session.Username}."
-                : "Non connecté : les parties se lancent avec un profil hors-ligne.";
+                ? Loc.T("Compte_Connecte", session.Username ?? "")
+                : Loc.T("Compte_NonConnecte");
 
             BtnConnexion.Visibility = session == null ? Visibility.Visible : Visibility.Collapsed;
             BtnDeconnexion.Visibility = session != null ? Visibility.Visible : Visibility.Collapsed;
@@ -150,7 +152,7 @@ namespace Misty.Views
             }
             catch (Exception ex)
             {
-                await Dialogs.ErreurAsync("Connexion impossible", ex.Message);
+                await Dialogs.ErreurAsync(Loc.T("Compte_ConnexionImpossible"), ex.Message);
             }
             finally
             {
@@ -165,11 +167,11 @@ namespace Misty.Views
             try
             {
                 await AccountService.DeconnexionTotaleAsync();
-                await Dialogs.InfoAsync("Compte oublié", "Le compte Microsoft a été retiré de ce PC.");
+                await Dialogs.InfoAsync(Loc.T("Compte_Oublie"), Loc.T("Compte_Oublie_Texte"));
             }
             catch (Exception ex)
             {
-                await Dialogs.ErreurAsync("Erreur de déconnexion", ex.Message);
+                await Dialogs.ErreurAsync(Loc.T("Compte_ErreurDeconnexion"), ex.Message);
             }
         }
 
@@ -183,13 +185,12 @@ namespace Misty.Views
                 SettingsStore.Set(SettingsStore.Ram, ((int)SliderRam.Value).ToString());
         }
 
-        private void AfficherRam() => TxtRam.Text = $"{SliderRam.Value / 1024:0} GO";
+        private void AfficherRam() => TxtRam.Text = $"{SliderRam.Value / 1024:0} {Loc.T("Unite_Go")}";
 
         // ───────────────────────── Versions ─────────────────────────
 
         private void ChkTypes_Click(object sender, RoutedEventArgs e)
         {
-
             SettingsStore.SetBool(SettingsStore.Snapshot, ChkSnapshot.IsChecked == true);
             SettingsStore.SetBool(SettingsStore.Beta, ChkBeta.IsChecked == true);
             SettingsStore.SetBool(SettingsStore.Alpha, ChkAlpha.IsChecked == true);
@@ -197,23 +198,12 @@ namespace Misty.Views
         }
 
         // ───────────────────────── Rich Presence Discord ─────────────────────────
-        /*
-        private async void BtnActiverDiscord_Click(object sender, RoutedEventArgs e)
+
+        private void Chkrich(object sender, RoutedEventArgs e)
         {
+            if (chargement) return;
             SettingsStore.SetBool(SettingsStore.RichPresence, Discordrichpresence1.IsChecked == true);
-        }*/
-        private async void Chkrich(object sender, RoutedEventArgs e)
-        {
-            SettingsStore.SetBool(SettingsStore.RichPresence, Discordrichpresence1.IsChecked == true);
-
-            string richPresence = SettingsStore.GetBool(SettingsStore.RichPresence, true).ToString().ToLower();
-
-            if (richPresence == "true")
-                discord.DansLeLauncher();
-
-            else if (Discordrichpresence1.IsChecked == false)
-                discord.FermerRichPresence();
-            
+            DiscordPresenceService.Instance.Reappliquer();
         }
 
         // ───────────────────────── Raccourci ─────────────────────────
@@ -244,7 +234,7 @@ namespace Misty.Views
             {
                 ShortcutService.Supprimer(SettingsStore.Get(SettingsStore.Raccourci));
                 SettingsStore.Set(SettingsStore.Raccourci, "");
-                TxtCheminRaccourci.Text = "Aucun dossier choisi";
+                TxtCheminRaccourci.Text = Loc.T("Options_AucunDossier");
             }
         }
 
@@ -252,7 +242,7 @@ namespace Misty.Views
 
         private async Task ChoisirDossierRaccourciAsync()
         {
-            var dialogue = new OpenFolderDialog { Title = "Dossier du raccourci Misty" };
+            var dialogue = new OpenFolderDialog { Title = Loc.T("Options_DossierRaccourci") };
             if (dialogue.ShowDialog() != true) return;
 
             ShortcutService.Supprimer(SettingsStore.Get(SettingsStore.Raccourci)); // ancien emplacement
@@ -279,23 +269,22 @@ namespace Misty.Views
             }
             catch (Exception ex)
             {
-                await Dialogs.ErreurAsync("Raccourci", "Erreur lors de la création du raccourci : " + ex.Message);
+                await Dialogs.ErreurAsync(Loc.T("Options_Raccourci"), Loc.T("Options_RaccourciErreur", ex.Message));
             }
         }
-
 
         // ───────────────────────── Stockage ─────────────────────────
 
         private async Task CalculerTailleAsync()
         {
-            TxtTaille.Text = "CALCUL…";
+            TxtTaille.Text = Loc.T("Options_Calcul");
             long octets = await Task.Run(() =>
             {
                 try { return SystemInfo.TailleDossier(AppPaths.DataDir); }
                 catch { return 0L; }
             });
             double mo = octets / (1024.0 * 1024.0);
-            TxtTaille.Text = mo >= 1024 ? $"{mo / 1024:0.00} GO" : $"{mo:0} MO";
+            TxtTaille.Text = mo >= 1024 ? $"{mo / 1024:0.00} {Loc.T("Unite_Go")}" : $"{mo:0} {Loc.T("Unite_Mo")}";
         }
 
         private void BtnOuvrirDossier_Click(object sender, RoutedEventArgs e)
@@ -306,9 +295,8 @@ namespace Misty.Views
 
         private async void BtnToutSupprimer_Click(object sender, RoutedEventArgs e)
         {
-            if (!await Dialogs.ConfirmerAsync("Tout supprimer",
-                    "Supprimer le dossier Misty et toutes ses données (versions, mods, mondes, profils) ?",
-                    "Tout supprimer", danger: true))
+            if (!await Dialogs.ConfirmerAsync(Loc.T("Options_ToutSupprimer"), Loc.T("Options_ToutSupprimer_Texte"),
+                    Loc.T("Options_ToutSupprimer"), danger: true))
                 return;
 
             try
@@ -318,24 +306,18 @@ namespace Misty.Views
             }
             catch (Exception ex)
             {
-                await Dialogs.ErreurAsync("Suppression incomplète", ex.Message);
+                await Dialogs.ErreurAsync(Loc.T("Options_SuppressionIncomplete"), ex.Message);
             }
             await CalculerTailleAsync();
 
-            if (await Dialogs.ConfirmerAsync("Fermer Misty ?",
-                    "Fermer le launcher maintenant pour ne pas recréer de données ?", "Fermer", "Rester"))
+            if (await Dialogs.ConfirmerAsync(Loc.T("Options_FermerMisty"), Loc.T("Options_FermerMisty_Texte"),
+                    Loc.T("Commun_Fermer"), Loc.T("Options_Rester")))
                 Application.Current.Shutdown();
         }
 
         private void BtnGitHub_Click(object sender, RoutedEventArgs e)
         {
             Process.Start(new ProcessStartInfo($"https://github.com/{AppInfo.GitHubRepo}") { UseShellExecute = true });
-        }
-
-        private void CmbProfil_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            
-            
         }
     }
 }

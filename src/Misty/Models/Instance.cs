@@ -36,11 +36,11 @@ namespace Misty.Models
         [JsonIgnore] public string Resume => $"{VersionMc} · {Loader}";
         [JsonIgnore] public ImageSource? Icone => File.Exists(CheminIcone) ? Images.DepuisFichier(CheminIcone) : Images.DepuisUrl(IconeUrl);
         [JsonIgnore]
-        public string DernierLancementTexte => DernierLancement is not DateTime d ? "Jamais lancé"
-            : d.Date == DateTime.Today ? "Joué aujourd'hui"
-            : d.Date == DateTime.Today.AddDays(-1) ? "Joué hier"
-            : (DateTime.Today - d.Date).TotalDays < 30 ? $"Joué il y a {(int)(DateTime.Today - d.Date).TotalDays} j"
-            : $"Joué le {d:dd/MM/yyyy}";
+        public string DernierLancementTexte => DernierLancement is not DateTime d ? Loc.T("Profil_Jamais")
+            : d.Date == DateTime.Today ? Loc.T("Profil_Aujourdhui")
+            : d.Date == DateTime.Today.AddDays(-1) ? Loc.T("Profil_Hier")
+            : (DateTime.Today - d.Date).TotalDays < 30 ? Loc.T("Profil_IlYa", (int)(DateTime.Today - d.Date).TotalDays)
+            : Loc.T("Profil_Le", d.ToString("d", System.Globalization.CultureInfo.GetCultureInfo(Loc.Instance.Code)));
 
         [JsonIgnore] public bool EstModpack => ModpackProjectId != null;
         [JsonIgnore] public bool SupporteMods => ContentService.SupporteMods(Loader);

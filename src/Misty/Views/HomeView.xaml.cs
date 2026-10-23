@@ -32,6 +32,9 @@ namespace Misty.Views
         private bool jeuEnCours;
         private Instance? profil;
 
+        /// <summary>Minecraft a été lancé depuis Misty et tourne encore.</summary>
+        public bool JeuEnCours => jeuEnCours;
+
         /// <summary>L'utilisateur veut gérer le contenu du profil sélectionné.</summary>
         public event Action<Instance>? GererProfilDemande;
 
@@ -44,6 +47,11 @@ namespace Misty.Views
 
             AccountService.SessionChanged += () => Dispatcher.Invoke(MajCompte);
             InstanceStore.Modifie += () => Dispatcher.Invoke(ChargerProfils);
+            Loc.Changee += () =>
+            {
+                MajCompte();
+                ChargerProfils(); // "Jeu rapide" + résumé du profil
+            };
 
             AnimerBloc();
         }
@@ -59,11 +67,11 @@ namespace Misty.Views
 
             _ = ConnexionPremiumAutoAsync(); // en parallèle du chargement des versions
 
-            Statut("Chargement des versions…");
+            Statut(Loc.T("Home_ChargementVersions"));
             await ChargerVersionsAsync();
             ChargerDerniereVersion();
             if (profil == null && CmbVersion.SelectedItem == null)
-                Statut("Choisis une version pour commencer");
+                Statut(Loc.T("Home_ChoisisVersion"));
         }
 
         /// <summary>Appelé quand on revient sur la page (les options ont pu changer).</summary>
@@ -116,14 +124,14 @@ namespace Misty.Views
         {
             BtnMicrosoft.IsEnabled = false;
             string ancienStatut = TxtStatut.Text;
-            Statut("Connexion au compte Microsoft…");
+            Statut(Loc.T("Home_ConnexionMicrosoft"));
             try
             {
                 await AccountService.ConnecterAsync();
             }
             catch (Exception ex)
             {
-                await Dialogs.ErreurAsync("Connexion impossible", ex.Message);
+                await Dialogs.ErreurAsync(Loc.T("Compte_ConnexionImpossible"), ex.Message);
             }
             finally
             {
@@ -142,9 +150,9 @@ namespace Misty.Views
             TxtPseudoPremium.Text = session?.Username ?? "";
 
             BtnMicrosoft.Content = premium ? "" : "";
-            BtnMicrosoft.ToolTip = premium ? "Se déconnecter" : "Se connecter avec un compte Microsoft";
+            BtnMicrosoft.ToolTip = Loc.T(premium ? "Compte_SeDeconnecter" : "Home_ConnecterMicrosoft");
 
-            PastilleCompte.ToolTip = premium ? $"Compte Microsoft : {session!.Username}" : "Hors-ligne";
+            PastilleCompte.ToolTip = premium ? Loc.T("Home_CompteMicrosoft", session!.Username ?? "") : Loc.T("Home_HorsLigne");
             PastilleCompteIcone.Text = premium ? "" : "";
             ((Border)PastilleCompte.Child).Background = (Brush)FindResource(premium ? "GreenBrush" : "BlueBrush");
 
@@ -180,7 +188,7 @@ namespace Misty.Views
         {
             string? idVoulu = profil?.Id ?? SettingsStore.Get(SettingsStore.DernierProfil);
 
-            var choix = new List<ChoixProfil> { new("Jeu rapide", null) };
+            var choix = new List<ChoixProfil> { new(Loc.T("Home_JeuRapide"), null) };
             choix.AddRange(InstanceStore.Lister().Select(i => new ChoixProfil(i.Nom, i)));
 
             CmbProfil.SelectionChanged -= CmbProfil_SelectionChanged;
@@ -208,7 +216,7 @@ namespace Misty.Views
 
             if (profil != null)
             {
-                CarteLibelle.Text = "PROFIL · " + profil.Nom.ToUpperInvariant();
+                CarteLibelle.Text = Loc.T("Home_Profil") + " · " + profil.Nom.ToUpperInvariant();
                 CarteVersion.Text = profil.VersionMc;
                 CarteLoader.Text = profil.Loader.ToUpperInvariant();
                 TxtResumeProfil.Text = ResumeContenu(profil);
@@ -220,7 +228,7 @@ namespace Misty.Views
             }
             else
             {
-                CarteLibelle.Text = "VERSION SÉLECTIONNÉE";
+                CarteLibelle.Text = Loc.T("Home_Version_Selected");
                 CarteVersion.Text = string.IsNullOrEmpty(selectedVersion) ? "—" : selectedVersion;
                 CarteLoader.Text = (CmbMode.SelectedItem as string ?? ModLoaderService.Vanilla).ToUpperInvariant();
                 Bloc.Source = PixelArt.BlocHerbe;
@@ -231,7 +239,7 @@ namespace Misty.Views
             {
                 BtnJouer.IsEnabled = avecProfil || modesCharges;
                 if (avecProfil || modesCharges)
-                    Statut(jeuEnCours ? "Minecraft est en cours d'exécution" : "Prêt à jouer");
+                    Statut(Loc.T(jeuEnCours ? "Home_EnCours" : "Home_Pret"));
             }
         }
 
@@ -244,19 +252,11 @@ namespace Misty.Views
                 foreach (var groupe in ContentService.Lister(instance).Where(c => c.Actif).GroupBy(c => c.Type))
                 {
                     int n = groupe.Count();
-                    string libelle = groupe.Key switch
-                    {
-                        ContentService.Mod => n > 1 ? "mods" : "mod",
-                        ContentService.PackRessources => n > 1 ? "packs de ressources" : "pack de ressources",
-                        ContentService.Datapack => n > 1 ? "datapacks" : "datapack",
-                        ContentService.Shader => n > 1 ? "shaders" : "shader",
-                        _ => groupe.Key,
-                    };
-                    morceaux.Add($"{n} {libelle}");
+                    morceaux.Add($"{n} {ContentService.LibelleNombre(groupe.Key, n)}");
                 }
             }
             catch { }
-            return morceaux.Count > 0 ? string.Join(" · ", morceaux) : "Aucun contenu : clique sur le crayon pour en ajouter";
+            return morceaux.Count > 0 ? string.Join(" · ", morceaux) : Loc.T("Home_AucunContenu");
         }
 
         private void BtnGererProfil_Click(object sender, RoutedEventArgs e)
@@ -288,8 +288,8 @@ namespace Misty.Views
             }
             catch (Exception ex)
             {
-                Statut("Impossible de charger les versions");
-                await Dialogs.ErreurAsync("Versions indisponibles", "Erreur au chargement des versions : " + ex.Message);
+                Statut(Loc.T("Home_VersionsImpossible"));
+                await Dialogs.ErreurAsync(Loc.T("Home_VersionsIndisponibles"), Loc.T("Home_VersionsErreur", ex.Message));
             }
         }
 
@@ -306,14 +306,14 @@ namespace Misty.Views
         {
             object? versionActuelle = CmbVersion.SelectedItem;
             BtnRecharger.IsEnabled = false;
-            if (profil == null) Statut("Chargement des versions…");
+            if (profil == null) Statut(Loc.T("Home_ChargementVersions"));
 
             await ChargerVersionsAsync();
 
             if (versionActuelle != null && CmbVersion.Items.Contains(versionActuelle))
                 CmbVersion.SelectedItem = versionActuelle;
             else if (profil == null)
-                Statut("Choisis une version pour commencer");
+                Statut(Loc.T("Home_ChoisisVersion"));
 
             BtnRecharger.IsEnabled = true;
         }
@@ -334,7 +334,7 @@ namespace Misty.Views
             {
                 BtnJouer.IsEnabled = false;
                 CarteVersion.Text = version;
-                Statut($"Recherche des mod loaders pour {version}…");
+                Statut(Loc.T("Commun_RechercheLoaders", version));
             }
 
             var modes = await MinecraftService.Loaders.ModesDisponiblesAsync(version);
@@ -372,7 +372,7 @@ namespace Misty.Views
             CmbVersion.IsEnabled = false;
             CmbMode.IsEnabled = false;
             CmbProfil.IsEnabled = false;
-            AfficherProgression(0, $"Préparation de {instance?.Nom ?? $"{version} {mode}"}…");
+            AfficherProgression(0, Loc.T("Home_Preparation", instance?.Nom ?? $"{version} {mode}"));
 
             try
             {
@@ -383,18 +383,18 @@ namespace Misty.Views
                 }
                 catch (Exception ex)
                 {
-                    Statut("Échec du téléchargement");
-                    await Dialogs.ErreurAsync("Téléchargement impossible", ex.Message);
+                    Statut(Loc.T("Home_EchecTelechargement"));
+                    await Dialogs.ErreurAsync(Loc.T("Home_TelechargementImpossible"), ex.Message);
                     return;
                 }
 
-                AfficherProgression(100, "Lancement de Minecraft…");
+                AfficherProgression(100, Loc.T("Home_Lancement"));
                 await LancerJeuAsync(version, mode, nomVersion, instance);
             }
             finally
             {
                 installationEnCours = false;
-                BtnJouer.Content = "JOUER";
+                Loc.Lier(BtnJouer, ContentProperty, "Home_Bouton_Jouer");
                 BtnJouer.IsEnabled = true;
                 CmbVersion.IsEnabled = true;
                 CmbMode.IsEnabled = modesCharges;
@@ -434,22 +434,14 @@ namespace Misty.Views
                 process.Exited += (s, args) => Dispatcher.Invoke(() =>
                 {
                     jeuEnCours = false;
-
-                    /*
-                    string richPresence = SettingsStore.GetBool(SettingsStore.RichPresence, true).ToString().ToLower();
-
-                    if (richPresence == "true")
-                        discord.DansLeLauncher();
-                    else
-                        discord.FermerRichPresence();
-                    */
-                    Statut("Prêt à jouer");
+                    discord.DansLeLauncher();
+                    Statut(Loc.T("Home_Pret"));
                     if (profil != null) TxtResumeProfil.Text = ResumeContenu(profil);
                 });
 
                 process.Start();
                 jeuEnCours = true;
-                Statut($"{instance?.Nom ?? "Minecraft " + version} est lancé, bon jeu !");
+                Statut(Loc.T("Home_Lance", instance?.Nom ?? "Minecraft " + version));
 
                 if (instance != null)
                 {
@@ -459,8 +451,8 @@ namespace Misty.Views
             }
             catch (Exception ex)
             {
-                Statut("Échec du lancement");
-                await Dialogs.ErreurAsync("Impossible de lancer le jeu", ex.Message);
+                Statut(Loc.T("Home_EchecLancement"));
+                await Dialogs.ErreurAsync(Loc.T("Home_LancementImpossible"), ex.Message);
             }
         }
 
@@ -470,7 +462,7 @@ namespace Misty.Views
         {
             if (args.TotalTasks <= 0) return;
             double pourcentage = args.ProgressedTasks * 100.0 / args.TotalTasks;
-            AfficherProgression(pourcentage, $"Téléchargement… {args.Name}");
+            AfficherProgression(pourcentage, Loc.T("Home_Telechargement", args.Name ?? ""));
         });
 
         private void Statut(string texte) => TxtStatut.Text = texte;

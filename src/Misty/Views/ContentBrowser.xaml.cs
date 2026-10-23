@@ -38,8 +38,11 @@ namespace Misty.Views
         /// <summary>Indique si un projet est déjà installé.</summary>
         public Func<ProjetDistant, bool>? EstInstalle { get; set; }
 
-        /// <summary>Libellé du bouton quand le projet n'est pas installé.</summary>
-        public string LibelleInstaller { get; set; } = "Installer";
+        /// <summary>Clé de traduction du bouton quand le projet n'est pas installé.</summary>
+        public string LibelleInstaller { get; set; } = "Explorateur_Installer";
+
+        private IReadOnlyList<(string Type, string Libelle)> types = Array.Empty<(string, string)>();
+        private Func<IReadOnlyList<(string Type, string Libelle)>>? sourceTypes;
 
         public ContentBrowser()
         {
@@ -52,19 +55,51 @@ namespace Misty.Views
                 antiRebond.Stop();
                 await RechercherAsync(nouvelle: true);
             };
+
+            Loc.Changee += () =>
+            {
+                if (sourceTypes == null) return;
+                configuration = true;
+                types = sourceTypes();
+                ConstruireTypes();
+                int tri = CmbTri.SelectedIndex;
+                RemplirTris();
+                CmbTri.SelectedIndex = Math.Max(0, tri);
+                configuration = false;
+                foreach (var r in resultats) r.Rafraichir();
+                MajInfo();
+                if (!chargement && total > 0) TxtBas.Text = resultats.Count >= total ? Loc.T("Explorateur_Fin") : "";
+            };
         }
 
         /// <summary>
         /// Prépare l'explorateur. instance = null pour les modpacks (pas de filtre de version/loader).
         /// </summary>
-        public async void Configurer(Instance? instance, IReadOnlyList<(string Type, string Libelle)> types, string? typeInitial = null)
+        /// <param name="types">Fonction qui renvoie les types proposés (rappelée au changement de langue).</param>
+        public async void Configurer(Instance? instance, Func<IReadOnlyList<(string Type, string Libelle)>> types, string? typeInitial = null)
         {
             configuration = true;
             this.instance = instance;
-            type = typeInitial ?? types[0].Type;
+            sourceTypes = types;
+            this.types = types();
+            type = typeInitial ?? this.types[0].Type;
             if (type == ContentService.Mod && instance?.SupporteMods == false)
                 type = ContentService.PackRessources;
 
+            ConstruireTypes();
+
+            source = sourceRetenue;
+            (source == Sources.CurseForge ? SourceCurseForge : SourceModrinth).IsChecked = true;
+            RemplirTris();
+
+            TxtRecherche.Text = "";
+            antiRebond.Stop(); // le TextChanged ci-dessus ne doit pas relancer une 2e recherche
+            configuration = false;
+            await RechercherAsync(nouvelle: true);
+        }
+
+        private void ConstruireTypes()
+        {
             PanneauTypes.Children.Clear();
             PanneauTypes.Visibility = types.Count > 1 ? Visibility.Visible : Visibility.Collapsed;
             foreach (var (t, libelle) in types)
@@ -80,24 +115,16 @@ namespace Misty.Views
                 if (t == ContentService.Mod && instance != null && !instance.SupporteMods)
                 {
                     onglet.IsEnabled = false;
-                    onglet.ToolTip = "Choisis un mod loader (Fabric, Forge…) pour installer des mods";
+                    onglet.ToolTip = Loc.T("Explorateur_ModsImpossibles");
                 }
                 onglet.Checked += async (s, _) =>
                 {
+                    if (configuration) return;
                     type = (string)((RadioButton)s!).Tag;
                     await RechercherAsync(nouvelle: true);
                 };
                 PanneauTypes.Children.Add(onglet);
             }
-
-            source = sourceRetenue;
-            (source == Sources.CurseForge ? SourceCurseForge : SourceModrinth).IsChecked = true;
-            RemplirTris();
-
-            TxtRecherche.Text = "";
-            antiRebond.Stop(); // le TextChanged ci-dessus ne doit pas relancer une 2e recherche
-            configuration = false;
-            await RechercherAsync(nouvelle: true);
         }
 
         /// <summary>Met à jour l'état "Installé" des résultats affichés.</summary>
@@ -168,7 +195,7 @@ namespace Misty.Views
             if (sansCle) return;
 
             chargement = true;
-            TxtBas.Text = "CHARGEMENT…";
+            TxtBas.Text = Loc.T("Commun_ChargementMaj");
             MajInfo();
 
             try
@@ -183,12 +210,12 @@ namespace Misty.Views
                 foreach (var projet in projets)
                     resultats.Add(new ResultatVM(projet, LibelleInstaller) { EstInstalle = EstInstalle?.Invoke(projet) == true });
 
-                TxtBas.Text = resultats.Count == 0 ? "AUCUN RÉSULTAT" : resultats.Count >= total ? "C'EST TOUT !" : "";
+                TxtBas.Text = resultats.Count == 0 ? Loc.T("Explorateur_Aucun") : resultats.Count >= total ? Loc.T("Explorateur_Fin") : "";
             }
             catch (Exception ex)
             {
                 if (maGeneration == generation)
-                    TxtBas.Text = $"{Sources.Libelle(source).ToUpperInvariant()} INJOIGNABLE : {ex.Message.ToUpperInvariant()}";
+                    TxtBas.Text = Loc.T("Explorateur_Injoignable", Sources.Libelle(source)).ToUpperInvariant() + " : " + ex.Message.ToUpperInvariant();
             }
             finally
             {
@@ -202,9 +229,9 @@ namespace Misty.Views
 
         private void MajInfo()
         {
-            string filtre = instance == null ? "" : $" · compatibles avec {instance.VersionMc}" +
+            string filtre = instance == null ? "" : " · " + Loc.T("Explorateur_Compatibles", instance.VersionMc) +
                 (type == ContentService.Mod || type == ContentService.Shader ? $" ({instance.Loader})" : "");
-            TxtInfo.Text = (total > 0 ? $"{total:N0} résultats sur {Sources.Libelle(source)}" : Sources.Libelle(source)) + filtre;
+            TxtInfo.Text = (total > 0 ? Loc.T("Explorateur_Resultats", total.ToString("N0"), Sources.Libelle(source)) : Sources.Libelle(source)) + filtre;
         }
 
         // ───────────────────────── Installation ─────────────────────────
@@ -241,7 +268,7 @@ namespace Misty.Views
 
             public ProjetDistant Projet { get; }
             public ImageSource? Icone { get; }
-            public string Auteur => string.IsNullOrEmpty(Projet.Auteur) ? "" : "  par " + Projet.Auteur;
+            public string Auteur => string.IsNullOrEmpty(Projet.Auteur) ? "" : "  " + Loc.T("Explorateur_Par", Projet.Auteur);
             public string Telechargements => ModrinthApi.FormaterNombre(Projet.Telechargements);
             public string Categories => string.Join(" · ", Projet.Categories
                 .Where(c => c is not ("fabric" or "forge" or "neoforge" or "quilt" or "minecraft" or "datapack" or "iris" or "optifine"))
@@ -251,7 +278,10 @@ namespace Misty.Views
             public bool EnCours { get => enCours; set { enCours = value; Notifier(); } }
 
             public bool BoutonActif => !EnCours;
-            public string LibelleBouton => EnCours ? "En cours…" : EstInstalle ? "Installé" : libelleInstaller;
+            public string LibelleBouton => Loc.T(EnCours ? "Explorateur_EnCours" : EstInstalle ? "Explorateur_Installe" : libelleInstaller);
+
+            /// <summary>Après un changement de langue.</summary>
+            public void Rafraichir() => Notifier(nameof(Auteur));
             public string IconeBouton => EnCours ? "" : EstInstalle ? "" : "";
 
             public event PropertyChangedEventHandler? PropertyChanged;

@@ -24,23 +24,34 @@ namespace Misty.Services
         public const string IdIris = "YL57xq9U";
         public const string IdOculus = "GchcoXML";
 
-        public static readonly (string Type, string Libelle)[] Types =
+        /// <summary>Types installables dans un profil, avec leur libellé dans la langue actuelle.</summary>
+        public static (string Type, string Libelle)[] Types => new[]
         {
-            (Mod, "Mods"),
-            (PackRessources, "Packs de ressources"),
-            (Datapack, "Datapacks"),
-            (Shader, "Shaders"),
+            (Mod, Loc.T("Type_Mods")),
+            (PackRessources, Loc.T("Type_Packs")),
+            (Datapack, Loc.T("Type_Datapacks")),
+            (Shader, Loc.T("Type_Shaders")),
         };
 
         private static readonly JsonSerializerOptions json = new() { WriteIndented = true };
 
         public static string LibelleType(string type) => type switch
         {
-            Mod => "Mod",
-            PackRessources => "Pack de ressources",
-            Datapack => "Datapack",
-            Shader => "Shader",
-            Modpack => "Modpack",
+            Mod => Loc.T("Type_Mod"),
+            PackRessources => Loc.T("Type_Pack"),
+            Datapack => Loc.T("Type_Datapack"),
+            Shader => Loc.T("Type_Shader"),
+            Modpack => Loc.T("Type_Modpack"),
+            _ => type,
+        };
+
+        /// <summary>"mod" / "mods" selon le nombre, en minuscules (ex. "3 mods").</summary>
+        public static string LibelleNombre(string type, int n) => type switch
+        {
+            Mod => Loc.T(n > 1 ? "Nb_Mods" : "Nb_Mod"),
+            PackRessources => Loc.T(n > 1 ? "Nb_Packs" : "Nb_Pack"),
+            Datapack => Loc.T(n > 1 ? "Nb_Datapacks" : "Nb_Datapack"),
+            Shader => Loc.T(n > 1 ? "Nb_Shaders" : "Nb_Shader"),
             _ => type,
         };
 
@@ -273,10 +284,10 @@ namespace Misty.Services
             if (version == null)
             {
                 string titre = (await ModrinthApi.ProjetsAsync(new[] { projectId })).FirstOrDefault()?.Title ?? projectId;
-                throw new InvalidOperationException($"{titre} n'a pas de version compatible avec {instance.VersionMc} ({instance.Loader}).");
+                throw new InvalidOperationException(Loc.T("Erreur_PasDeVersion", titre, instance.VersionMc, instance.Loader));
             }
 
-            var fichier = version.FichierPrincipal ?? throw new InvalidOperationException("Cette version ne contient aucun fichier.");
+            var fichier = version.FichierPrincipal ?? throw new InvalidOperationException(Loc.T("Erreur_AucunFichier"));
             var projet = (await ModrinthApi.ProjetsAsync(new[] { projectId })).FirstOrDefault();
             projectId = projet?.Id ?? projectId; // on garde l'ID réel, même si on a reçu un slug
             visites.Add(projectId);
@@ -285,7 +296,7 @@ namespace Misty.Services
 
             RetirerAncienneVersion(instance, metas, Sources.Modrinth, projectId, type, dossier);
 
-            progression?.Report($"Téléchargement de {titreProjet}…");
+            progression?.Report(Loc.T("Progres_Telechargement", titreProjet));
             string destination = Path.Combine(dossier, NomFichierSur(fichier.Filename));
             await Telechargement.FichierAsync(fichier.Url, destination, fichier.Hashes.GetValueOrDefault("sha1"));
 
@@ -326,7 +337,7 @@ namespace Misty.Services
             if (!visites.Add(modId)) return;
 
             var mod = (await CurseForgeApi.ModsAsync(new[] { modId })).FirstOrDefault()
-                ?? throw new InvalidOperationException($"Projet CurseForge {modId} introuvable.");
+                ?? throw new InvalidOperationException(Loc.T("Erreur_ProjetCF", modId));
 
             // Fichiers compatibles : bonne version de Minecraft (+ bon loader pour les mods)
             var fichiers = (await CurseForgeApi.FichiersAsync(modId, instance.VersionMc))
@@ -339,17 +350,16 @@ namespace Misty.Services
             }
 
             var fichier = fichiers.FirstOrDefault(f => f.ReleaseType == 1) ?? fichiers.FirstOrDefault()
-                ?? throw new InvalidOperationException($"{mod.Name} n'a pas de version compatible avec {instance.VersionMc} ({instance.Loader}) sur CurseForge.");
+                ?? throw new InvalidOperationException(Loc.T("Erreur_PasDeVersionCF", mod.Name, instance.VersionMc, instance.Loader));
 
             if (string.IsNullOrEmpty(fichier.DownloadUrl))
                 throw new InvalidOperationException(
-                    $"L'auteur de {mod.Name} n'autorise pas le téléchargement depuis d'autres applications que CurseForge.\n\n" +
-                    $"Télécharge-le sur {CurseForgeApi.PageFichier(mod, modId, fichier.Id)} puis place-le dans le dossier du profil.");
+                    Loc.T("Erreur_CFInterdit", mod.Name, CurseForgeApi.PageFichier(mod, modId, fichier.Id)));
 
             string dossier = Dossier(instance, type, monde);
             RetirerAncienneVersion(instance, metas, Sources.CurseForge, modId.ToString(), type, dossier);
 
-            progression?.Report($"Téléchargement de {mod.Name}…");
+            progression?.Report(Loc.T("Progres_Telechargement", mod.Name));
             string destination = Path.Combine(dossier, NomFichierSur(fichier.FileName));
             await Telechargement.FichierAsync(fichier.DownloadUrl, destination, fichier.Sha1);
 

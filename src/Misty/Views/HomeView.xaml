@@ -21,7 +21,7 @@
             <!-- Titre -->
             <StackPanel VerticalAlignment="Center" Margin="14,0,0,0">
                 <Border HorizontalAlignment="Left" CornerRadius="10" Background="#401C2335" Padding="12,6" Margin="6,0,0,14">
-                    <TextBlock Style="{StaticResource PixelLabel}" Foreground="White" FontSize="12" Text="LAUNCHER MINECRAFT" />
+                    <TextBlock Style="{StaticResource PixelLabel}" Foreground="White" FontSize="12" Text="{loc:Tr Home_Badge}" />
                 </Border>
 
                 <controls:OutlinedText Text="MISTY" FontFamily="{StaticResource PixelFont}" FontSize="128"
@@ -30,7 +30,7 @@
 
                 <TextBlock Style="{StaticResource BodyText}" FontSize="16" Foreground="{StaticResource Navy2Brush}"
                            Margin="8,10,0,0" MaxWidth="420" HorizontalAlignment="Left" LineHeight="24">
-                    Toutes les versions, tous les mod loaders.<LineBreak />Choisis, clique, joue.
+                    <Run Text="{loc:Tr Home_txt-1}" /><LineBreak /><Run Text="{loc:Tr Home_txt-2}" />
                 </TextBlock>
 
                 <!-- Loaders pris en charge -->
@@ -92,7 +92,7 @@
 
                                 <!-- version sélectionnée -->
                                 <StackPanel VerticalAlignment="Bottom" Margin="22,0,22,22">
-                                    <TextBlock x:Name="CarteLibelle" Style="{StaticResource PixelLabel}" FontSize="11" Foreground="#99FFFFFF" Text="{loc:Tr Home_Version_Selected}" TextTrimming="CharacterEllipsis" />
+                                    <TextBlock x:Name="CarteLibelle" Style="{StaticResource PixelLabel}" FontSize="11" Foreground="#99FFFFFF" TextTrimming="CharacterEllipsis" />
                                     <controls:OutlinedText x:Name="CarteVersion" Text="—" FontFamily="{StaticResource PixelFont}" FontSize="34"
                                                            Fill="White" Stroke="{StaticResource NavyBrush}" StrokeThickness="3"
                                                            ShadowBrush="#000A0F1A" Margin="0,4,0,0" />
@@ -104,7 +104,7 @@
                     <!-- pastilles (comme les icônes du visuel) -->
                     <Border x:Name="PastilleCompte" Width="54" Height="54" CornerRadius="27" Background="White"
                             HorizontalAlignment="Left" VerticalAlignment="Top" Margin="-16,26,0,0"
-                            Effect="{StaticResource SmallShadow}" ToolTip="Hors-ligne">
+                            Effect="{StaticResource SmallShadow}">
                         <Border Margin="5" CornerRadius="22" Background="{StaticResource BlueBrush}">
                             <TextBlock x:Name="PastilleCompteIcone" Style="{StaticResource Icon}" Foreground="White" FontSize="20" Text="&#xE77B;" />
                         </Border>
@@ -172,7 +172,7 @@
                                 </Border>
                             </Grid>
                             <Button x:Name="BtnMicrosoft" Style="{StaticResource IconButton}" Width="44" Height="44" Margin="8,0,0,0"
-                                    Content="&#xE8FA;" ToolTip="Se connecter avec un compte Microsoft" Click="BtnMicrosoft_Click" />
+                                    Content="&#xE8FA;" Click="BtnMicrosoft_Click" />
                         </StackPanel>
                     </StackPanel>
                 </StackPanel>
@@ -181,7 +181,7 @@
 
                 <!-- Profil -->
                 <StackPanel Grid.Column="2" VerticalAlignment="Bottom" Margin="0,0,10,0">
-                    <TextBlock Style="{StaticResource PixelLabel}" FontSize="10" Text="PROFIL" Margin="4,0,0,6" />
+                    <TextBlock Style="{StaticResource PixelLabel}" FontSize="10" Text="{loc:Tr Home_Profil}" Margin="4,0,0,6" />
                     <ComboBox x:Name="CmbProfil" Style="{StaticResource GlassCombo}" Width="160"
                               SelectionChanged="CmbProfil_SelectionChanged" />
                 </StackPanel>
@@ -190,16 +190,16 @@
                     <!-- Jeu rapide : version + loader au choix -->
                     <StackPanel x:Name="PanneauRapide" Orientation="Horizontal">
                         <StackPanel Margin="0,0,10,0">
-                            <TextBlock Style="{StaticResource PixelLabel}" FontSize="10" Text="VERSION" Margin="4,0,0,6" />
+                            <TextBlock Style="{StaticResource PixelLabel}" FontSize="10" Text="{loc:Tr Commun_Version}" Margin="4,0,0,6" />
                             <StackPanel Orientation="Horizontal">
                                 <ComboBox x:Name="CmbVersion" Style="{StaticResource GlassCombo}" Width="130"
                                           SelectionChanged="CmbVersion_SelectionChanged" />
                                 <Button x:Name="BtnRecharger" Style="{StaticResource IconButton}" Width="44" Height="44" Margin="8,0,0,0"
-                                        Content="&#xE72C;" ToolTip="Recharger la liste des versions" Click="BtnRecharger_Click" />
+                                        Content="&#xE72C;" ToolTip="{loc:Tr Home_Recharger}" Click="BtnRecharger_Click" />
                             </StackPanel>
                         </StackPanel>
                         <StackPanel>
-                            <TextBlock Style="{StaticResource PixelLabel}" FontSize="10" Text="MOD LOADER" Margin="4,0,0,6" />
+                            <TextBlock Style="{StaticResource PixelLabel}" FontSize="10" Text="{loc:Tr Commun_ModLoader}" Margin="4,0,0,6" />
                             <ComboBox x:Name="CmbMode" Style="{StaticResource GlassCombo}" Width="130" IsEnabled="False"
                                       SelectionChanged="CmbMode_SelectionChanged" />
                         </StackPanel>
@@ -207,7 +207,7 @@
 
                     <!-- Profil choisi : résumé + accès à la gestion du contenu -->
                     <StackPanel x:Name="PanneauProfil" Visibility="Collapsed">
-                        <TextBlock Style="{StaticResource PixelLabel}" FontSize="10" Text="CONTENU" Margin="4,0,0,6" />
+                        <TextBlock Style="{StaticResource PixelLabel}" FontSize="10" Text="{loc:Tr Home_Contenu}" Margin="4,0,0,6" />
                         <StackPanel Orientation="Horizontal">
                             <Border CornerRadius="12" Height="44" Width="258" Background="{StaticResource GlassStrongBrush}"
                                     BorderBrush="{StaticResource GlassBorderBrush}" BorderThickness="1.5" Padding="14,0">
@@ -215,7 +215,7 @@
                                            Foreground="{StaticResource NavyBrush}" TextTrimming="CharacterEllipsis" />
                             </Border>
                             <Button Style="{StaticResource IconButton}" Width="44" Height="44" Margin="8,0,0,0"
-                                    Content="&#xE70F;" ToolTip="Gérer les mods, packs et shaders" Click="BtnGererProfil_Click" />
+                                    Content="&#xE70F;" ToolTip="{loc:Tr Home_Gerer}" Click="BtnGererProfil_Click" />
                         </StackPanel>
                     </StackPanel>
                 </Grid>

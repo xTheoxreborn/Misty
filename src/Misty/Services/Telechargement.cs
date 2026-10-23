@@ -31,7 +31,7 @@ namespace Misty.Services
             if (!string.IsNullOrEmpty(sha1) && !string.Equals(await Sha1Async(temporaire), sha1, StringComparison.OrdinalIgnoreCase))
             {
                 File.Delete(temporaire);
-                throw new InvalidDataException($"Fichier corrompu : {Path.GetFileName(destination)}");
+                throw new InvalidDataException(Loc.T("Erreur_Corrompu", Path.GetFileName(destination)));
             }
 
             File.Move(temporaire, destination, overwrite: true);

@@ -1,7 +1,8 @@
 <UserControl x:Class="Misty.Views.ContentBrowser"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:controls="clr-namespace:Misty.Controls">
+             xmlns:controls="clr-namespace:Misty.Controls"
+             xmlns:loc="clr-namespace:Misty.Services">
 
     <Grid>
         <Grid.RowDefinitions>
@@ -14,14 +15,14 @@
         <DockPanel Margin="0,0,0,12">
             <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
                 <RadioButton x:Name="SourceModrinth" Style="{StaticResource TabPill}"
-                             Checked="Source_Checked" Margin="0,0,8,0" ToolTip="Chercher sur Modrinth">
+                             Checked="Source_Checked" Margin="0,0,8,0" ToolTip="{loc:Tr Explorateur_SurModrinth}">
                     <StackPanel Orientation="Horizontal">
                         <Ellipse Width="9" Height="9" Fill="#1BD96A" Margin="0,0,8,0" VerticalAlignment="Center" />
                         <TextBlock Text="Modrinth" />
                     </StackPanel>
                 </RadioButton>
                 <RadioButton x:Name="SourceCurseForge" Style="{StaticResource TabPill}"
-                             Checked="Source_Checked" Margin="0" ToolTip="Chercher sur CurseForge">
+                             Checked="Source_Checked" Margin="0" ToolTip="{loc:Tr Explorateur_SurCurseForge}">
                     <StackPanel Orientation="Horizontal">
                         <Ellipse Width="9" Height="9" Fill="#F16436" Margin="0,0,8,0" VerticalAlignment="Center" />
                         <TextBlock Text="CurseForge" />
@@ -35,7 +36,7 @@
         <DockPanel Grid.Row="1" Margin="0,0,0,12">
             <ComboBox x:Name="CmbTri" DockPanel.Dock="Right" Style="{StaticResource GlassCombo}" Width="170" Margin="10,0,0,0"
                       SelectionChanged="CmbTri_SelectionChanged" />
-            <TextBox x:Name="TxtRecherche" Style="{StaticResource SearchBox}" Tag="Rechercher…"
+            <TextBox x:Name="TxtRecherche" Style="{StaticResource SearchBox}" Tag="{loc:Tr Commun_Rechercher}"
                      TextChanged="TxtRecherche_TextChanged" />
         </DockPanel>
 
@@ -106,11 +107,9 @@
             <Border x:Name="PanneauSansCle" Style="{StaticResource GlassCard}" Visibility="Collapsed"
                     VerticalAlignment="Top" HorizontalAlignment="Left" MaxWidth="560">
                 <StackPanel>
-                    <TextBlock Style="{StaticResource SectionTitle}" Text="CLÉ API CURSEFORGE MANQUANTE" />
-                    <TextBlock Style="{StaticResource BodyText}" Margin="0,6,0,0" LineHeight="20">
-                        CurseForge exige une clé API personnelle. Demande-la gratuitement sur console.curseforge.com,
-                        colle-la dans le fichier src/Misty/curseforge.key puis recompile Misty.
-                    </TextBlock>
+                    <TextBlock Style="{StaticResource SectionTitle}" Text="{loc:Tr Explorateur_SansCle}" />
+                    <TextBlock Style="{StaticResource BodyText}" Margin="0,6,0,0" LineHeight="20"
+                               Text="{loc:Tr Explorateur_SansCle_Texte}" />
                 </StackPanel>
             </Border>
         </Grid>

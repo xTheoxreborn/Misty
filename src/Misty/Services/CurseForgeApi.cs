@@ -35,11 +35,11 @@ namespace Misty.Services
 
         public static readonly (string Cle, string Libelle)[] Tris =
         {
-            ("2", "Popularité"),
-            ("6", "Téléchargements"),
-            ("3", "Mis à jour"),
-            ("1", "En vedette"),
-            ("4", "Nom"),
+            ("2", "Tri_Popularite"),
+            ("6", "Tri_Telechargements"),
+            ("3", "Tri_MisAJour"),
+            ("1", "Tri_Vedette"),
+            ("4", "Tri_Nom"),
         };
 
         private static string? LireCle()
@@ -67,7 +67,7 @@ namespace Misty.Services
         private static void VerifierCle()
         {
             if (Cle == null)
-                throw new InvalidOperationException("Clé API CurseForge manquante : colle-la dans src/Misty/curseforge.key puis recompile.");
+                throw new InvalidOperationException(Loc.T("Erreur_CleCF"));
         }
 
         public static int Classe(string type) => type switch

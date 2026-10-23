@@ -26,7 +26,11 @@ namespace Misty.Services
             using var doc = JsonDocument.Parse(json);
 
             string version = (doc.RootElement.GetProperty("tag_name").GetString() ?? "").TrimStart('v');
-            string? url = doc.RootElement.GetProperty("assets")[0].GetProperty("browser_download_url").GetString();
+            // Le zip "Misty-x.y.zip" (la release peut aussi contenir l'installateur .exe)
+            var assets = doc.RootElement.GetProperty("assets").EnumerateArray().ToList();
+            string? url = assets
+                .Select(a => a.GetProperty("browser_download_url").GetString())
+                .FirstOrDefault(u => u != null && u.EndsWith(".zip", StringComparison.OrdinalIgnoreCase));
 
             if (string.IsNullOrEmpty(version) || string.IsNullOrEmpty(url) || !EstPlusRecente(version, AppInfo.Version))
                 return null;
@@ -100,11 +104,32 @@ namespace Misty.Services
             if (!string.IsNullOrEmpty(raccourci))
                 ShortcutService.Creer(raccourci);
 
+            // Installé avec le setup : ses raccourcis (menu Démarrer, bureau) et l'entrée
+            // "Applications installées" pointent encore vers l'ancien dossier
+            try
+            {
+                ShortcutService.Rediriger(ancienDossier);
+                MajEntreeDesinstallation();
+            }
+            catch { /* pas installé avec le setup, ou raccourci déjà modifié par l'utilisateur */ }
+
             if (Directory.Exists(ancienDossier))
                 Directory.Delete(ancienDossier, true);
 
             SettingsStore.Set(SettingsStore.Suppr, "");
             return true;
+        }
+
+        /// <summary>ID de l'installateur Inno Setup (installer\Misty.iss).</summary>
+        private const string CleDesinstallation = @"Software\Microsoft\Windows\CurrentVersion\Uninstall\{8F4C2A61-3B7E-4D19-9A55-6C1E0F2B7D43}_is1";
+
+        /// <summary>Met à jour la version et l'icône affichées dans "Applications installées".</summary>
+        private static void MajEntreeDesinstallation()
+        {
+            using var cle = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(CleDesinstallation, writable: true);
+            if (cle == null) return;
+            cle.SetValue("DisplayVersion", AppInfo.Version);
+            cle.SetValue("DisplayIcon", AppPaths.AppExe);
         }
 
         /// <summary>

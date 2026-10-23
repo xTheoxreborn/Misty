@@ -28,8 +28,20 @@ namespace Misty.Views
             Explorateur.Installer = InstallerAsync;
             Explorateur.EstInstalle = p => ContentService.EstInstalle(contenus, p.Source, p.Id);
 
-            // Filtres par type
-            var filtres = new List<(string Type, string Libelle)> { ("", "Tout") };
+            ConstruireFiltres();
+            Loc.Changee += () =>
+            {
+                ConstruireFiltres();
+                AppliquerFiltre();
+                foreach (var c in contenus) c.Rafraichir();
+            };
+        }
+
+        /// <summary>Filtres par type (reconstruits au changement de langue).</summary>
+        private void ConstruireFiltres()
+        {
+            PanneauFiltres.Children.Clear();
+            var filtres = new List<(string Type, string Libelle)> { ("", Loc.T("Instance_Tout")) };
             filtres.AddRange(ContentService.Types);
             foreach (var (type, libelle) in filtres)
             {
@@ -39,7 +51,7 @@ namespace Misty.Views
                     Content = libelle,
                     GroupName = "FiltreContenu",
                     Tag = type,
-                    IsChecked = type == "",
+                    IsChecked = type == filtreType,
                     Padding = new Thickness(12, 6, 12, 6),
                 };
                 onglet.Checked += (s, _) =>
@@ -106,7 +118,7 @@ namespace Misty.Views
             catch (Exception ex)
             {
                 contenus = new();
-                TxtStatut.Text = "Lecture du dossier impossible : " + ex.Message;
+                TxtStatut.Text = Loc.T("Instance_LectureImpossible", ex.Message);
             }
             AppliquerFiltre();
 
@@ -115,7 +127,7 @@ namespace Misty.Views
             {
                 try
                 {
-                    TxtStatut.Text = "Identification des fichiers…";
+                    TxtStatut.Text = Loc.T("Instance_Identification");
                     await ContentService.IdentifierAsync(instance, contenus);
                     TxtStatut.Text = "";
                     AppliquerFiltre();
@@ -138,7 +150,7 @@ namespace Misty.Views
 
             ListeContenu.ItemsSource = visibles;
             PanneauVide.Visibility = visibles.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
-            TxtOngletContenu.Text = contenus.Count > 0 ? $"Contenu ({contenus.Count})" : "Contenu";
+            TxtOngletContenu.Text = contenus.Count > 0 ? $"{Loc.T("Instance_Contenu")} ({contenus.Count})" : Loc.T("Instance_Contenu");
         }
 
         private void TxtFiltre_TextChanged(object sender, TextChangedEventArgs e) => AppliquerFiltre();
@@ -153,14 +165,14 @@ namespace Misty.Views
             catch (Exception ex)
             {
                 contenu.Rafraichir();
-                await Dialogs.ErreurAsync("Impossible de modifier le fichier", ex.Message + "\n\nLe jeu est peut-être encore ouvert.");
+                await Dialogs.ErreurAsync(Loc.T("Instance_ModifImpossible"), ex.Message + "\n\n" + Loc.T("Commun_JeuOuvert"));
             }
         }
 
         private async void BtnSupprimerContenu_Click(object sender, RoutedEventArgs e)
         {
             if ((sender as FrameworkElement)?.DataContext is not ContenuInstalle contenu) return;
-            if (!await Dialogs.ConfirmerAsync("Supprimer", $"Supprimer « {contenu.Titre} » de ce profil ?", "Supprimer", danger: true))
+            if (!await Dialogs.ConfirmerAsync(Loc.T("Commun_Supprimer"), Loc.T("Instance_SupprimerContenu", contenu.Titre), Loc.T("Commun_Supprimer"), danger: true))
                 return;
 
             try
@@ -171,7 +183,7 @@ namespace Misty.Views
             }
             catch (Exception ex)
             {
-                await Dialogs.ErreurAsync("Suppression impossible", ex.Message + "\n\nLe jeu est peut-être encore ouvert.");
+                await Dialogs.ErreurAsync(Loc.T("Commun_SuppressionImpossible"), ex.Message + "\n\n" + Loc.T("Commun_JeuOuvert"));
             }
         }
 
@@ -188,7 +200,7 @@ namespace Misty.Views
             if (decouvrir && Explorateur.Tag as string != instance.Id)
             {
                 Explorateur.Tag = instance.Id;
-                Explorateur.Configurer(instance, ContentService.Types);
+                Explorateur.Configurer(instance, () => ContentService.Types);
             }
             if (!decouvrir)
                 ChargerContenu();
@@ -207,12 +219,11 @@ namespace Misty.Views
                     var mondes = ContentService.Mondes(instance);
                     if (mondes.Count == 0)
                     {
-                        await Dialogs.InfoAsync("Aucun monde",
-                            "Les datapacks s'installent dans un monde. Lance ce profil et crée un monde, puis reviens ici.");
+                        await Dialogs.InfoAsync(Loc.T("Instance_AucunMonde"), Loc.T("Instance_AucunMonde_Texte"));
                         return false;
                     }
                     monde = mondes.Count == 1 ? mondes[0]
-                        : await Dialogs.ChoisirAsync("Choisir un monde", $"Dans quel monde installer « {projet.Titre} » ?", mondes);
+                        : await Dialogs.ChoisirAsync(Loc.T("Instance_ChoisirMonde"), Loc.T("Instance_ChoisirMonde_Texte", projet.Titre), mondes);
                     if (monde == null) return false;
                 }
 
@@ -221,8 +232,8 @@ namespace Misty.Views
 
                 var installes = await ContentService.InstallerAsync(instance, projet.Source, projet.Id, type, monde, progression);
                 TxtStatut.Text = installes.Count > 1
-                    ? $"{projet.Titre} installé (+ {installes.Count - 1} dépendance{(installes.Count > 2 ? "s" : "")})"
-                    : $"{projet.Titre} installé";
+                    ? Loc.T("Instance_InstalleDeps", projet.Titre, installes.Count - 1)
+                    : Loc.T("Instance_Installe", projet.Titre);
 
                 contenus = ContentService.Lister(instance);
                 AppliquerFiltre();
@@ -231,7 +242,7 @@ namespace Misty.Views
             catch (Exception ex)
             {
                 TxtStatut.Text = "";
-                await Dialogs.ErreurAsync("Installation impossible", ex.Message);
+                await Dialogs.ErreurAsync(Loc.T("Instance_InstallationImpossible"), ex.Message);
                 return false;
             }
         }
@@ -243,13 +254,12 @@ namespace Misty.Views
             if (prerequis == null) return true;
 
             if (prerequis == "")
-                return await Dialogs.ConfirmerAsync("Shaders non pris en charge",
-                    $"Avec {instance.Loader}, Minecraft ne peut pas charger de shaders. Il faut un profil OptiFine, " +
-                    "ou Fabric / NeoForge avec Iris.\n\nInstaller quand même ?", "Installer quand même");
+                return await Dialogs.ConfirmerAsync(Loc.T("Shaders_NonPris"), Loc.T("Shaders_NonPris_Texte", instance.Loader),
+                    Loc.T("Shaders_QuandMeme"));
 
             string nom = prerequis == ContentService.IdIris ? "Iris" : "Oculus";
-            if (!await Dialogs.ConfirmerAsync("Mod requis",
-                    $"Les shaders ont besoin du mod {nom} pour fonctionner. L'installer aussi ?", $"Installer {nom}", "Ignorer"))
+            if (!await Dialogs.ConfirmerAsync(Loc.T("Shaders_ModRequis"), Loc.T("Shaders_ModRequis_Texte", nom),
+                    Loc.T("Shaders_Installer", nom), Loc.T("Commun_Ignorer")))
                 return true;
 
             await ContentService.InstallerAsync(instance, Sources.Modrinth, prerequis, ContentService.Mod, null, progression);
@@ -272,7 +282,7 @@ namespace Misty.Views
         {
             var dialogue = new OpenFileDialog
             {
-                Title = "Icône du profil",
+                Title = Loc.T("Instance_IconeTitre"),
                 Filter = "Images|*.png;*.jpg;*.jpeg;*.bmp;*.gif",
             };
             if (dialogue.ShowDialog() != true) return;
@@ -297,7 +307,7 @@ namespace Misty.Views
             }
             catch (Exception ex)
             {
-                await Dialogs.ErreurAsync("Image illisible", ex.Message);
+                await Dialogs.ErreurAsync(Loc.T("Instance_ImageIllisible"), ex.Message);
             }
         }
 
@@ -338,9 +348,8 @@ namespace Misty.Views
 
         private async void BtnSupprimer_Click(object sender, RoutedEventArgs e)
         {
-            if (!await Dialogs.ConfirmerAsync("Supprimer le profil",
-                    $"Supprimer « {instance.Nom} » ? Ses mods, packs, mondes et options seront effacés définitivement.",
-                    "Supprimer", danger: true))
+            if (!await Dialogs.ConfirmerAsync(Loc.T("Profil_Supprimer"), Loc.T("Profil_Supprimer_Texte", instance.Nom),
+                    Loc.T("Commun_Supprimer"), danger: true))
                 return;
 
             try
@@ -350,7 +359,7 @@ namespace Misty.Views
             }
             catch (Exception ex)
             {
-                await Dialogs.ErreurAsync("Suppression impossible", ex.Message + "\n\nLe jeu est peut-être encore ouvert.");
+                await Dialogs.ErreurAsync(Loc.T("Commun_SuppressionImpossible"), ex.Message + "\n\n" + Loc.T("Commun_JeuOuvert"));
             }
         }
     }

@@ -31,11 +31,11 @@ namespace Misty.Services
         /// <summary>Tris proposés par la recherche Modrinth.</summary>
         public static readonly (string Cle, string Libelle)[] Tris =
         {
-            ("relevance", "Pertinence"),
-            ("downloads", "Téléchargements"),
-            ("follows", "Popularité"),
-            ("newest", "Plus récents"),
-            ("updated", "Mis à jour"),
+            ("relevance", "Tri_Pertinence"),
+            ("downloads", "Tri_Telechargements"),
+            ("follows", "Tri_Popularite"),
+            ("newest", "Tri_Recents"),
+            ("updated", "Tri_MisAJour"),
         };
 
         /// <param name="type">mod, resourcepack, datapack, shader, modpack</param>

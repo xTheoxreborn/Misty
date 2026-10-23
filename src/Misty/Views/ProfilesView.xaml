@@ -2,7 +2,8 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:controls="clr-namespace:Misty.Controls"
-             xmlns:views="clr-namespace:Misty.Views">
+             xmlns:views="clr-namespace:Misty.Views"
+             xmlns:loc="clr-namespace:Misty.Services">
 
     <UserControl.Resources>
         <!-- Carte de profil : verre qui s'éclaircit au survol -->
@@ -31,17 +32,17 @@
                     <Button Style="{StaticResource GlassButton}" Margin="0,0,10,0" Click="BtnModpacks_Click">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Style="{StaticResource Icon}" Text="&#xE896;" FontSize="12" Margin="0,0,8,0" />
-                            <TextBlock Text="Installer un modpack" />
+                            <TextBlock Text="{loc:Tr Profil_InstallerModpack}" />
                         </StackPanel>
                     </Button>
                     <Button Style="{StaticResource PrimaryButton}" Click="BtnNouveau_Click">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Style="{StaticResource Icon}" Text="&#xE710;" FontSize="12" Margin="0,0,8,0" Foreground="White" />
-                            <TextBlock Text="Nouveau profil" />
+                            <TextBlock Text="{loc:Tr Profil_Nouveau}" />
                         </StackPanel>
                     </Button>
                 </StackPanel>
-                <controls:OutlinedText Text="PROFILS" FontFamily="{StaticResource PixelFont}" FontSize="48"
+                <controls:OutlinedText Text="{loc:Tr Profil_Titre}" FontFamily="{StaticResource PixelFont}" FontSize="48"
                                        Fill="White" Stroke="{StaticResource SlateBrush}" StrokeThickness="4"
                                        ShadowBrush="{StaticResource SlateDarkBrush}" ShadowDepth="5" HorizontalAlignment="Left" />
             </DockPanel>
@@ -71,10 +72,10 @@
                                         <DockPanel Margin="0,14,0,0">
                                             <Button DockPanel.Dock="Right" Style="{StaticResource IconButton}" Content="&#xE768;" Width="42" Height="42"
                                                     Background="{DynamicResource GreenBrush}" BorderBrush="#66FFFFFF" Foreground="White"
-                                                    ToolTip="Jouer" Click="BtnJouer_Click" />
+                                                    ToolTip="{loc:Tr Nav_Jouer}" Click="BtnJouer_Click" />
                                             <Button DockPanel.Dock="Right" Style="{StaticResource IconButton}" Content="&#xE74D;" Width="42" Height="42"
                                                     Background="{DynamicResource DangerBrush}" BorderBrush="#66FFFFFF" Foreground="White"
-                                                    ToolTip="Supprimer" Click="BtnSupprimer_Click" />
+                                                    ToolTip="{loc:Tr Commun_Supprimer}" Click="BtnSupprimer_Click" />
                                             <TextBlock Text="{Binding DernierLancementTexte}" VerticalAlignment="Center"
                                                        FontSize="12" Foreground="{StaticResource TextMutedBrush}" />
                                         </DockPanel>
@@ -88,11 +89,9 @@
                     <Border x:Name="PanneauVide" Style="{StaticResource GlassCard}" Padding="40" HorizontalAlignment="Left" Visibility="Collapsed">
                         <StackPanel>
                             <Image Source="{x:Static controls:PixelArt.BlocHerbe}" Width="64" Height="64" HorizontalAlignment="Left" RenderOptions.BitmapScalingMode="NearestNeighbor" />
-                            <TextBlock Style="{StaticResource SectionTitle}" Text="AUCUN PROFIL" Margin="0,16,0,6" />
-                            <TextBlock Style="{StaticResource BodyText}" MaxWidth="420" HorizontalAlignment="Left">
-                                Un profil a sa propre version, son mod loader et son dossier (mods, packs de ressources, shaders, mondes).
-                                Crée-en un, ou installe un modpack depuis Modrinth.
-                            </TextBlock>
+                            <TextBlock Style="{StaticResource SectionTitle}" Text="{loc:Tr Profil_Aucun}" Margin="0,16,0,6" />
+                            <TextBlock Style="{StaticResource BodyText}" MaxWidth="420" HorizontalAlignment="Left"
+                                       Text="{loc:Tr Profil_Aucun_Texte}" />
                         </StackPanel>
                     </Border>
                 </StackPanel>
@@ -106,7 +105,7 @@
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
             <StackPanel Orientation="Horizontal" Margin="0,0,0,18">
-                <Button Style="{StaticResource IconButton}" Content="&#xE72B;" ToolTip="Retour aux profils" VerticalAlignment="Center"
+                <Button Style="{StaticResource IconButton}" Content="&#xE72B;" ToolTip="{loc:Tr Profil_Retour}" VerticalAlignment="Center"
                         Margin="0,0,16,0" Click="BtnRetourListe_Click" />
                 <controls:OutlinedText Text="MODPACKS" FontFamily="{StaticResource PixelFont}" FontSize="48"
                                        Fill="White" Stroke="{StaticResource SlateBrush}" StrokeThickness="4"
@@ -121,9 +120,9 @@
             <Border Width="460" HorizontalAlignment="Center" VerticalAlignment="Center" CornerRadius="24" Background="#F2F6FAFF"
                     BorderBrush="White" BorderThickness="2" Padding="28,26" Effect="{StaticResource SoftShadow}">
                 <StackPanel>
-                    <TextBlock Style="{StaticResource SectionTitle}" Text="NOUVEAU PROFIL" Margin="0,0,0,18" />
+                    <TextBlock Style="{StaticResource SectionTitle}" Text="{loc:Tr Profil_NouveauTitre}" Margin="0,0,0,18" />
 
-                    <TextBlock Style="{StaticResource PixelLabel}" FontSize="10" Text="NOM" Margin="4,0,0,6" />
+                    <TextBlock Style="{StaticResource PixelLabel}" FontSize="10" Text="{loc:Tr Commun_Nom}" Margin="4,0,0,6" />
                     <TextBox x:Name="TxtNom" Style="{StaticResource GlassTextBox}" MaxLength="40" Margin="0,0,0,14" />
 
                     <Grid>
@@ -133,11 +132,11 @@
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
                         <StackPanel>
-                            <TextBlock Style="{StaticResource PixelLabel}" FontSize="10" Text="VERSION" Margin="4,0,0,6" />
+                            <TextBlock Style="{StaticResource PixelLabel}" FontSize="10" Text="{loc:Tr Commun_Version}" Margin="4,0,0,6" />
                             <ComboBox x:Name="CmbVersion" Style="{StaticResource GlassCombo}" SelectionChanged="CmbVersion_SelectionChanged" />
                         </StackPanel>
                         <StackPanel Grid.Column="2">
-                            <TextBlock Style="{StaticResource PixelLabel}" FontSize="10" Text="MOD LOADER" Margin="4,0,0,6" />
+                            <TextBlock Style="{StaticResource PixelLabel}" FontSize="10" Text="{loc:Tr Commun_ModLoader}" Margin="4,0,0,6" />
                             <ComboBox x:Name="CmbLoader" Style="{StaticResource GlassCombo}" IsEnabled="False" />
                         </StackPanel>
                     </Grid>
@@ -145,8 +144,8 @@
                     <TextBlock x:Name="TxtCreationInfo" Style="{StaticResource BodyText}" Margin="2,12,0,0" />
 
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,22,0,0">
-                        <Button Style="{StaticResource GlassButton}" Content="Annuler" Margin="0,0,10,0" Click="BtnAnnulerCreation_Click" />
-                        <Button x:Name="BtnCreer" Style="{StaticResource PrimaryButton}" Content="Créer le profil" Click="BtnCreer_Click" />
+                        <Button Style="{StaticResource GlassButton}" Content="{loc:Tr Commun_Annuler}" Margin="0,0,10,0" Click="BtnAnnulerCreation_Click" />
+                        <Button x:Name="BtnCreer" Style="{StaticResource PrimaryButton}" Content="{loc:Tr Profil_Creer}" Click="BtnCreer_Click" />
                     </StackPanel>
                 </StackPanel>
             </Border>

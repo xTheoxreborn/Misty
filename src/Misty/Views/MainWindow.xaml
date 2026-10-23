@@ -2,6 +2,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:controls="clr-namespace:Misty.Controls"
+        xmlns:loc="clr-namespace:Misty.Services"
         Title="Misty"
         Icon="pack://application:,,,/Misty;component/Assets/icone.ico"
         Width="1204" Height="744"
@@ -78,7 +79,7 @@
                             <StackPanel DockPanel.Dock="Bottom" HorizontalAlignment="Center">
                                 <Button x:Name="BtnDossier" Style="{StaticResource IconButton}" Content="&#xE8B7;"
                                         Foreground="White" Background="#26FFFFFF" BorderBrush="#40FFFFFF"
-                                        ToolTip="Ouvrir le dossier du jeu" Click="BtnDossier_Click" Margin="0,0,0,12" />
+                                        ToolTip="{loc:Tr Nav_Dossier}" Click="BtnDossier_Click" Margin="0,0,0,12" />
                                 <TextBlock x:Name="TxtVersionApp" Style="{StaticResource PixelLabel}" FontSize="9"
                                            Foreground="#CCFFFFFF" HorizontalAlignment="Center" TextAlignment="Center"
                                            TextWrapping="Wrap" Width="70" />
@@ -86,15 +87,15 @@
 
                             <StackPanel HorizontalAlignment="Center">
                                 <RadioButton x:Name="NavAccueil" Style="{StaticResource NavButton}" Content="&#xE80F;"
-                                             ToolTip="Jouer" IsChecked="True" Checked="Nav_Checked" Margin="0,0,0,10" />
+                                             ToolTip="{loc:Tr Nav_Jouer}" IsChecked="True" Checked="Nav_Checked" Click="Nav_Click" Margin="0,0,0,10" />
                                 <RadioButton x:Name="NavProfils" Style="{StaticResource NavButton}" Content="&#xE8F1;"
-                                             ToolTip="Profils, mods et modpacks" Checked="Nav_Checked" Margin="0,0,0,10" />
+                                             ToolTip="{loc:Tr Nav_Profils}" Checked="Nav_Checked" Click="Nav_Click" Margin="0,0,0,10" />
                                 <RadioButton x:Name="NavOptions" Style="{StaticResource NavButton}" Content="&#xE713;"
-                                             ToolTip="Options" Checked="Nav_Checked" Margin="0,0,0,10" />
+                                             ToolTip="{loc:Tr Nav_Options}" Checked="Nav_Checked" Click="Nav_Click" Margin="0,0,0,10" />
                                 <RadioButton x:Name="NavNotes" Style="{StaticResource NavButton}" Content="&#xE81C;"
-                                             ToolTip="Notes de version" Checked="Nav_Checked" Margin="0,0,0,10" />
+                                             ToolTip="{loc:Tr Nav_Notes}" Checked="Nav_Checked" Click="Nav_Click" Margin="0,0,0,10" />
                                 <RadioButton x:Name="NavSoon" Style="{StaticResource NavButton}" Content="&#xE946;"
-                                             ToolTip="Fonctionnalités à venir" Checked="Nav_Checked" />
+                                             ToolTip="{loc:Tr Nav_Soon}" Checked="Nav_Checked" Click="Nav_Click" />
                             </StackPanel>
                         </DockPanel>
                     </Border>
@@ -108,8 +109,8 @@
 
                         <!-- barre de titre -->
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,8,10,0">
-                            <Button Style="{StaticResource ChromeButton}" Content="&#xE921;" Click="BtnMinimiser_Click" ToolTip="Réduire" />
-                            <Button Style="{StaticResource ChromeCloseButton}" Content="&#xE8BB;" Click="BtnFermer_Click" ToolTip="Fermer" Margin="4,0,0,0" />
+                            <Button Style="{StaticResource ChromeButton}" Content="&#xE921;" Click="BtnMinimiser_Click" ToolTip="{loc:Tr Fenetre_Reduire}" />
+                            <Button Style="{StaticResource ChromeCloseButton}" Content="&#xE8BB;" Click="BtnFermer_Click" ToolTip="{loc:Tr Commun_Fermer}" Margin="4,0,0,0" />
                         </StackPanel>
 
                         <ContentControl x:Name="PageHost" Grid.Row="1" Focusable="False">

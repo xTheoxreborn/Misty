@@ -29,18 +29,18 @@ namespace Misty.Services
 
         private static async Task<Resultat> InstallerModrinthAsync(ProjetDistant projet, IProgress<string> progression)
         {
-            progression.Report("Recherche de la dernière version…");
+            progression.Report(Loc.T("Progres_DerniereVersion"));
             var versions = await ModrinthApi.VersionsAsync(projet.Id, null, null);
             var version = versions.FirstOrDefault(v => v.VersionType == "release") ?? versions.FirstOrDefault()
-                ?? throw new InvalidOperationException("Ce modpack n'a aucune version publiée.");
+                ?? throw new InvalidOperationException(Loc.T("Erreur_ModpackSansVersion"));
             var fichier = version.Files.FirstOrDefault(f => f.Filename.EndsWith(".mrpack", StringComparison.OrdinalIgnoreCase))
-                ?? throw new InvalidOperationException("Cette version ne contient pas de fichier .mrpack.");
+                ?? throw new InvalidOperationException(Loc.T("Erreur_SansMrpack"));
 
             return await AvecArchiveAsync(projet, fichier.Url, fichier.Hashes.GetValueOrDefault("sha1"), progression, async (zip, creer) =>
             {
                 var index = await LireJsonAsync<IndexModpack>(zip, "modrinth.index.json");
                 string versionMc = index.Dependencies.GetValueOrDefault("minecraft")
-                    ?? throw new InvalidDataException("Le modpack n'indique pas sa version de Minecraft.");
+                    ?? throw new InvalidDataException(Loc.T("Erreur_ModpackSansMc"));
                 var (loader, versionLoader) = LoaderModrinth(index.Dependencies);
 
                 var instance = creer(versionMc, loader, versionLoader, version.VersionNumber);
@@ -52,7 +52,7 @@ namespace Misty.Services
                 await EnParalleleAsync(fichiers, progression,
                     f => TelechargerAvecSecoursAsync(f, CheminSur(instance.Dossier, f.Path)));
 
-                progression.Report("Copie des fichiers de configuration…");
+                progression.Report(Loc.T("Progres_Config"));
                 Extraire(zip, "overrides/", instance.Dossier);
                 Extraire(zip, "client-overrides/", instance.Dossier);
 
@@ -84,19 +84,19 @@ namespace Misty.Services
                     derniere = ex;
                 }
             }
-            throw new IOException($"Impossible de télécharger {fichier.Path}", derniere);
+            throw new IOException(Loc.T("Erreur_Telechargement", fichier.Path), derniere);
         }
 
         // ───────────────────────── CurseForge ─────────────────────────
 
         private static async Task<Resultat> InstallerCurseForgeAsync(ProjetDistant projet, IProgress<string> progression)
         {
-            progression.Report("Recherche de la dernière version…");
+            progression.Report(Loc.T("Progres_DerniereVersion"));
             var fichiersPack = await CurseForgeApi.FichiersAsync(int.Parse(projet.Id), null);
             var fichierPack = fichiersPack.FirstOrDefault(f => f.ReleaseType == 1 && f.IsAvailable) ?? fichiersPack.FirstOrDefault()
-                ?? throw new InvalidOperationException("Ce modpack n'a aucune version publiée.");
+                ?? throw new InvalidOperationException(Loc.T("Erreur_ModpackSansVersion"));
             if (string.IsNullOrEmpty(fichierPack.DownloadUrl))
-                throw new InvalidOperationException("L'auteur de ce modpack n'autorise pas son téléchargement en dehors de CurseForge.");
+                throw new InvalidOperationException(Loc.T("Erreur_ModpackCFInterdit"));
 
             return await AvecArchiveAsync(projet, fichierPack.DownloadUrl, fichierPack.Sha1, progression, async (zip, creer) =>
             {
@@ -107,7 +107,7 @@ namespace Misty.Services
                     string.IsNullOrEmpty(manifeste.Version) ? fichierPack.DisplayName : manifeste.Version);
 
                 // Infos des fichiers (URL, nom) et des projets (type, nom, icône)
-                progression.Report("Lecture de la liste des mods…");
+                progression.Report(Loc.T("Progres_ListeMods"));
                 var requis = manifeste.Files.Where(f => f.Required).ToList();
                 var fichiers = (await CurseForgeApi.FichiersParIdsAsync(requis.Select(f => f.FileID))).ToDictionary(f => f.Id);
                 var mods = (await CurseForgeApi.ModsAsync(requis.Select(f => f.ProjectID))).ToDictionary(m => m.Id);
@@ -150,7 +150,7 @@ namespace Misty.Services
                     t => Telechargement.FichierAsync(t.Fichier.DownloadUrl!, t.Destination, t.Fichier.Sha1));
                 ContentService.EnregistrerMetas(instance, metas);
 
-                progression.Report("Copie des fichiers de configuration…");
+                progression.Report(Loc.T("Progres_Config"));
                 Extraire(zip, (string.IsNullOrEmpty(manifeste.Overrides) ? "overrides" : manifeste.Overrides.Trim('/')) + "/", instance.Dossier);
 
                 return new Resultat(instance, bloques);
@@ -173,7 +173,7 @@ namespace Misty.Services
                 "neoforge" => (ModLoaderService.NeoForge, version),
                 "fabric" => (ModLoaderService.Fabric, version),
                 //"quilt" => (ModLoaderService.Quilt, version),
-                _ => throw new InvalidDataException($"Mod loader non pris en charge : {principal.Id}"),
+                _ => throw new InvalidDataException(Loc.T("Erreur_LoaderNonPris", principal.Id)),
             };
         }
 
@@ -190,7 +190,7 @@ namespace Misty.Services
             Instance? instance = null;
             try
             {
-                progression.Report("Téléchargement du modpack…");
+                progression.Report(Loc.T("Progres_Modpack"));
                 await Telechargement.FichierAsync(url, temporaire, sha1);
 
                 using var zip = ZipFile.OpenRead(temporaire);
@@ -222,7 +222,7 @@ namespace Misty.Services
 
         private static async Task<T> LireJsonAsync<T>(ZipArchive zip, string nom)
         {
-            var entree = zip.GetEntry(nom) ?? throw new InvalidDataException($"{nom} manquant dans le modpack.");
+            var entree = zip.GetEntry(nom) ?? throw new InvalidDataException(Loc.T("Erreur_Manquant", nom));
             using var flux = entree.Open();
             return await JsonSerializer.DeserializeAsync<T>(flux, json) ?? throw new InvalidDataException($"{nom} illisible.");
         }
@@ -238,7 +238,7 @@ namespace Misty.Services
                 try
                 {
                     await action(e);
-                    progression.Report($"Téléchargement des fichiers… {Interlocked.Increment(ref faits)}/{elements.Count}");
+                    progression.Report(Loc.T("Progres_Fichiers", Interlocked.Increment(ref faits), elements.Count));
                 }
                 finally
                 {

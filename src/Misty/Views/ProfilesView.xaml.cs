@@ -19,10 +19,16 @@ namespace Misty.Views
         {
             InitializeComponent();
 
-            ExplorateurModpacks.LibelleInstaller = "Créer le profil";
+            ExplorateurModpacks.LibelleInstaller = "Profil_Creer";
             ExplorateurModpacks.Installer = InstallerModpackAsync;
             ExplorateurModpacks.EstInstalle = p => InstanceStore.Lister()
                 .Any(i => i.ModpackProjectId == p.Id && (i.ModpackSource ?? Sources.Modrinth) == p.Source);
+
+            // "Joué hier"… est calculé à l'affichage
+            Loc.Changee += () =>
+            {
+                if (ListeProfils.ItemsSource != null) ListeProfils.ItemsSource = InstanceStore.Lister();
+            };
         }
 
         /// <summary>Recharge la liste (appelé à chaque ouverture de la page).</summary>
@@ -57,9 +63,8 @@ namespace Misty.Views
         {
             if ((sender as FrameworkElement)?.DataContext is not Instance instance) return;
 
-            if (!await Dialogs.ConfirmerAsync("Supprimer le profil",
-                    $"Supprimer « {instance.Nom} » ? Ses mods, packs, mondes et options seront effacés définitivement.",
-                    "Supprimer", danger: true))
+            if (!await Dialogs.ConfirmerAsync(Loc.T("Profil_Supprimer"), Loc.T("Profil_Supprimer_Texte", instance.Nom),
+                    Loc.T("Commun_Supprimer"), danger: true))
                 return;
 
             try
@@ -69,13 +74,13 @@ namespace Misty.Views
             }
             catch (Exception ex)
             {
-                await Dialogs.ErreurAsync("Suppression impossible", ex.Message + "\n\nLe jeu est peut-être encore ouvert.");
+                await Dialogs.ErreurAsync(Loc.T("Commun_SuppressionImpossible"), ex.Message + "\n\n" + Loc.T("Commun_JeuOuvert"));
             }
         }
         private async void BtnNouveau_Click(object sender, RoutedEventArgs e)
         {
             TxtNom.Text = "";
-            TxtCreationInfo.Text = "Chargement des versions…";
+            TxtCreationInfo.Text = Loc.T("Home_ChargementVersions");
             BtnCreer.IsEnabled = false;
             PanneauCreation.Visibility = Visibility.Visible;
             TxtNom.Focus();
@@ -88,7 +93,7 @@ namespace Misty.Views
             }
             catch (Exception ex)
             {
-                TxtCreationInfo.Text = "Impossible de charger les versions : " + ex.Message;
+                TxtCreationInfo.Text = Loc.T("Home_VersionsErreur", ex.Message);
             }
         }
 
@@ -98,7 +103,7 @@ namespace Misty.Views
 
             CmbLoader.IsEnabled = false;
             BtnCreer.IsEnabled = false;
-            TxtCreationInfo.Text = $"Recherche des mod loaders pour {version}…";
+            TxtCreationInfo.Text = Loc.T("Commun_RechercheLoaders", version);
 
             var modes = await MinecraftService.Loaders.ModesDisponiblesAsync(version);
             if (CmbVersion.SelectedItem as string != version) return; // version changée entre-temps
@@ -108,7 +113,7 @@ namespace Misty.Views
             CmbLoader.SelectedItem = modes.Contains(ModLoaderService.Fabric) ? ModLoaderService.Fabric : modes[0];
             CmbLoader.IsEnabled = true;
             BtnCreer.IsEnabled = true;
-            TxtCreationInfo.Text = "Les mods ne sont disponibles qu'avec un mod loader (Fabric, Forge, NeoForge, Quilt…).";
+            TxtCreationInfo.Text = Loc.T("Profil_InfoLoader");
         }
 
         private void BtnCreer_Click(object sender, RoutedEventArgs e)
@@ -138,7 +143,7 @@ namespace Misty.Views
             if (ExplorateurModpacks.Tag == null)
             {
                 ExplorateurModpacks.Tag = "configuré";
-                ExplorateurModpacks.Configurer(null, new[] { (ContentService.Modpack, "Modpacks") });
+                ExplorateurModpacks.Configurer(null, () => new[] { (ContentService.Modpack, Loc.T("Type_Modpacks")) });
             }
             else
             {
@@ -152,7 +157,7 @@ namespace Misty.Views
         private async Task<bool> InstallerModpackAsync(ProjetDistant projet, string type)
         {
             TxtAttenteTitre.Text = projet.Titre.ToUpperInvariant();
-            TxtAttente.Text = "Préparation…";
+            TxtAttente.Text = Loc.T("Commun_Preparation");
             PanneauAttente.Visibility = Visibility.Visible;
 
             ModpackService.Resultat resultat;
@@ -163,7 +168,7 @@ namespace Misty.Views
             catch (Exception ex)
             {
                 PanneauAttente.Visibility = Visibility.Collapsed;
-                await Dialogs.ErreurAsync("Installation du modpack impossible", ex.Message);
+                await Dialogs.ErreurAsync(Loc.T("Profil_ModpackImpossible"), ex.Message);
                 return false;
             }
 
@@ -180,14 +185,13 @@ namespace Misty.Views
         /// </summary>
         private static async Task ProposerTelechargementsManuelsAsync(ModpackService.Resultat resultat)
         {
-            var liste = string.Join("\n", resultat.Bloques.Take(12).Select(b => $"• {b.Nom} (dossier {b.Dossier})"));
+            var liste = string.Join("\n", resultat.Bloques.Take(12).Select(b => "• " + Loc.T("Manuel_Ligne", b.Nom, b.Dossier)));
             if (resultat.Bloques.Count > 12)
-                liste += $"\n… et {resultat.Bloques.Count - 12} autre(s)";
+                liste += "\n" + Loc.T("Manuel_Autres", resultat.Bloques.Count - 12);
 
-            bool ouvrir = await Dialogs.ConfirmerAsync("Téléchargements manuels",
-                $"{resultat.Bloques.Count} fichier(s) ne peuvent être téléchargés que depuis le site de CurseForge (choix de leurs auteurs) :\n\n" +
-                $"{liste}\n\nTélécharge-les puis place-les dans le dossier indiqué du profil (bouton dossier en haut).",
-                "Ouvrir les pages", "Plus tard");
+            bool ouvrir = await Dialogs.ConfirmerAsync(Loc.T("Manuel_Titre"),
+                Loc.T("Manuel_Texte", resultat.Bloques.Count, liste),
+                Loc.T("Manuel_Ouvrir"), Loc.T("Commun_PlusTard"));
             if (!ouvrir) return;
 
             foreach (var bloque in resultat.Bloques)

@@ -10,7 +10,7 @@ namespace Misty
         private async void App_DispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
         {
             e.Handled = true;
-            await Dialogs.ErreurAsync("Erreur inattendue", e.Exception.Message);
+            await Dialogs.ErreurAsync(Loc.T("Erreur_Inattendue"), e.Exception.Message);
         }
     }
 }

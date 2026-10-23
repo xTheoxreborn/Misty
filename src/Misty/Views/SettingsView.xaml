@@ -45,7 +45,7 @@
                                             <StackPanel Orientation="Horizontal">
                                                 <TextBlock Text="{Binding}" FontWeight="SemiBold" FontSize="13" Foreground="{StaticResource NavyBrush}" VerticalAlignment="Center" />
                                                 <Button Style="{StaticResource ChromeCloseButton}" Width="28" Height="28" Margin="8,0,0,0"
-                                                        Content="&#xE8BB;" FontSize="9" Tag="{Binding}" ToolTip="Supprimer ce compte"
+                                                        Content="&#xE8BB;" FontSize="9" Tag="{Binding}" ToolTip="{loc:Tr Options_SupprimerCompte}"
                                                         Click="BtnSupprimerProfil_Click" />
                                             </StackPanel>
                                         </Border>
@@ -71,10 +71,10 @@
                             <TextBlock Style="{StaticResource SectionTitle}" Text="{loc:Tr Options_Compte_Microsoft}" />
                             <TextBlock x:Name="TxtEtatMicrosoft" Style="{StaticResource BodyText}" Margin="0,0,0,14" />
                             <WrapPanel>
-                                <Button x:Name="BtnConnexion" Style="{StaticResource PrimaryButton}" Content="Se connecter" Margin="0,0,10,0" Click="BtnConnexion_Click" />
-                                <Button x:Name="BtnDeconnexion" Style="{StaticResource GlassButton}" Content="Se déconnecter" Margin="0,0,10,0" Click="BtnDeconnexion_Click" />
-                                <Button x:Name="BtnDeconnexionTotale" Style="{StaticResource GlassButton}" Content="Déconnexion totale" Click="BtnDeconnexionTotale_Click"
-                                        ToolTip="Oublie aussi le compte mis en cache sur ce PC" />
+                                <Button x:Name="BtnConnexion" Style="{StaticResource PrimaryButton}" Content="{loc:Tr Compte_SeConnecter}" Margin="0,0,10,0" Click="BtnConnexion_Click" />
+                                <Button x:Name="BtnDeconnexion" Style="{StaticResource GlassButton}" Content="{loc:Tr Compte_SeDeconnecter}" Margin="0,0,10,0" Click="BtnDeconnexion_Click" />
+                                <Button x:Name="BtnDeconnexionTotale" Style="{StaticResource GlassButton}" Content="{loc:Tr Compte_DeconnexionTotale}" Click="BtnDeconnexionTotale_Click"
+                                        ToolTip="{loc:Tr Compte_DeconnexionTotale_Info}" />
                             </WrapPanel>
                         </StackPanel>
                     </Border>
@@ -85,30 +85,28 @@
                             <CheckBox x:Name="ChkRaccourci" Style="{StaticResource ToggleSwitch}" Checked="ChkRaccourci_Changed" Unchecked="ChkRaccourci_Changed">
                                 <StackPanel>
                                     <TextBlock Style="{StaticResource SectionTitle}" Text="{loc:Tr Options_Raccourci}" />
-                                    <TextBlock Style="{StaticResource BodyText}" FontWeight="Normal" Text="Crée un raccourci Misty, mis à jour automatiquement." />
+                                    <TextBlock Style="{StaticResource BodyText}" FontWeight="Normal" Text="{loc:Tr Options_Raccourci_Texte}" />
                                 </StackPanel>
                             </CheckBox>
                             <StackPanel x:Name="PanneauRaccourci" Margin="0,14,0,0" Visibility="Collapsed">
                                 <Border CornerRadius="10" Background="#40FFFFFF" Padding="12,8" Margin="0,0,0,10">
                                     <TextBlock x:Name="TxtCheminRaccourci" Style="{StaticResource BodyText}" Foreground="{StaticResource Navy2Brush}"
-                                               TextTrimming="CharacterEllipsis" TextWrapping="NoWrap" Text="Aucun dossier choisi" />
+                                               TextTrimming="CharacterEllipsis" TextWrapping="NoWrap" />
                                 </Border>
                                 <StackPanel Orientation="Horizontal">
-                                    <Button Style="{StaticResource GlassButton}" Content="Choisir le dossier…" Margin="0,0,10,0" Click="BtnChoisirRaccourci_Click" />
-                                    <Button Style="{StaticResource GlassButton}" Content="Recréer" Click="BtnRecreerRaccourci_Click" />
+                                    <Button Style="{StaticResource GlassButton}" Content="{loc:Tr Options_ChoisirDossier}" Margin="0,0,10,0" Click="BtnChoisirRaccourci_Click" />
+                                    <Button Style="{StaticResource GlassButton}" Content="{loc:Tr Options_Recreer}" Click="BtnRecreerRaccourci_Click" />
                                 </StackPanel>
                             </StackPanel>
                         </StackPanel>
                     </Border>
 
-
-
-
-                    <!-- Raccourci -->
+                    <!-- Langue -->
                     <Border Style="{StaticResource GlassCard}">
                         <StackPanel>
                             <StackPanel>
-                                <TextBlock Style="{StaticResource SectionTitle}" Text="{loc:Tr Options_Langue}" Margin="0,0,0,10" />
+                                <TextBlock Style="{StaticResource SectionTitle}" Text="{loc:Tr Options_Langue}" />
+                                <TextBlock Style="{StaticResource BodyText}" Text="{loc:Tr Options_Langue_Texte}" Margin="0,0,0,12" />
 
                                 <ComboBox x:Name="CmbLangue" Style="{StaticResource GlassCombo}" SelectedValuePath="Code"
                       SelectionChanged="CmbLangue_SelectionChanged">
@@ -124,16 +122,6 @@
                                 </ComboBox>
                             </StackPanel>
 
-                            <StackPanel x:Name="PanneauRaccourci1" Margin="0,14,0,0" Visibility="Collapsed">
-                                <Border CornerRadius="10" Background="#40FFFFFF" Padding="12,8" Margin="0,0,0,10">
-                                    <TextBlock x:Name="TxtCheminRaccourci1" Style="{StaticResource BodyText}" Foreground="{StaticResource Navy2Brush}"
-                           TextTrimming="CharacterEllipsis" TextWrapping="NoWrap" Text="Aucun dossier choisi" />
-                                </Border>
-                                <StackPanel Orientation="Horizontal">
-                                    <Button Style="{StaticResource GlassButton}" Content="Choisir le dossier…" Margin="0,0,10,0" Click="BtnChoisirRaccourci_Click" />
-                                    <Button Style="{StaticResource GlassButton}" Content="Recréer" Click="BtnRecreerRaccourci_Click" />
-                                </StackPanel>
-                            </StackPanel>
                         </StackPanel>
                     </Border>
 
@@ -164,9 +152,9 @@
                     <Border Style="{StaticResource GlassCard}" Margin="0,0,0,18">
                         <StackPanel>
                             <TextBlock Style="{StaticResource SectionTitle}" Text="{loc:Tr Options_Versions}" />
-                            <TextBlock Style="{StaticResource BodyText}" Text="Les releases sont toujours affichées." Margin="0,0,0,12" />
+                            <TextBlock Style="{StaticResource BodyText}" Text="{loc:Tr Options_Versions_Texte}" Margin="0,0,0,12" />
                             <CheckBox x:Name="ChkSnapshot" Style="{StaticResource ToggleSwitch}" Content="Snapshots" Margin="0,4" Click="ChkTypes_Click" />
-                            <CheckBox x:Name="ChkBeta" Style="{StaticResource ToggleSwitch}" Content="Bêtas" Margin="0,4" Click="ChkTypes_Click" />
+                            <CheckBox x:Name="ChkBeta" Style="{StaticResource ToggleSwitch}" Content="{loc:Tr Options_Betas}" Margin="0,4" Click="ChkTypes_Click" />
                             <CheckBox x:Name="ChkAlpha" Style="{StaticResource ToggleSwitch}" Content="{loc:Tr Options_indev}" Margin="0,4" Click="ChkTypes_Click" />
                         </StackPanel>
                     </Border>
@@ -174,12 +162,12 @@
                     <!-- Stockage -->
                     <Border Style="{StaticResource GlassCard}" Margin="0,0,0,18">
                         <StackPanel>
-                            <TextBlock Style="{StaticResource SectionTitle}" Text="STOCKAGE" />
+                            <TextBlock Style="{StaticResource SectionTitle}" Text="{loc:Tr Options_Stockage}" />
                             <TextBlock x:Name="TxtDossier" Style="{StaticResource BodyText}" TextTrimming="CharacterEllipsis" TextWrapping="NoWrap" />
                             <TextBlock x:Name="TxtTaille" Style="{StaticResource PixelLabel}" FontSize="14" Foreground="{StaticResource NavyBrush}" Margin="0,10,0,14" Text="…" />
                             <StackPanel Orientation="Horizontal">
-                                <Button Style="{StaticResource GlassButton}" Content="Ouvrir le dossier" Margin="0,0,10,0" Click="BtnOuvrirDossier_Click" />
-                                <Button Style="{StaticResource DangerButton}" Content="Tout supprimer" Click="BtnToutSupprimer_Click" />
+                                <Button Style="{StaticResource GlassButton}" Content="{loc:Tr Commun_OuvrirDossier}" Margin="0,0,10,0" Click="BtnOuvrirDossier_Click" />
+                                <Button Style="{StaticResource DangerButton}" Content="{loc:Tr Options_ToutSupprimer}" Click="BtnToutSupprimer_Click" />
                             </StackPanel>
                         </StackPanel>
                     </Border>
@@ -189,19 +177,10 @@
                         <StackPanel>
                             <CheckBox x:Name="Discordrichpresence1" Style="{StaticResource ToggleSwitch}" Checked="Chkrich" Unchecked="Chkrich" >
                                 <StackPanel>
-                                    <TextBlock Style="{StaticResource SectionTitle}" Text="Rich Presence Discord" />
-                                    <TextBlock Style="{StaticResource BodyText}" FontWeight="Normal" Text="Affiche Misty comme activité Discord" />
+                                    <TextBlock Style="{StaticResource SectionTitle}" Text="RICH PRESENCE DISCORD" />
+                                    <TextBlock Style="{StaticResource BodyText}" FontWeight="Normal" Text="{loc:Tr Options_Discord_Texte}" />
                                 </StackPanel>
                             </CheckBox>
-                            <StackPanel x:Name="Discordrichpresence2" Margin="0,14,0,0" Visibility="Collapsed">
-                                <Border CornerRadius="10" Background="#40FFFFFF" Padding="12,8" Margin="0,0,0,10">
-                                    <TextBlock x:Name="TxtCheminRaccourci2" Style="{StaticResource BodyText}" Foreground="{StaticResource Navy2Brush}" TextTrimming="CharacterEllipsis" TextWrapping="NoWrap" Text="Aucun dossier choisi" />
-                                </Border>
-                                <StackPanel Orientation="Horizontal">
-                                    <Button Style="{StaticResource GlassButton}" Content="Choisir le dossier…" Margin="0,0,10,0" Click="BtnChoisirRaccourci_Click" />
-                                    <Button Style="{StaticResource GlassButton}" Content="Recréer" Click="BtnRecreerRaccourci_Click" />
-                                </StackPanel>
-                            </StackPanel>
                         </StackPanel>
                     </Border>
 
@@ -210,7 +189,7 @@
                         <DockPanel>
                             <Button DockPanel.Dock="Right" Style="{StaticResource GlassButton}" Content="GitHub" VerticalAlignment="Center" Click="BtnGitHub_Click" />
                             <StackPanel>
-                                <TextBlock Style="{StaticResource SectionTitle}" Text="À PROPOS" />
+                                <TextBlock Style="{StaticResource SectionTitle}" Text="{loc:Tr Options_APropos}" />
                                 <TextBlock x:Name="TxtAPropos" Style="{StaticResource BodyText}" />
                             </StackPanel>
                         </DockPanel>

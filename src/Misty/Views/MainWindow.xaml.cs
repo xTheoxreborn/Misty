@@ -1,4 +1,3 @@
-using DiscordRPC;
 using Misty.Services;
 using System.Diagnostics;
 using System.Windows;
@@ -25,6 +24,7 @@ namespace Misty.Views
         private readonly PackEditorView packEditeur;
 
         private TaskCompletionSource<string?>? dialogEnCours;
+        private bool avertiPacks;
 
         public MainWindow()
         {
@@ -34,15 +34,8 @@ namespace Misty.Views
             Dialogs.Host = this;
             TxtVersionApp.Text = "v" + AppInfo.Version;
 
-            discord = new DiscordPresenceService();
-
-            string richPresence = SettingsStore.GetBool(SettingsStore.RichPresence, true).ToString().ToLower();
-            if (richPresence == "true")
-                discord.DansLeLauncher();
-            else
-                discord.FermerRichPresence();
-
-
+            discord = DiscordPresenceService.Instance;
+            discord.DansLeLauncher();
 
             accueil = new HomeView(discord);
             options = new SettingsView();
@@ -57,7 +50,7 @@ namespace Misty.Views
                 Naviguer(packEditeur);
                 await packEditeur.ChargerAsync(pack);
             };
-            packEditeur.RetourDemande += () => Naviguer(soon);
+            packEditeur.RetourDemande += () => { soon.Rafraichir(); Naviguer(soon); };
 
 
 
@@ -108,11 +101,11 @@ namespace Misty.Views
             {
                 bool migre = await UpdateService.MigrerAncienDossierAsync(() => { });
                 if (migre)
-                    await Dialogs.InfoAsync("Dossier migré", "Tes données ont été déplacées vers le nouveau dossier d'installation.");
+                    await Dialogs.InfoAsync(Loc.T("Demarrage_Migre"), Loc.T("Demarrage_Migre_Texte"));
             }
             catch (Exception ex)
             {
-                await Dialogs.ErreurAsync("Migration impossible", "Erreur lors de la migration de l'ancien dossier : " + ex.Message);
+                await Dialogs.ErreurAsync(Loc.T("Demarrage_MigrationImpossible"), Loc.T("Demarrage_MigrationImpossible_Texte", ex.Message));
             }
         }
 
@@ -132,9 +125,9 @@ namespace Misty.Views
             if (release == null) return;
 
             bool installer = await Dialogs.ConfirmerAsync(
-                "Mise à jour disponible",
-                $"La version {release.Version} est disponible (actuelle : {AppInfo.Version}).\nLa télécharger maintenant ?",
-                "Mettre à jour", "Plus tard");
+                Loc.T("Maj_Disponible"),
+                Loc.T("Maj_Disponible_Texte", release.Version, AppInfo.Version),
+                Loc.T("Maj_Installer"), Loc.T("Commun_PlusTard"));
 
             if (!installer) return;
 
@@ -145,7 +138,7 @@ namespace Misty.Views
             }
             catch (Exception ex)
             {
-                await Dialogs.ErreurAsync("Mise à jour impossible", ex.Message);
+                await Dialogs.ErreurAsync(Loc.T("Maj_Impossible"), ex.Message);
             }
         }
 
@@ -154,11 +147,11 @@ namespace Misty.Views
             try
             {
                 if (await UpdateService.FinaliserMiseAJourAsync())
-                    await Dialogs.InfoAsync("Mise à jour terminée", $"Misty est maintenant en version {AppInfo.Version} !");
+                    await Dialogs.InfoAsync(Loc.T("Maj_Terminee"), Loc.T("Maj_Terminee_Texte", AppInfo.Version));
             }
             catch (Exception ex)
             {
-                await Dialogs.ErreurAsync("Nettoyage impossible", "Erreur lors de la suppression de l'ancienne version : " + ex.Message);
+                await Dialogs.ErreurAsync(Loc.T("Maj_Nettoyage"), Loc.T("Maj_Nettoyage_Texte", ex.Message));
             }
         }
 
@@ -182,25 +175,34 @@ namespace Misty.Views
                 profils.Rafraichir();
 
             Naviguer(page);
+            if (page == soon) soon.Rafraichir(); // après Naviguer : l'éditeur a pu enregistrer une texture
 
-            string richPresence = SettingsStore.GetBool(SettingsStore.RichPresence, true).ToString().ToLower();
-
-            if (NavSoon.IsChecked == true && richPresence == "true")
+            if (page == soon)
             {
                 discord.EditRessourcePack();
+                // Avertissement montré une seule fois par session
+                if (!avertiPacks)
+                {
+                    avertiPacks = true;
+                    await Dialogs.InfoAsync(Loc.T("Pack_Experimental"), Loc.T("Pack_Experimental_Texte"));
+                }
             }
-            else if (NavSoon.IsChecked == false && richPresence == "true")
-            {
+            else if (!accueil.JeuEnCours)
                 discord.DansLeLauncher();
-            }
-            else
-                discord.FermerRichPresence();
+        }
 
-
-            if (NavSoon.IsChecked == true)
+        /// <summary>Re-cliquer sur l'onglet actif depuis une sous-page (profil, éditeur) ramène à sa page principale.</summary>
+        private void Nav_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender == NavSoon && PageHost.Content == packEditeur)
             {
-                await Dialogs.InfoAsync("Fonction expérimentale",
-"La modification des packs de textures est expérimentale. Des bugs peuvent apparaître.");
+                Naviguer(soon); // enregistre d'abord la texture en cours
+                soon.Rafraichir();
+            }
+            else if (sender == NavProfils && PageHost.Content == instanceVue)
+            {
+                profils.Rafraichir();
+                Naviguer(profils);
             }
         }
         
@@ -220,6 +222,10 @@ namespace Misty.Views
         private void Naviguer(UserControl page)
         {
             if (PageHost.Content == page) return;
+
+            // On quitte l'éditeur : la texture en cours ne doit pas être perdue
+            if (PageHost.Content == packEditeur)
+                packEditeur.Quitter();
 
             PageHost.Content = page;
 
@@ -254,7 +260,7 @@ namespace Misty.Views
         {
             DialogChoix.ItemsSource = options;
             DialogOk.Visibility = Visibility.Collapsed;
-            return OuvrirDialog(titre, message, "", "Annuler", false);
+            return OuvrirDialog(titre, message, "", Loc.T("Commun_Annuler"), false);
         }
 
         /// <summary>Résultat : "" pour OK, l'option choisie, ou null pour Annuler/Échap.</summary>

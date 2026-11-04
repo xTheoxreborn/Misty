@@ -62,5 +62,5 @@ assets/             polices, drapeaux, icône
 
 - Le compte Microsoft : le cache de CmlLib n'est pas réutilisable, il faut se reconnecter une fois
   (le compte est ensuite gardé dans `msa.json`).
-- La fenêtre utilise les coins arrondis de Windows 11 (au lieu d'une fenêtre transparente).
+- La fenêtre est transparente et son contenu est découpé en coins arrondis (identique sur Windows 10 et 11).
 - L'éditeur externe (Paint.NET…) : la texture est rechargée dès que son fichier change.

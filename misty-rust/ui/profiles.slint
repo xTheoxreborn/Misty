@@ -1,0 +1,316 @@
+// Liste des profils, création d'un profil, installation d'un modpack.
+
+import { Theme, Tr, Assets } from "theme.slint";
+import { ProfilesState } from "state.slint";
+import { Icon, PixelLabel, BodyText, SectionTitle, OutlinedText, GlassCard, Thumb, IconButton, MButton, GlassInput, GlassCombo, Spinner } from "widgets.slint";
+import { ContentBrowser } from "browser.slint";
+import { ScrollView } from "std-widgets.slint";
+
+component ProfileCardView inherits Rectangle {
+    in property <string> name;
+    in property <string> summary;
+    in property <string> last;
+    in property <image> icon;
+    in property <bool> has-icon;
+    callback open();
+    callback play();
+    callback delete();
+
+    width: 236px;
+    height: 236px;
+    border-radius: 20px;
+    background: touch.has-hover ? Theme.glass-hover : Theme.glass;
+    border-width: 1.5px;
+    border-color: touch.has-hover ? white : Theme.glass-border;
+    animate background { duration: 120ms; }
+
+    touch := TouchArea {
+        mouse-cursor: pointer;
+        clicked => { root.open(); }
+    }
+    VerticalLayout {
+        padding: 16px;
+        spacing: 0px;
+        HorizontalLayout {
+            alignment: start;
+            Thumb {
+                width: 76px;
+                height: 76px;
+                radius: 20px;
+                border: 2.5px;
+                grass-margin: 16px;
+                grass-opacity: 1;
+                source: root.icon;
+                has-image: root.has-icon;
+            }
+        }
+        Text {
+            text: root.name;
+            font-family: Theme.ui-font;
+            font-weight: 600;
+            font-size: 16px;
+            color: Theme.navy;
+            overflow: elide;
+            height: 44px;
+            vertical-alignment: bottom;
+        }
+        PixelLabel {
+            text: root.summary;
+            font-size: 11px;
+            height: 22px;
+        }
+        Rectangle { vertical-stretch: 1; }
+        HorizontalLayout {
+            spacing: 6px;
+            Text {
+                horizontal-stretch: 1;
+                text: root.last;
+                font-family: Theme.ui-font;
+                font-size: 12px;
+                color: Theme.text-muted;
+                vertical-alignment: center;
+                overflow: elide;
+            }
+            IconButton {
+                width: 42px;
+                height: 42px;
+                icon: "\u{E74D}";
+                fond: Theme.danger;
+                encre: white;
+                bord: #FFFFFF66;
+                tooltip: Tr.t("Commun_Supprimer");
+                clicked => { root.delete(); }
+            }
+            IconButton {
+                width: 42px;
+                height: 42px;
+                icon: "\u{E768}";
+                fond: Theme.green-dark;
+                encre: white;
+                bord: #FFFFFF66;
+                tooltip: Tr.t("Nav_Jouer");
+                clicked => { root.play(); }
+            }
+        }
+    }
+}
+
+export component ProfilesPage inherits Rectangle {
+    // ═══════════ Liste des profils ═══════════
+    if ProfilesState.view == 0: VerticalLayout {
+        padding-left: 26px;
+        padding-right: 30px;
+        padding-bottom: 26px;
+        spacing: 18px;
+
+        HorizontalLayout {
+            padding-left: 6px;
+            spacing: 10px;
+            OutlinedText {
+                text: Tr.t("Profil_Titre");
+                font-size: 48px;
+                depth: 5px;
+            }
+            Rectangle { horizontal-stretch: 1; }
+            VerticalLayout {
+                alignment: center;
+                MButton {
+                    text: Tr.t("Profil_InstallerModpack");
+                    icon: "\u{E896}";
+                    clicked => { ProfilesState.modpacks(); }
+                }
+            }
+            VerticalLayout {
+                alignment: center;
+                MButton {
+                    kind: 1;
+                    text: Tr.t("Profil_Nouveau");
+                    icon: "\u{E710}";
+                    clicked => { ProfilesState.new-profile(); }
+                }
+            }
+        }
+
+        zone := ScrollView {
+            vertical-stretch: 1;
+            property <int> colonnes: max(1, floor((self.visible-width + 16px) / 252px));
+            content-width: self.visible-width;
+            content-height: ProfilesState.list.length == 0 ? 300px : ceil(ProfilesState.list.length / self.colonnes) * 252px;
+
+            for p[i] in ProfilesState.list: ProfileCardView {
+                x: mod(i, zone.colonnes) * 252px;
+                y: floor(i / zone.colonnes) * 252px;
+                name: p.name;
+                summary: p.summary;
+                last: p.last;
+                icon: p.icon;
+                has-icon: p.has-icon;
+                open => { ProfilesState.open(p.id); }
+                play => { ProfilesState.play(p.id); }
+                delete => { ProfilesState.delete(p.id); }
+            }
+
+            // État vide
+            if ProfilesState.list.length == 0: GlassCard {
+                x: 0;
+                y: 0;
+                width: 500px;
+                height: vide.preferred-height;
+                vide := VerticalLayout {
+                    padding: 40px;
+                    spacing: 6px;
+                    HorizontalLayout {
+                        alignment: start;
+                        Image {
+                            width: 64px;
+                            height: 64px;
+                            source: Assets.grass;
+                            image-rendering: pixelated;
+                        }
+                    }
+                    SectionTitle {
+                        text: Tr.t("Profil_Aucun");
+                        height: 40px;
+                        vertical-alignment: bottom;
+                    }
+                    BodyText { text: Tr.t("Profil_Aucun_Texte"); }
+                }
+            }
+        }
+    }
+
+    // ═══════════ Modpacks ═══════════
+    if ProfilesState.view == 1: VerticalLayout {
+        padding-left: 26px;
+        padding-right: 30px;
+        padding-bottom: 26px;
+        spacing: 18px;
+        HorizontalLayout {
+            spacing: 16px;
+            alignment: start;
+            VerticalLayout {
+                alignment: center;
+                IconButton {
+                    icon: "\u{E72B}";
+                    tooltip: Tr.t("Profil_Retour");
+                    clicked => { ProfilesState.back(); }
+                }
+            }
+            OutlinedText {
+                text: "MODPACKS";
+                font-size: 48px;
+                depth: 5px;
+            }
+        }
+        ContentBrowser { vertical-stretch: 1; }
+    }
+
+    // ═══════════ Création d'un profil ═══════════
+    if ProfilesState.creating: Rectangle {
+        background: #1C233566;
+        TouchArea {
+            clicked => { ProfilesState.cancel-create(); }
+        }
+        Rectangle {
+            width: 460px;
+            height: form.preferred-height;
+            border-radius: 24px;
+            background: #F6FAFFF2;
+            border-width: 2px;
+            border-color: white;
+            drop-shadow-blur: 30px;
+            drop-shadow-color: #1C233560;
+            TouchArea { }
+            form := VerticalLayout {
+                padding-left: 28px;
+                padding-right: 28px;
+                padding-top: 26px;
+                padding-bottom: 26px;
+                spacing: 6px;
+                SectionTitle {
+                    text: Tr.t("Profil_NouveauTitre");
+                    height: 36px;
+                    vertical-alignment: top;
+                }
+                PixelLabel { text: Tr.t("Commun_Nom"); font-size: 10px; x: 4px; }
+                nom := GlassInput {
+                    text <=> ProfilesState.create-name;
+                    init => { self.focus-input(); }
+                }
+                Rectangle { height: 8px; }
+                HorizontalLayout {
+                    spacing: 12px;
+                    VerticalLayout {
+                        spacing: 6px;
+                        PixelLabel { text: Tr.t("Commun_Version"); font-size: 10px; x: 4px; }
+                        GlassCombo {
+                            model: ProfilesState.create-versions;
+                            current-index <=> ProfilesState.create-version-index;
+                            selected(i) => { ProfilesState.create-version-selected(i); }
+                        }
+                    }
+                    VerticalLayout {
+                        spacing: 6px;
+                        PixelLabel { text: Tr.t("Commun_ModLoader"); font-size: 10px; x: 4px; }
+                        GlassCombo {
+                            model: ProfilesState.create-loaders;
+                            current-index <=> ProfilesState.create-loader-index;
+                            enabled: ProfilesState.create-loader-enabled;
+                        }
+                    }
+                }
+                BodyText {
+                    text: ProfilesState.create-info;
+                    x: 2px;
+                    min-height: 30px;
+                    vertical-alignment: center;
+                }
+                HorizontalLayout {
+                    alignment: end;
+                    spacing: 10px;
+                    padding-top: 12px;
+                    MButton {
+                        text: Tr.t("Commun_Annuler");
+                        clicked => { ProfilesState.cancel-create(); }
+                    }
+                    MButton {
+                        kind: 1;
+                        text: Tr.t("Profil_Creer");
+                        enabled: ProfilesState.create-enabled;
+                        clicked => { ProfilesState.create(); }
+                    }
+                }
+            }
+        }
+    }
+
+    // ═══════════ Installation d'un modpack en cours ═══════════
+    if ProfilesState.waiting: Rectangle {
+        background: #1C23358C;
+        TouchArea { }
+        Rectangle {
+            width: 420px;
+            height: attente.preferred-height;
+            border-radius: 24px;
+            background: #F6FAFFF2;
+            border-width: 2px;
+            border-color: white;
+            drop-shadow-blur: 30px;
+            drop-shadow-color: #1C233560;
+            attente := VerticalLayout {
+                padding: 28px;
+                spacing: 6px;
+                Spinner { height: 48px; }
+                SectionTitle {
+                    text: ProfilesState.wait-title;
+                    horizontal-alignment: center;
+                    wrap: word-wrap;
+                }
+                BodyText {
+                    text: ProfilesState.wait-text;
+                    horizontal-alignment: center;
+                }
+            }
+        }
+    }
+}

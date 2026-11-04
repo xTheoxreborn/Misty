@@ -1,0 +1,283 @@
+// Packs de textures : liste, création, export, suppression. L'édition se fait dans editor.slint.
+
+import { Theme, Tr, Assets } from "theme.slint";
+import { PacksState } from "state.slint";
+import { Icon, PixelLabel, BodyText, SectionTitle, OutlinedText, GlassCard, Thumb, Badge, IconButton, MButton, GlassInput, GlassCombo } from "widgets.slint";
+import { ScrollView } from "std-widgets.slint";
+
+component PackCardView inherits Rectangle {
+    in property <string> name;
+    in property <string> description;
+    in property <string> version;
+    in property <string> count;
+    in property <image> icon;
+    in property <bool> has-icon;
+    callback edit();
+    callback folder();
+    callback export();
+    callback delete();
+
+    width: 316px;
+    height: 160px;
+    border-radius: 20px;
+    background: touch.has-hover ? Theme.glass-hover : Theme.glass;
+    border-width: 1.5px;
+    border-color: touch.has-hover ? white : Theme.glass-border;
+    animate background { duration: 120ms; }
+
+    touch := TouchArea {
+        mouse-cursor: pointer;
+        clicked => { root.edit(); }
+    }
+    VerticalLayout {
+        padding: 16px;
+        spacing: 16px;
+        HorizontalLayout {
+            spacing: 14px;
+            Thumb {
+                width: 72px;
+                height: 72px;
+                radius: 18px;
+                border: 2.5px;
+                grass-margin: 16px;
+                grass-opacity: 1;
+                pixel-art: true;
+                source: root.icon;
+                has-image: root.has-icon;
+            }
+            VerticalLayout {
+                horizontal-stretch: 1;
+                spacing: 3px;
+                alignment: start;
+                Text {
+                    text: root.name;
+                    font-family: Theme.ui-font;
+                    font-weight: 600;
+                    font-size: 16px;
+                    color: Theme.navy;
+                    overflow: elide;
+                }
+                Text {
+                    text: root.description;
+                    font-family: Theme.ui-font;
+                    font-size: 12.5px;
+                    color: Theme.text-muted;
+                    overflow: elide;
+                }
+                Rectangle { height: 4px; }
+                HorizontalLayout {
+                    spacing: 6px;
+                    alignment: start;
+                    if root.version != "": Badge {
+                        text: root.version;
+                        font-size: 10px;
+                    }
+                    Badge {
+                        text: root.count;
+                        couleur: Theme.green-dark;
+                        font-size: 10px;
+                    }
+                }
+            }
+        }
+        HorizontalLayout {
+            spacing: 6px;
+            MButton {
+                kind: 1;
+                icon: "\u{E70F}";
+                text: Tr.t("Pack_Editer");
+                clicked => { root.edit(); }
+            }
+            Rectangle { horizontal-stretch: 1; }
+            IconButton {
+                icon: "\u{E896}";
+                tooltip: Tr.t("Pack_Exporter");
+                clicked => { root.export(); }
+            }
+            IconButton {
+                icon: "\u{E8B7}";
+                tooltip: Tr.t("Pack_Dossier");
+                clicked => { root.folder(); }
+            }
+            IconButton {
+                icon: "\u{E74D}";
+                fond: Theme.danger;
+                encre: white;
+                bord: #FFFFFF66;
+                tooltip: Tr.t("Pack_Supprimer");
+                clicked => { root.delete(); }
+            }
+        }
+    }
+}
+
+export component PacksPage inherits Rectangle {
+    VerticalLayout {
+        padding-left: 26px;
+        padding-right: 30px;
+        padding-bottom: 26px;
+        spacing: 18px;
+
+        HorizontalLayout {
+            padding-left: 6px;
+            VerticalLayout {
+                spacing: 6px;
+                HorizontalLayout {
+                    alignment: start;
+                    OutlinedText {
+                        text: Tr.t("Pack_Titre");
+                        font-size: 40px;
+                        depth: 5px;
+                    }
+                }
+                BodyText {
+                    text: Tr.t("Pack_SousTitre");
+                    x: 4px;
+                }
+            }
+            Rectangle { horizontal-stretch: 1; }
+            VerticalLayout {
+                alignment: center;
+                MButton {
+                    kind: 1;
+                    icon: "\u{E710}";
+                    text: Tr.t("Soon_CreerPack");
+                    clicked => { PacksState.new-pack(); }
+                }
+            }
+        }
+
+        zone := ScrollView {
+            vertical-stretch: 1;
+            property <int> colonnes: max(1, floor((self.visible-width + 16px) / 332px));
+            content-width: self.visible-width;
+            content-height: PacksState.list.length == 0 ? 300px : ceil(PacksState.list.length / self.colonnes) * 176px;
+
+            for p[i] in PacksState.list: PackCardView {
+                x: mod(i, zone.colonnes) * 332px;
+                y: floor(i / zone.colonnes) * 176px;
+                name: p.name;
+                description: p.description;
+                version: p.version;
+                count: p.count;
+                icon: p.icon;
+                has-icon: p.has-icon;
+                edit => { PacksState.edit(i); }
+                folder => { PacksState.folder(i); }
+                export => { PacksState.export(i); }
+                delete => { PacksState.delete(i); }
+            }
+
+            // État vide
+            if PacksState.list.length == 0: GlassCard {
+                x: 0;
+                y: 0;
+                width: 520px;
+                height: vide.preferred-height;
+                vide := VerticalLayout {
+                    padding: 40px;
+                    spacing: 6px;
+                    HorizontalLayout {
+                        alignment: start;
+                        Image {
+                            width: 64px;
+                            height: 64px;
+                            source: Assets.grass;
+                            image-rendering: pixelated;
+                        }
+                    }
+                    SectionTitle {
+                        text: Tr.t("Pack_AucunTitre");
+                        height: 40px;
+                        vertical-alignment: bottom;
+                    }
+                    BodyText { text: Tr.t("Soon_Aucun"); }
+                }
+            }
+        }
+    }
+
+    // ═══ Création d'un pack ═══
+    if PacksState.creating: Rectangle {
+        background: #1C233566;
+        TouchArea {
+            clicked => {
+                if (PacksState.create-enabled) {
+                    PacksState.cancel-create();
+                }
+            }
+        }
+        Rectangle {
+            width: 460px;
+            height: form.preferred-height;
+            border-radius: 24px;
+            background: #F6FAFFF2;
+            border-width: 2px;
+            border-color: white;
+            drop-shadow-blur: 30px;
+            drop-shadow-color: #1C233560;
+            TouchArea { }
+            form := VerticalLayout {
+                padding-left: 28px;
+                padding-right: 28px;
+                padding-top: 26px;
+                padding-bottom: 26px;
+                spacing: 6px;
+                SectionTitle {
+                    text: Tr.t("Pack_Nouveau");
+                    height: 36px;
+                    vertical-alignment: top;
+                }
+                PixelLabel { text: Tr.t("Pack_Nom"); font-size: 10px; x: 4px; }
+                GlassInput {
+                    text <=> PacksState.create-name;
+                    init => { self.focus-input(); }
+                    accepted => {
+                        if (PacksState.create-enabled) {
+                            PacksState.validate();
+                        }
+                    }
+                }
+                Rectangle { height: 8px; }
+                PixelLabel { text: Tr.t("Pack_Description"); font-size: 10px; x: 4px; }
+                GlassInput {
+                    text <=> PacksState.create-desc;
+                    accepted => {
+                        if (PacksState.create-enabled) {
+                            PacksState.validate();
+                        }
+                    }
+                }
+                Rectangle { height: 8px; }
+                PixelLabel { text: Tr.t("Pack_Version"); font-size: 10px; x: 4px; }
+                GlassCombo {
+                    model: PacksState.versions;
+                    current-index <=> PacksState.version-index;
+                    enabled: PacksState.create-enabled;
+                }
+                BodyText {
+                    text: PacksState.create-info;
+                    x: 2px;
+                    min-height: 36px;
+                    vertical-alignment: center;
+                }
+                HorizontalLayout {
+                    alignment: end;
+                    spacing: 10px;
+                    padding-top: 12px;
+                    MButton {
+                        text: Tr.t("Commun_Annuler");
+                        enabled: PacksState.create-enabled;
+                        clicked => { PacksState.cancel-create(); }
+                    }
+                    MButton {
+                        kind: 1;
+                        text: Tr.t("Pack_Creer");
+                        enabled: PacksState.create-enabled;
+                        clicked => { PacksState.validate(); }
+                    }
+                }
+            }
+        }
+    }
+}

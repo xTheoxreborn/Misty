@@ -1,0 +1,61 @@
+[package]
+name = "misty"
+version = "0.3.1"
+edition = "2021"
+description = "Launcher Minecraft"
+authors = ["xTheoxreborn"]
+license = "MIT"
+repository = "https://github.com/xTheoxreborn/Misty"
+build = "build.rs"
+
+# L'exe s'appelle Misty.exe (attendu par la mise à jour automatique et les raccourcis)
+[[bin]]
+name = "Misty"
+path = "src/main.rs"
+
+[dependencies]
+# Interface
+slint = { version = "1.18", features = ["unstable-winit-030"] }
+# Asynchrone + réseau
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "fs", "process", "sync", "time", "io-util"] }
+reqwest = { version = "0.12", default-features = false, features = ["json", "stream", "rustls-tls", "gzip"] }
+futures = "0.3"
+# Données
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+chrono = { version = "0.4", features = ["serde"] }
+# Fichiers
+zip = { version = "2", default-features = false, features = ["deflate"] }
+sha1 = "0.10"
+hex = "0.4"
+image = { version = "0.25", default-features = false, features = ["png", "jpeg", "gif", "bmp", "webp"] }
+dirs = "5"
+# Divers
+anyhow = "1"
+rand = "0.8"
+regex = "1"
+unicode-normalization = "0.1"
+urlencoding = "2"
+open = "5"
+rfd = "0.15"
+discord-rich-presence = "0.2"
+sys-locale = "0.3"
+md5 = "0.7"
+uuid = { version = "1", features = ["v4"] }
+# Connexion Microsoft (fenêtre web lancée dans un sous-processus)
+wry = "0.57"
+tao = "0.35"
+
+[target.'cfg(windows)'.dependencies]
+winreg = "0.55"
+mslnk = "0.1"
+windows-sys = { version = "0.59", features = ["Win32_System_SystemInformation", "Win32_Foundation", "Win32_Graphics_Dwm"] }
+
+[build-dependencies]
+slint-build = "1.18"
+winresource = "0.1"
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+strip = true

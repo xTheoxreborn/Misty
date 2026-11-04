@@ -1,0 +1,65 @@
+// Thème : couleurs (relevées sur le visuel de référence), polices, traductions, images partagées.
+
+import "../assets/fonts/Silkscreen-Regular.ttf";
+import "../assets/fonts/Silkscreen-Bold.ttf";
+
+export global Theme {
+    // Palette
+    out property <color> sky-light: #C4DFF8;
+    out property <color> sky: #A8C8EC;
+    out property <color> steel: #6B90BD;
+    out property <color> deep: #4F74A6;
+    out property <color> slate: #58738E;
+    out property <color> slate-dark: #3E526A;
+    out property <color> navy: #1C2335;
+    out property <color> navy2: #2A3347;
+    out property <color> green: #1DE062;
+    out property <color> green-dark: #13B24C;
+    out property <color> green-edge: #0E7F37;
+    out property <color> blue: #2F8CFF;
+    out property <color> danger: #FF5A6E;
+
+    // Texte
+    out property <color> text: #1C2335;
+    out property <color> text-muted: #5A6B82;
+
+    // Verre dépoli
+    out property <color> glass: #FFFFFF59;
+    out property <color> glass-strong: #FFFFFFA6;
+    out property <color> glass-hover: #FFFFFF8C;
+    out property <color> glass-border: #FFFFFFB3;
+
+    // Polices
+    out property <string> pixel-font: "Silkscreen";
+    out property <string> ui-font: "Segoe UI Variable Text";
+    out property <string> icon-font: "Segoe MDL2 Assets"; // présente sur Windows 10 ET 11 (Segoe Fluent Icons = Win11 seulement)
+}
+
+// Traductions : Tr.t("Cle"). Quand la langue change, Rust incrémente `rev`
+// et tous les textes qui utilisent Tr.t sont recalculés.
+export global Tr {
+    in property <int> rev;
+    pure callback lookup(string) -> string;
+    public pure function t(key: string) -> string {
+        if (rev < 0) {
+            return "";
+        }
+        return lookup(key);
+    }
+}
+
+// Bulle d'aide unique, dessinée par la fenêtre au-dessus de tout le reste.
+// Les boutons indiquent seulement le texte et la position (coordonnées dans la fenêtre).
+export global Bulle {
+    in-out property <string> texte;
+    in-out property <length> x;
+    in-out property <length> y;
+    /// true : à droite du bouton (barre latérale) ; false : centrée sous le bouton
+    in-out property <bool> a-droite;
+    in-out property <bool> visible;
+}
+
+// Images générées en Rust (bloc d'herbe en pixel art…).
+export global Assets {
+    in property <image> grass;
+}

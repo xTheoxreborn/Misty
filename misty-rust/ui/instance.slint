@@ -1,0 +1,297 @@
+// Détail d'un profil : contenu installé (mods, packs, datapacks, shaders) et explorateur Modrinth / CurseForge.
+
+import { Theme, Tr, Assets } from "theme.slint";
+import { InstanceState } from "state.slint";
+import { Icon, PixelLabel, BodyText, SectionTitle, Badge, Thumb, IconButton, MButton, PlayButton, TabPill, GlassInput, ToggleSwitch } from "widgets.slint";
+import { ContentBrowser } from "browser.slint";
+import { ListView } from "std-widgets.slint";
+
+export component InstancePage inherits Rectangle {
+    VerticalLayout {
+        padding-left: 26px;
+        padding-right: 30px;
+        padding-bottom: 26px;
+        spacing: 0px;
+
+        // ═══ En-tête ═══
+        HorizontalLayout {
+            padding-bottom: 18px;
+            spacing: 0px;
+            VerticalLayout {
+                alignment: center;
+                IconButton {
+                    icon: "\u{E72B}";
+                    tooltip: Tr.t("Profil_Retour");
+                    clicked => { InstanceState.back(); }
+                }
+            }
+            HorizontalLayout {
+                padding-left: 16px;
+                padding-right: 18px;
+                Thumb {
+                    width: 80px;
+                    height: 80px;
+                    radius: 22px;
+                    border: 3px;
+                    grass-margin: 16px;
+                    grass-opacity: 1;
+                    source: InstanceState.icon;
+                    has-image: InstanceState.has-icon;
+                    drop-shadow-blur: 8px;
+                    drop-shadow-color: #1C233540;
+                }
+            }
+            VerticalLayout {
+                horizontal-stretch: 1;
+                alignment: center;
+                spacing: 8px;
+                if !InstanceState.renaming: Text {
+                    text: InstanceState.name;
+                    font-family: Theme.pixel-font;
+                    font-size: 28px;
+                    color: white;
+                    stroke: Theme.slate-dark;
+                    stroke-width: 1px;
+                    overflow: elide;
+                }
+                // Renommage : remplace le nom le temps de la saisie
+                if InstanceState.renaming: HorizontalLayout {
+                    spacing: 8px;
+                    alignment: start;
+                    GlassInput {
+                        width: 300px;
+                        text <=> InstanceState.rename-text;
+                        init => {
+                            self.focus-input();
+                            self.select-all();
+                        }
+                        accepted => { InstanceState.rename-ok(); }
+                    }
+                    MButton {
+                        kind: 1;
+                        text: "OK";
+                        clicked => { InstanceState.rename-ok(); }
+                    }
+                }
+                HorizontalLayout {
+                    spacing: 6px;
+                    alignment: start;
+                    for b in InstanceState.badges: Badge {
+                        text: b.text;
+                        couleur: b.color;
+                    }
+                }
+            }
+            HorizontalLayout {
+                spacing: 8px;
+                VerticalLayout {
+                    alignment: center;
+                    IconButton {
+                        icon: "\u{E8B7}";
+                        tooltip: Tr.t("Instance_Dossier");
+                        clicked => { InstanceState.folder(); }
+                    }
+                }
+                VerticalLayout {
+                    alignment: center;
+                    IconButton {
+                        icon: "\u{E8B9}";
+                        tooltip: Tr.t("Instance_Icone");
+                        clicked => { InstanceState.change-icon(); }
+                    }
+                }
+                VerticalLayout {
+                    alignment: center;
+                    IconButton {
+                        icon: "\u{E70F}";
+                        tooltip: Tr.t("Instance_Renommer");
+                        clicked => { InstanceState.rename(); }
+                    }
+                }
+                VerticalLayout {
+                    alignment: center;
+                    IconButton {
+                        icon: "\u{E74D}";
+                        encre: Theme.danger;
+                        tooltip: Tr.t("Profil_Supprimer");
+                        clicked => { InstanceState.delete(); }
+                    }
+                }
+                Rectangle { width: 6px; }
+                VerticalLayout {
+                    alignment: center;
+                    PlayButton {
+                        width: 150px;
+                        height: 60px;
+                        font-size: 22px;
+                        text: Tr.t("Home_Bouton_Jouer");
+                        clicked => { InstanceState.play(); }
+                    }
+                }
+            }
+        }
+
+        // ═══ Onglets ═══
+        HorizontalLayout {
+            padding-bottom: 14px;
+            spacing: 8px;
+            TabPill {
+                icon: "\u{E8F1}";
+                text: InstanceState.content-tab-text;
+                checked: InstanceState.tab == 0;
+                clicked => {
+                    InstanceState.tab = 0;
+                    InstanceState.tab-changed(0);
+                }
+            }
+            TabPill {
+                icon: "\u{E721}";
+                text: Tr.t("Instance_Decouvrir");
+                checked: InstanceState.tab == 1;
+                clicked => {
+                    InstanceState.tab = 1;
+                    InstanceState.tab-changed(1);
+                }
+            }
+            Text {
+                horizontal-stretch: 1;
+                text: InstanceState.status;
+                font-family: Theme.ui-font;
+                font-size: 13px;
+                font-weight: 600;
+                color: Theme.navy2;
+                horizontal-alignment: right;
+                vertical-alignment: center;
+                overflow: elide;
+            }
+        }
+
+        // ═══ Contenu installé ═══
+        if InstanceState.tab == 0: VerticalLayout {
+            vertical-stretch: 1;
+            spacing: 12px;
+            HorizontalLayout {
+                spacing: 8px;
+                for f[i] in InstanceState.filters: TabPill {
+                    text: f;
+                    checked: i == InstanceState.filter-index;
+                    clicked => {
+                        InstanceState.filter-index = i;
+                        InstanceState.filter-changed(i);
+                    }
+                }
+                Rectangle { horizontal-stretch: 1; }
+                GlassInput {
+                    width: 240px;
+                    search: true;
+                    placeholder: Tr.t("Instance_Filtrer");
+                    text <=> InstanceState.filter-text;
+                    edited(t) => { InstanceState.filter-text-changed(t); }
+                }
+            }
+
+            if InstanceState.items.length > 0: ListView {
+                vertical-stretch: 1;
+                for c[i] in InstanceState.items: Rectangle {
+                    height: 66px;
+                    Rectangle {
+                        y: 0;
+                        height: parent.height - 8px;
+                        width: parent.width - 10px;
+                        border-radius: 16px;
+                        background: Theme.glass;
+                        border-width: 1.5px;
+                        border-color: Theme.glass-border;
+                        opacity: c.active ? 1 : 0.6;
+                        HorizontalLayout {
+                            padding-left: 10px;
+                            padding-right: 12px;
+                            padding-top: 8px;
+                            padding-bottom: 8px;
+                            spacing: 12px;
+                            Thumb {
+                                width: 42px;
+                                height: 42px;
+                                radius: 11px;
+                                grass-margin: 10px;
+                                source: c.icon;
+                                has-image: c.has-icon;
+                            }
+                            VerticalLayout {
+                                horizontal-stretch: 1;
+                                alignment: center;
+                                spacing: 2px;
+                                Text {
+                                    text: c.title;
+                                    font-family: Theme.ui-font;
+                                    font-weight: 600;
+                                    font-size: 14px;
+                                    color: Theme.navy;
+                                    overflow: elide;
+                                }
+                                Text {
+                                    text: c.details;
+                                    font-family: Theme.ui-font;
+                                    font-size: 12px;
+                                    color: Theme.text-muted;
+                                    overflow: elide;
+                                }
+                            }
+                            ToggleSwitch {
+                                width: 44px;
+                                auto: false;
+                                checked: c.active;
+                                toggled => { InstanceState.toggle(i); }
+                            }
+                            VerticalLayout {
+                                alignment: center;
+                                IconButton {
+                                    width: 36px;
+                                    height: 36px;
+                                    icon: "\u{E74D}";
+                                    icon-size: 13px;
+                                    fond: transparent;
+                                    bord: transparent;
+                                    encre: Theme.danger;
+                                    tooltip: Tr.t("Commun_Supprimer");
+                                    clicked => { InstanceState.remove(i); }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // État vide
+            if InstanceState.items.length == 0: VerticalLayout {
+                vertical-stretch: 1;
+                alignment: start;
+                padding-top: 40px;
+                spacing: 4px;
+                HorizontalLayout {
+                    alignment: center;
+                    Image {
+                        width: 64px;
+                        height: 64px;
+                        source: Assets.grass;
+                        image-rendering: pixelated;
+                        opacity: 0.8;
+                    }
+                }
+                SectionTitle {
+                    text: Tr.t("Instance_Vide");
+                    horizontal-alignment: center;
+                    height: 40px;
+                    vertical-alignment: bottom;
+                }
+                BodyText {
+                    text: Tr.t("Instance_Vide_Texte");
+                    horizontal-alignment: center;
+                }
+            }
+        }
+
+        // ═══ Découvrir ═══
+        if InstanceState.tab == 1: ContentBrowser { vertical-stretch: 1; }
+    }
+}

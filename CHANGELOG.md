@@ -1,4 +1,14 @@
 # Changelog
+## 0.3.1
+- Fenêtre aux coins arrondis : le fond de l'application épouse maintenant des angles arrondis, avec un affichage net sur tous les bords
+- Amélioration : le sélecteur de version (menu général) s'ouvre directement sur la version choisie au lieu de revenir tout en haut de la liste, ce qui permet de choisir facilement la version juste avant ou après
+- Correction : le même comportement est appliqué à toutes les listes déroulantes (profil, mod loader, …)
+- Correction de bugs mineurs d'affichage
+- Correction de Optifine dans les dernières versions
+
+## 0.3.0
+- Baisse considérable de l'utilisation de la RAM du launcher
+
 ## 0.2.4.3
 - Séparer les textures modifié avec le template
 - Ajout du sélecteur des langues

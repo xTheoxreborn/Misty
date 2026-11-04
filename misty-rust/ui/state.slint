@@ -1,0 +1,389 @@
+// État de chaque page, partagé avec Rust.
+// Rust remplit ces propriétés et réagit aux callbacks (voir src/ui/*.rs).
+
+import { LangItem } from "widgets.slint";
+
+// ───────────────────────── Fenêtre ─────────────────────────
+
+/// Petit carré blanc qui flotte en fond.
+export struct Particle {
+    x: length,
+    y: length,
+    size: length,
+    opacity: float,
+    amp: length,
+    period: duration,
+}
+
+export global AppState {
+    /// 0 accueil, 1 profils, 2 options, 3 notes, 4 packs, 5 détail d'un profil, 6 éditeur de pack
+    in-out property <int> page: 0;
+    in property <[Particle]> particles;
+    /// Onglet de la barre latérale allumé
+    in-out property <int> nav: 0;
+    in property <string> version-text;
+    callback nav-clicked(int);
+    callback open-data-folder();
+    callback minimize();
+    callback close();
+    callback drag();
+}
+
+// ───────────────────────── Boîte de dialogue ─────────────────────────
+
+export global DialogState {
+    in-out property <bool> visible;
+    in property <string> title;
+    in property <string> message;
+    in property <string> ok-text;
+    /// "" = pas de bouton Annuler
+    in property <string> cancel-text;
+    in property <bool> danger;
+    in property <string> icon;
+    /// Mode « choix dans une liste »
+    in property <[string]> choices;
+    callback ok();
+    callback cancel();
+    callback choose(int);
+}
+
+// ───────────────────────── Accueil ─────────────────────────
+
+export global HomeState {
+    in property <[string]> accounts;
+    in-out property <int> account-index;
+    in property <bool> premium;
+    in property <string> premium-name;
+    in property <bool> ms-busy;
+    in property <image> avatar;
+    in property <bool> has-avatar;
+
+    in property <[string]> profiles;
+    in-out property <int> profile-index;
+    in property <bool> quick: true;
+
+    in property <[string]> versions;
+    in-out property <int> version-index: -1;
+    in property <[string]> modes;
+    in-out property <int> mode-index: -1;
+    in property <bool> modes-enabled;
+    in property <bool> reload-enabled: true;
+    in property <bool> selectors-enabled: true;
+
+    in property <string> card-label;
+    in property <string> card-version: "—";
+    in property <string> card-loader: "VANILLA";
+    in property <image> card-icon;
+    in property <bool> has-card-icon;
+    in property <string> summary;
+
+    in property <string> status;
+    in property <string> percent-text;
+    in property <float> progress;
+    in property <bool> play-enabled;
+    in property <string> play-text;
+
+    callback account-selected(int);
+    callback profile-selected(int);
+    callback version-selected(int);
+    callback mode-selected(int);
+    callback ms-clicked();
+    callback reload();
+    callback manage();
+    callback play();
+}
+
+// ───────────────────────── Profils ─────────────────────────
+
+export struct ProfileCard {
+    id: string,
+    name: string,
+    summary: string,
+    last: string,
+    icon: image,
+    has-icon: bool,
+}
+
+export global ProfilesState {
+    in property <[ProfileCard]> list;
+    /// 0 liste, 1 modpacks
+    in-out property <int> view;
+
+    in-out property <bool> creating;
+    in-out property <string> create-name;
+    in property <[string]> create-versions;
+    in-out property <int> create-version-index: -1;
+    in property <[string]> create-loaders;
+    in-out property <int> create-loader-index: -1;
+    in property <bool> create-loader-enabled;
+    in property <string> create-info;
+    in property <bool> create-enabled;
+
+    in property <bool> waiting;
+    in property <string> wait-title;
+    in property <string> wait-text;
+
+    callback open(string);
+    callback play(string);
+    callback delete(string);
+    callback new-profile();
+    callback modpacks();
+    callback back();
+    callback create-version-selected(int);
+    callback create();
+    callback cancel-create();
+}
+
+// ───────────────────────── Détail d'un profil ─────────────────────────
+
+export struct BadgeItem {
+    text: string,
+    color: color,
+}
+
+export struct ContentItem {
+    title: string,
+    details: string,
+    icon: image,
+    has-icon: bool,
+    active: bool,
+}
+
+export global InstanceState {
+    in property <string> name;
+    in property <image> icon;
+    in property <bool> has-icon;
+    in property <[BadgeItem]> badges;
+    in property <string> status;
+    /// 0 contenu installé, 1 découvrir
+    in-out property <int> tab;
+    in property <string> content-tab-text;
+    in property <[string]> filters;
+    in-out property <int> filter-index;
+    in-out property <string> filter-text;
+    in property <[ContentItem]> items;
+    in-out property <bool> renaming;
+    in-out property <string> rename-text;
+
+    callback back();
+    callback play();
+    callback folder();
+    callback change-icon();
+    callback rename();
+    callback rename-ok();
+    callback delete();
+    callback tab-changed(int);
+    callback filter-changed(int);
+    callback filter-text-changed(string);
+    callback toggle(int);
+    callback remove(int);
+}
+
+// ───────────────────────── Explorateur Modrinth / CurseForge ─────────────────────────
+
+export struct TabItem {
+    text: string,
+    enabled: bool,
+}
+
+export struct ResultItem {
+    title: string,
+    author: string,
+    description: string,
+    downloads: string,
+    categories: string,
+    icon: image,
+    has-icon: bool,
+    installed: bool,
+    busy: bool,
+    button-text: string,
+    button-icon: string,
+}
+
+export global BrowserState {
+    in property <[TabItem]> types;
+    in-out property <int> type-index;
+    /// 0 Modrinth, 1 CurseForge
+    in-out property <int> source;
+    in property <[string]> sorts;
+    in-out property <int> sort-index;
+    in-out property <string> query;
+    in property <string> info;
+    in property <[ResultItem]> results;
+    in property <string> bottom-text;
+    in property <bool> no-key;
+    /// Incrémenté par Rust pour remonter en haut de la liste
+    in property <int> scroll-reset;
+
+    callback type-changed(int);
+    callback source-changed(int);
+    callback sort-changed(int);
+    callback query-changed(string);
+    callback install(int);
+    callback near-end();
+}
+
+// ───────────────────────── Options ─────────────────────────
+
+export struct PseudoRow {
+    items: [string],
+}
+
+export global SettingsState {
+    in property <[PseudoRow]> pseudo-rows;
+    in-out property <string> new-pseudo;
+    in property <string> ms-state;
+    in property <bool> ms-connected;
+    in property <bool> ms-busy;
+    in-out property <bool> shortcut-enabled;
+    in property <string> shortcut-path;
+    in property <[LangItem]> langs;
+    in-out property <int> lang-index;
+    in property <string> ram-text;
+    in property <string> ram-total-text;
+    in property <float> ram-max: 8192;
+    in-out property <float> ram-value: 4096;
+    in-out property <bool> snapshot;
+    in-out property <bool> beta;
+    in-out property <bool> alpha;
+    in property <string> data-dir;
+    in property <string> size-text;
+    in-out property <bool> rich;
+    in property <string> about-text;
+
+    callback add-pseudo();
+    callback remove-pseudo(string);
+    callback connect();
+    callback disconnect();
+    callback disconnect-all();
+    callback shortcut-toggled(bool);
+    callback choose-shortcut();
+    callback recreate-shortcut();
+    callback lang-selected(int);
+    callback ram-changed(float);
+    callback types-changed();
+    callback open-folder();
+    callback delete-all();
+    callback rich-toggled(bool);
+    callback github();
+}
+
+// ───────────────────────── Notes de version ─────────────────────────
+
+export struct ChangelogSection {
+    title: string,
+    lines: [string],
+    recent: bool,
+}
+
+export global ChangelogState {
+    in property <[ChangelogSection]> sections;
+}
+
+// ───────────────────────── Packs de textures ─────────────────────────
+
+export struct PackCard {
+    name: string,
+    description: string,
+    version: string,
+    count: string,
+    icon: image,
+    has-icon: bool,
+}
+
+export global PacksState {
+    in property <[PackCard]> list;
+    in-out property <bool> creating;
+    in-out property <string> create-name;
+    in-out property <string> create-desc;
+    in property <[string]> versions;
+    in-out property <int> version-index: -1;
+    in property <string> create-info;
+    in property <bool> create-enabled: true;
+
+    callback new-pack();
+    callback validate();
+    callback cancel-create();
+    callback edit(int);
+    callback folder(int);
+    callback export(int);
+    callback delete(int);
+}
+
+// ───────────────────────── Éditeur de pack ─────────────────────────
+
+export struct CategoryItem {
+    name: string,
+    count: string,
+}
+
+export struct TextureItem {
+    path: string,
+    thumb: image,
+    has-thumb: bool,
+    modified: bool,
+}
+
+export global EditorState {
+    in property <string> pack-name;
+    in property <image> pack-icon;
+    in property <bool> has-pack-icon;
+    in property <string> info;
+    /// 0 toutes les textures, 1 mes textures
+    in-out property <int> mode;
+    in property <string> perso-text;
+    in property <[CategoryItem]> categories;
+    in-out property <int> category-index;
+    in-out property <string> search;
+    in property <[TextureItem]> textures;
+    in property <int> selected: -1;
+    in property <string> message;
+    in property <int> scroll-reset;
+
+    in property <bool> editor-visible;
+    in property <string> texture-title;
+    in property <string> size-text;
+    in property <image> pixels;
+    in property <image> checker;
+    in property <image> grid;
+    in-out property <bool> show-grid: true;
+    in-out property <float> zoom: 10;
+    in property <length> canvas-width;
+    in property <length> canvas-height;
+    /// 0 crayon, 1 gomme, 2 pot de peinture, 3 pipette
+    in-out property <int> tool;
+    in property <color> color;
+    in-out property <string> hex-text;
+    in-out property <float> red;
+    in-out property <float> green;
+    in-out property <float> blue;
+    in property <[color]> recents;
+    in property <[color]> palette;
+    in property <bool> reset-enabled;
+    in property <bool> export-enabled: true;
+
+    callback back();
+    callback change-icon();
+    callback search-changed(string);
+    callback folder();
+    callback export();
+    callback mode-changed(int);
+    callback category-changed(int);
+    callback select(int);
+    callback zoom-changed(float);
+    callback grid-toggled(bool);
+    callback tool-changed(int);
+    callback pointer-down(length, length, bool);
+    callback pointer-move(length, length);
+    callback pointer-up();
+    callback rgb-changed();
+    callback hex-changed(string);
+    callback pick-color(color);
+    callback undo();
+    callback redo();
+    callback save();
+    callback external();
+    callback reset();
+    /// Raccourcis clavier ; renvoie true si la touche est utilisée
+    callback key(string, bool) -> bool;
+}

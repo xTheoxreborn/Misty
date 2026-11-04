@@ -1,0 +1,212 @@
+// Explorateur de contenu Modrinth / CurseForge : recherche, tri, défilement infini, bouton d'installation.
+
+import { Theme, Tr } from "theme.slint";
+import { BrowserState } from "state.slint";
+import { Icon, PixelLabel, BodyText, SectionTitle, GlassCard, Thumb, MButton, TabPill, GlassInput, GlassCombo } from "widgets.slint";
+import { ListView } from "std-widgets.slint";
+
+export component ContentBrowser inherits Rectangle {
+    VerticalLayout {
+        spacing: 12px;
+
+        // Types de contenu + choix de la plateforme
+        HorizontalLayout {
+            spacing: 8px;
+            if BrowserState.types.length > 1: HorizontalLayout {
+                spacing: 8px;
+                for t[i] in BrowserState.types: TabPill {
+                    text: t.text;
+                    enabled: t.enabled;
+                    checked: i == BrowserState.type-index;
+                    clicked => {
+                        if (i != BrowserState.type-index) {
+                            BrowserState.type-index = i;
+                            BrowserState.type-changed(i);
+                        }
+                    }
+                }
+            }
+            Rectangle { horizontal-stretch: 1; }
+            TabPill {
+                text: "Modrinth";
+                has-dot: true;
+                dot: #1BD96A;
+                checked: BrowserState.source == 0;
+                clicked => {
+                    if (BrowserState.source != 0) {
+                        BrowserState.source = 0;
+                        BrowserState.source-changed(0);
+                    }
+                }
+            }
+            TabPill {
+                text: "CurseForge";
+                has-dot: true;
+                dot: #F16436;
+                checked: BrowserState.source == 1;
+                clicked => {
+                    if (BrowserState.source != 1) {
+                        BrowserState.source = 1;
+                        BrowserState.source-changed(1);
+                    }
+                }
+            }
+        }
+
+        // Recherche + tri
+        HorizontalLayout {
+            spacing: 10px;
+            GlassInput {
+                horizontal-stretch: 1;
+                search: true;
+                placeholder: Tr.t("Commun_Rechercher");
+                text <=> BrowserState.query;
+                edited(t) => { BrowserState.query-changed(t); }
+            }
+            GlassCombo {
+                width: 170px;
+                model: BrowserState.sorts;
+                current-index <=> BrowserState.sort-index;
+                selected(i) => { BrowserState.sort-changed(i); }
+            }
+        }
+
+        if !BrowserState.no-key: VerticalLayout {
+            vertical-stretch: 1;
+            spacing: 8px;
+            BodyText {
+                text: BrowserState.info;
+                x: 2px;
+            }
+            liste := ListView {
+                vertical-stretch: 1;
+                // Remonte en haut de la liste quand Rust le demande
+                property <int> reset: BrowserState.scroll-reset;
+                changed reset => {
+                    self.content-y = 0;
+                }
+                changed content-y => {
+                    if (-self.content-y + self.visible-height >= self.content-height - 300px) {
+                        BrowserState.near-end();
+                    }
+                }
+                for r[i] in BrowserState.results: Rectangle {
+                    height: 96px;
+                    Rectangle {
+                        y: 0;
+                        height: parent.height - 10px;
+                        width: parent.width - 10px;
+                        border-radius: 18px;
+                        background: Theme.glass;
+                        border-width: 1.5px;
+                        border-color: Theme.glass-border;
+                        HorizontalLayout {
+                            padding-left: 14px;
+                            padding-right: 14px;
+                            padding-top: 12px;
+                            padding-bottom: 12px;
+                            spacing: 14px;
+                            Thumb {
+                                width: 58px;
+                                height: 58px;
+                                source: r.icon;
+                                has-image: r.has-icon;
+                            }
+                            VerticalLayout {
+                                horizontal-stretch: 1;
+                                alignment: center;
+                                spacing: 3px;
+                                HorizontalLayout {
+                                    spacing: 8px;
+                                    Text {
+                                        text: r.title;
+                                        font-family: Theme.ui-font;
+                                        font-weight: 600;
+                                        font-size: 15px;
+                                        color: Theme.navy;
+                                        overflow: elide;
+                                        max-width: self.preferred-width;
+                                    }
+                                    Text {
+                                        horizontal-stretch: 1;
+                                        text: r.author;
+                                        font-family: Theme.ui-font;
+                                        font-size: 12px;
+                                        color: Theme.text-muted;
+                                        vertical-alignment: center;
+                                        overflow: elide;
+                                    }
+                                }
+                                Text {
+                                    text: r.description;
+                                    font-family: Theme.ui-font;
+                                    font-size: 13px;
+                                    color: Theme.navy2;
+                                    overflow: elide;
+                                }
+                                HorizontalLayout {
+                                    spacing: 5px;
+                                    Icon {
+                                        text: "\u{E896}";
+                                        font-size: 11px;
+                                        color: Theme.slate;
+                                    }
+                                    Text {
+                                        text: r.downloads;
+                                        font-family: Theme.ui-font;
+                                        font-size: 12px;
+                                        color: Theme.slate;
+                                    }
+                                    Rectangle { width: 9px; }
+                                    Text {
+                                        horizontal-stretch: 1;
+                                        text: r.categories;
+                                        font-family: Theme.ui-font;
+                                        font-size: 12px;
+                                        color: Theme.text-muted;
+                                        overflow: elide;
+                                    }
+                                }
+                            }
+                            VerticalLayout {
+                                alignment: center;
+                                MButton {
+                                    min-width: 118px;
+                                    kind: r.installed ? 3 : 1;
+                                    text: r.button-text;
+                                    icon: r.button-icon;
+                                    enabled: !r.busy;
+                                    clicked => { BrowserState.install(i); }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            PixelLabel {
+                text: BrowserState.bottom-text;
+                font-size: 11px;
+                horizontal-alignment: center;
+                height: BrowserState.bottom-text == "" ? 0px : 22px;
+            }
+        }
+
+        // CurseForge sans clé API
+        if BrowserState.no-key: VerticalLayout {
+            vertical-stretch: 1;
+            alignment: start;
+            HorizontalLayout {
+                alignment: start;
+                GlassCard {
+                    max-width: 560px;
+                    VerticalLayout {
+                        padding: 22px;
+                        spacing: 6px;
+                        SectionTitle { text: Tr.t("Explorateur_SansCle"); }
+                        BodyText { text: Tr.t("Explorateur_SansCle_Texte"); }
+                    }
+                }
+            }
+        }
+    }
+}

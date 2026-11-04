@@ -1,0 +1,427 @@
+// Fenêtre principale : cadre, barre latérale, pages, boîte de dialogue.
+
+import { Theme, Tr, Assets, Bulle } from "theme.slint";
+import { AppState, DialogState, HomeState, ProfilesState, InstanceState, BrowserState, SettingsState, ChangelogState, PacksState, EditorState } from "state.slint";
+import { Icon, PixelLabel, BodyText, SectionTitle, IconButton, ChromeButton, MButton } from "widgets.slint";
+import { HomePage } from "home.slint";
+import { ProfilesPage } from "profiles.slint";
+import { InstancePage } from "instance.slint";
+import { SettingsPage } from "settings.slint";
+import { ChangelogPage } from "changelog.slint";
+import { PacksPage } from "packs.slint";
+import { EditorPage } from "editor.slint";
+import { ScrollView } from "std-widgets.slint";
+
+export { Theme, Tr, Assets, AppState, DialogState, HomeState, ProfilesState, InstanceState, BrowserState, SettingsState, ChangelogState, PacksState, EditorState }
+
+/// Bouton de navigation de la barre latérale.
+component NavButton inherits Rectangle {
+    in property <string> icon;
+    in property <string> tooltip;
+    in property <bool> checked;
+    callback clicked;
+
+    width: 50px;
+    height: 50px;
+    border-radius: 15px;
+    background: root.checked ? white : touch.has-hover ? #FFFFFF26 : transparent;
+    border-width: root.checked ? 0px : 1.5px;
+    border-color: touch.has-hover ? #FFFFFF40 : transparent;
+    animate background { duration: 150ms; }
+
+    Icon {
+        text: root.icon;
+        font-size: 18px;
+        color: root.checked ? Theme.navy : white;
+    }
+    touch := TouchArea {
+        mouse-cursor: pointer;
+        clicked => {
+            Bulle.visible = false;
+            root.clicked();
+        }
+    }
+
+    // Bulle d'aide : affichée par la fenêtre, à droite du bouton
+    property <bool> survol: touch.has-hover;
+    changed survol => {
+        if (self.survol) {
+            Bulle.texte = root.tooltip;
+            Bulle.x = root.absolute-position.x + root.width + 12px;
+            Bulle.y = root.absolute-position.y + root.height / 2;
+            Bulle.a-droite = true;
+            Bulle.visible = true;
+        } else if (Bulle.texte == root.tooltip) {
+            Bulle.visible = false;
+        }
+    }
+}
+
+/// Page qui apparaît en fondu en glissant vers le haut.
+component Apparition inherits Rectangle {
+    opacity: 0;
+    property <length> decalage: 18px;
+    animate opacity, decalage { duration: 320ms; easing: ease-out; }
+    init => {
+        self.opacity = 1;
+        self.decalage = 0;
+    }
+    Rectangle {
+        y: root.decalage;
+        @children
+    }
+}
+
+export component MainWindow inherits Window {
+    title: "Misty";
+    // Slint ne lit pas le format .ico : on utilise la version PNG
+    icon: @image-url("../assets/icone.png");
+    width: 1180px;
+    height: 720px;
+    no-frame: true;
+    // transparent : les coins arrondis du fond laissent voir le bureau
+    background: transparent;
+    default-font-family: Theme.ui-font;
+
+    // Changement de page : le bouton survolé a pu disparaître, on cache sa bulle
+    property <int> page: AppState.page;
+    changed page => {
+        Bulle.visible = false;
+    }
+
+    clavier := FocusScope {
+        key-pressed(e) => {
+            if (DialogState.visible && e.text == Key.Escape) {
+                DialogState.cancel();
+                return accept;
+            }
+            return reject;
+        }
+
+        // Tout le contenu est découpé aux coins arrondis de la fenêtre
+        Rectangle {
+        clip: true;
+        border-radius: 18px;
+        background: Theme.sky;
+
+        // ═══ Fond : dégradé ciel ═══
+        Rectangle {
+            background: @linear-gradient(135deg, #BAD6F7 0%, #95B9E4 45%, #5B7FB0 100%);
+            clip: true;
+
+            // vignette sombre en bas à droite
+            Rectangle {
+                property <length> r: 1060px;
+                x: parent.width - self.r;
+                y: parent.height - self.r;
+                width: self.r * 2;
+                height: self.r * 2;
+                // le dégradé va jusqu'aux coins : transparent dès 70 % pour ne pas voir le bord du cercle
+                background: @radial-gradient(circle, #3F4A5EAA 0%, #3F4A5E00 60%);
+            }
+            // halo clair en haut
+            Rectangle {
+                property <length> r: 700px;
+                x: parent.width * 0.45 - self.r;
+                y: -self.r;
+                width: self.r * 2;
+                height: self.r * 2;
+                background: @radial-gradient(circle, #E4F1FF88 0%, #E4F1FF00 60%);
+            }
+            // bloc fantôme en bas à gauche
+            Image {
+                x: 40px;
+                y: parent.height - 130px;
+                width: 170px;
+                height: 170px;
+                source: Assets.grass;
+                image-rendering: pixelated;
+                opacity: 0.13;
+                transform-rotation: -14deg;
+            }
+            // carrés flottants
+            for p in AppState.particles: Rectangle {
+                x: p.x;
+                y: p.y + p.amp * sin((animation-tick() / p.period) * 360deg);
+                width: p.size;
+                height: p.size;
+                border-radius: p.size / 5;
+                background: white;
+                opacity: p.opacity;
+            }
+        }
+
+        HorizontalLayout {
+            spacing: 0px;
+
+            // ═══ Barre latérale ═══
+            Rectangle {
+                width: 92px;
+                Rectangle {
+                    x: 14px;
+                    y: 14px;
+                    width: parent.width - 18px;
+                    height: parent.height - 28px;
+                    border-radius: 22px;
+                    background: #1C233559;
+                    border-width: 1.5px;
+                    border-color: #FFFFFF40;
+
+                    VerticalLayout {
+                        padding-top: 16px;
+                        padding-bottom: 16px;
+                        alignment: space-between;
+
+                        VerticalLayout {
+                            spacing: 10px;
+                            HorizontalLayout {
+                                alignment: center;
+                                padding-bottom: 16px;
+                                Rectangle {
+                                    width: 50px;
+                                    height: 50px;
+                                    border-radius: 15px;
+                                    background: Theme.navy;
+                                    border-width: 2px;
+                                    border-color: #FFFFFF66;
+                                    Image {
+                                        width: 28px;
+                                        height: 28px;
+                                        source: Assets.grass;
+                                        image-rendering: pixelated;
+                                    }
+                                }
+                            }
+                            HorizontalLayout {
+                                alignment: center;
+                                NavButton {
+                                    icon: "\u{E80F}";
+                                    tooltip: Tr.t("Nav_Jouer");
+                                    checked: AppState.nav == 0;
+                                    clicked => { AppState.nav-clicked(0); }
+                                }
+                            }
+                            HorizontalLayout {
+                                alignment: center;
+                                NavButton {
+                                    icon: "\u{E8F1}";
+                                    tooltip: Tr.t("Nav_Profils");
+                                    checked: AppState.nav == 1;
+                                    clicked => { AppState.nav-clicked(1); }
+                                }
+                            }
+                            HorizontalLayout {
+                                alignment: center;
+                                NavButton {
+                                    icon: "\u{E713}";
+                                    tooltip: Tr.t("Nav_Options");
+                                    checked: AppState.nav == 2;
+                                    clicked => { AppState.nav-clicked(2); }
+                                }
+                            }
+                            HorizontalLayout {
+                                alignment: center;
+                                NavButton {
+                                    icon: "\u{E81C}";
+                                    tooltip: Tr.t("Nav_Notes");
+                                    checked: AppState.nav == 3;
+                                    clicked => { AppState.nav-clicked(3); }
+                                }
+                            }
+                            HorizontalLayout {
+                                alignment: center;
+                                NavButton {
+                                    icon: "\u{E790}";
+                                    tooltip: Tr.t("Nav_Soon");
+                                    checked: AppState.nav == 4;
+                                    clicked => { AppState.nav-clicked(4); }
+                                }
+                            }
+                        }
+
+                        // bas : dossier + version
+                        VerticalLayout {
+                            spacing: 12px;
+                            HorizontalLayout {
+                                alignment: center;
+                                IconButton {
+                                    icon: "\u{E8B7}";
+                                    encre: white;
+                                    fond: #FFFFFF26;
+                                    bord: #FFFFFF40;
+                                    tooltip: Tr.t("Nav_Dossier");
+                                    clicked => { AppState.open-data-folder(); }
+                                }
+                            }
+                            PixelLabel {
+                                text: AppState.version-text;
+                                font-size: 9px;
+                                color: #FFFFFFCC;
+                                horizontal-alignment: center;
+                                wrap: word-wrap;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // ═══ Contenu ═══
+            VerticalLayout {
+                horizontal-stretch: 1;
+                spacing: 0px;
+
+                // Barre de titre : on peut y attraper la fenêtre pour la déplacer
+                Rectangle {
+                    height: 46px;
+                    TouchArea {
+                        pointer-event(e) => {
+                            if (e.kind == PointerEventKind.down && e.button == PointerEventButton.left) {
+                                AppState.drag();
+                            }
+                        }
+                    }
+                    HorizontalLayout {
+                        alignment: end;
+                        padding-top: 8px;
+                        padding-right: 10px;
+                        padding-bottom: 4px;
+                        spacing: 4px;
+                        ChromeButton {
+                            icon: "\u{E921}";
+                            clicked => { AppState.minimize(); }
+                        }
+                        ChromeButton {
+                            icon: "\u{E8BB}";
+                            close: true;
+                            clicked => { AppState.close(); }
+                        }
+                    }
+                }
+
+                Rectangle {
+                    vertical-stretch: 1;
+                    if AppState.page == 0: Apparition { HomePage { } }
+                    if AppState.page == 1: Apparition { ProfilesPage { } }
+                    if AppState.page == 2: Apparition { SettingsPage { } }
+                    if AppState.page == 3: Apparition { ChangelogPage { } }
+                    if AppState.page == 4: Apparition { PacksPage { } }
+                    if AppState.page == 5: Apparition { InstancePage { } }
+                    if AppState.page == 6: Apparition { EditorPage { } }
+                }
+            }
+        }
+
+        // ═══ Bulle d'aide (au-dessus des pages) ═══
+        if Bulle.visible && !DialogState.visible: Rectangle {
+            width: bulle-texte.preferred-width + 20px;
+            height: 28px;
+            // reste dans la fenêtre
+            x: clamp(Bulle.a-droite ? Bulle.x : Bulle.x - self.width / 2, 6px, root.width - self.width - 6px);
+            y: Bulle.a-droite ? Bulle.y - self.height / 2 : Bulle.y;
+            border-radius: 9px;
+            background: Theme.navy;
+            drop-shadow-blur: 8px;
+            drop-shadow-color: #1C233550;
+            opacity: 0;
+            animate opacity { delay: 300ms; duration: 150ms; }
+            init => { self.opacity = 0.95; }
+            bulle-texte := Text {
+                text: Bulle.texte;
+                color: white;
+                font-family: Theme.ui-font;
+                font-size: 12px;
+                horizontal-alignment: center;
+                vertical-alignment: center;
+            }
+        }
+
+        // ═══ Boîte de dialogue ═══
+        if DialogState.visible: Rectangle {
+            background: #1C23358C;
+            opacity: 0;
+            animate opacity { duration: 200ms; }
+            init => {
+                self.opacity = 1;
+                clavier.focus();
+            }
+            TouchArea { }
+
+            carte := Rectangle {
+                width: 440px;
+                height: contenu.preferred-height;
+                border-radius: 24px;
+                background: #F6FAFFF2;
+                border-width: 2px;
+                border-color: white;
+                drop-shadow-blur: 30px;
+                drop-shadow-color: #1C233560;
+                transform-scale: 0.92;
+                animate transform-scale { duration: 220ms; easing: ease-out-back; }
+                init => { self.transform-scale = 1; }
+
+                contenu := VerticalLayout {
+                    padding-left: 28px;
+                    padding-right: 28px;
+                    padding-top: 26px;
+                    padding-bottom: 26px;
+                    spacing: 12px;
+
+                    HorizontalLayout {
+                        spacing: 12px;
+                        Rectangle {
+                            width: 34px;
+                            height: 34px;
+                            border-radius: 10px;
+                            background: DialogState.danger ? Theme.danger : Theme.blue;
+                            Icon {
+                                text: DialogState.icon;
+                                color: white;
+                            }
+                        }
+                        SectionTitle {
+                            horizontal-stretch: 1;
+                            text: DialogState.title;
+                            vertical-alignment: center;
+                            wrap: word-wrap;
+                        }
+                    }
+                    Text {
+                        text: DialogState.message;
+                        font-family: Theme.ui-font;
+                        font-size: 14px;
+                        color: Theme.navy2;
+                        wrap: word-wrap;
+                    }
+                    // options (mode « choix dans une liste »)
+                    if DialogState.choices.length > 0: ScrollView {
+                        height: min(260px, DialogState.choices.length * 46px);
+                        content-height: DialogState.choices.length * 46px;
+                        content-width: self.visible-width;
+                        for c[i] in DialogState.choices: MButton {
+                            x: 0;
+                            y: i * 46px;
+                            width: parent.width - 12px;
+                            text: c;
+                            clicked => { DialogState.choose(i); }
+                        }
+                    }
+                    HorizontalLayout {
+                        alignment: end;
+                        spacing: 10px;
+                        padding-top: 12px;
+                        if DialogState.cancel-text != "": MButton {
+                            text: DialogState.cancel-text;
+                            clicked => { DialogState.cancel(); }
+                        }
+                        if DialogState.ok-text != "": MButton {
+                            kind: DialogState.danger && DialogState.cancel-text != "" ? 2 : 1;
+                            text: DialogState.ok-text;
+                            clicked => { DialogState.ok(); }
+                        }
+                    }
+                }
+            }
+        }
+        }
+    }
+}

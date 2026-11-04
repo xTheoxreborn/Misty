@@ -1,0 +1,576 @@
+// Éditeur d'un pack de textures : catégories, grille des textures du template, dessin intégré au pixel.
+
+import { Theme, Tr, Assets } from "theme.slint";
+import { EditorState } from "state.slint";
+import { Icon, PixelLabel, BodyText, SectionTitle, GlassCard, Thumb, IconButton, MButton, TabPill, GlassInput, ToggleSwitch, GlassSlider } from "widgets.slint";
+import { ScrollView, ListView } from "std-widgets.slint";
+
+component PetitLabel inherits PixelLabel {
+    font-size: 10px;
+    color: Theme.slate;
+}
+
+component Pastille inherits Rectangle {
+    in property <color> couleur;
+    callback choisi();
+    width: 24px;
+    height: 24px;
+    border-radius: 7px;
+    background: root.couleur;
+    border-width: 1.5px;
+    border-color: white;
+    TouchArea {
+        mouse-cursor: pointer;
+        clicked => { root.choisi(); }
+    }
+}
+
+component OutilPill inherits Rectangle {
+    in property <string> text;
+    in property <string> icon;
+    in property <bool> checked;
+    callback clicked;
+    height: 34px;
+    border-radius: 10px;
+    background: root.checked ? Theme.navy : touch.has-hover ? Theme.glass-hover : Theme.glass-strong;
+    border-width: 1.5px;
+    border-color: root.checked ? Theme.navy : Theme.glass-border;
+    HorizontalLayout {
+        padding-left: 8px;
+        padding-right: 8px;
+        spacing: 6px;
+        alignment: center;
+        Icon {
+            text: root.icon;
+            font-size: 12px;
+            color: root.checked ? white : Theme.navy;
+        }
+        Text {
+            text: root.text;
+            font-family: Theme.ui-font;
+            font-size: 12px;
+            font-weight: 600;
+            color: root.checked ? white : Theme.navy;
+            vertical-alignment: center;
+            overflow: elide;
+        }
+    }
+    touch := TouchArea {
+        mouse-cursor: pointer;
+        clicked => { root.clicked(); }
+    }
+}
+
+export component EditorPage inherits Rectangle {
+    property <int> reset: EditorState.scroll-reset;
+    changed reset => {
+        grille.content-y = 0;
+    }
+
+    clavier := FocusScope {
+        key-pressed(e) => {
+            if (EditorState.key(e.text, e.modifiers.control)) {
+                return accept;
+            }
+            return reject;
+        }
+
+        VerticalLayout {
+            padding-left: 26px;
+            padding-right: 30px;
+            padding-bottom: 26px;
+            spacing: 16px;
+
+            // ═══ En-tête ═══
+            HorizontalLayout {
+                spacing: 14px;
+                VerticalLayout {
+                    alignment: center;
+                    IconButton {
+                        icon: "\u{E72B}";
+                        tooltip: Tr.t("Editeur_Retour");
+                        clicked => { EditorState.back(); }
+                    }
+                }
+                Thumb {
+                    width: 60px;
+                    height: 60px;
+                    radius: 16px;
+                    border: 2.5px;
+                    grass-margin: 12px;
+                    grass-opacity: 1;
+                    pixel-art: true;
+                    source: EditorState.pack-icon;
+                    has-image: EditorState.has-pack-icon;
+                    TouchArea {
+                        mouse-cursor: pointer;
+                        clicked => { EditorState.change-icon(); }
+                    }
+                }
+                VerticalLayout {
+                    horizontal-stretch: 1;
+                    alignment: center;
+                    spacing: 4px;
+                    Text {
+                        text: EditorState.pack-name;
+                        font-family: Theme.pixel-font;
+                        font-size: 24px;
+                        color: white;
+                        stroke: Theme.slate-dark;
+                        stroke-width: 1px;
+                        overflow: elide;
+                    }
+                    Text {
+                        text: EditorState.info;
+                        font-family: Theme.ui-font;
+                        font-size: 13px;
+                        font-weight: 600;
+                        color: Theme.navy2;
+                        overflow: elide;
+                    }
+                }
+                VerticalLayout {
+                    alignment: center;
+                    GlassInput {
+                        width: 240px;
+                        search: true;
+                        placeholder: Tr.t("Editeur_Rechercher");
+                        text <=> EditorState.search;
+                        edited(t) => { EditorState.search-changed(t); }
+                    }
+                }
+                VerticalLayout {
+                    alignment: center;
+                    IconButton {
+                        icon: "\u{E8B7}";
+                        tooltip: Tr.t("Pack_Dossier");
+                        clicked => { EditorState.folder(); }
+                    }
+                }
+                VerticalLayout {
+                    alignment: center;
+                    MButton {
+                        height: 44px;
+                        kind: 1;
+                        icon: "\u{E896}";
+                        text: Tr.t("Pack_Exporter");
+                        enabled: EditorState.export-enabled;
+                        clicked => { EditorState.export(); }
+                    }
+                }
+            }
+
+            HorizontalLayout {
+                vertical-stretch: 1;
+                spacing: 14px;
+
+                // ═══ Catégories ═══
+                GlassCard {
+                    width: 210px;
+                    VerticalLayout {
+                        padding: 10px;
+                        spacing: 6px;
+                        TabPill {
+                            text: Tr.t("Editeur_Tout");
+                            checked: EditorState.mode == 0;
+                            clicked => {
+                                EditorState.mode = 0;
+                                EditorState.mode-changed(0);
+                            }
+                        }
+                        TabPill {
+                            text: EditorState.perso-text;
+                            checked: EditorState.mode == 1;
+                            clicked => {
+                                EditorState.mode = 1;
+                                EditorState.mode-changed(1);
+                            }
+                        }
+                        Rectangle { height: 4px; }
+                        ListView {
+                            vertical-stretch: 1;
+                            for c[i] in EditorState.categories: Rectangle {
+                                height: 36px;
+                                border-radius: 10px;
+                                background: i == EditorState.category-index ? Theme.navy : cat.has-hover ? #FFFFFF59 : transparent;
+                                HorizontalLayout {
+                                    padding-left: 10px;
+                                    padding-right: 8px;
+                                    spacing: 6px;
+                                    Text {
+                                        horizontal-stretch: 1;
+                                        text: c.name;
+                                        font-family: Theme.ui-font;
+                                        font-size: 13px;
+                                        font-weight: 600;
+                                        color: i == EditorState.category-index ? white : Theme.navy;
+                                        vertical-alignment: center;
+                                        overflow: elide;
+                                    }
+                                    VerticalLayout {
+                                        alignment: center;
+                                        Rectangle {
+                                            border-radius: 7px;
+                                            background: i == EditorState.category-index ? #FFFFFF33 : #FFFFFF40;
+                                            width: nb.preferred-width + 12px;
+                                            height: 20px;
+                                            nb := Text {
+                                                text: c.count;
+                                                font-size: 11px;
+                                                color: i == EditorState.category-index ? white : Theme.text-muted;
+                                                horizontal-alignment: center;
+                                                vertical-alignment: center;
+                                            }
+                                        }
+                                    }
+                                }
+                                cat := TouchArea {
+                                    mouse-cursor: pointer;
+                                    clicked => {
+                                        EditorState.category-index = i;
+                                        EditorState.category-changed(i);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // ═══ Textures ═══
+                GlassCard {
+                    horizontal-stretch: 1;
+                    grille := ScrollView {
+                        x: 10px;
+                        y: 10px;
+                        width: parent.width - 20px;
+                        height: parent.height - 20px;
+                        property <int> colonnes: max(1, floor((self.visible-width + 6px) / 62px));
+                        content-width: self.visible-width;
+                        content-height: ceil(EditorState.textures.length / self.colonnes) * 62px;
+                        for t[i] in EditorState.textures: Rectangle {
+                            x: mod(i, grille.colonnes) * 62px;
+                            y: floor(i / grille.colonnes) * 62px;
+                            width: 56px;
+                            height: 56px;
+                            border-radius: 10px;
+                            background: i == EditorState.selected ? Theme.navy : tuile.has-hover ? #FFFFFF99 : #FFFFFF59;
+                            border-width: 2px;
+                            border-color: i == EditorState.selected ? Theme.blue : t.modified ? Theme.green : transparent;
+                            if t.has-thumb: Image {
+                                x: 8px;
+                                y: 8px;
+                                width: 40px;
+                                height: 40px;
+                                source: t.thumb;
+                                image-fit: contain;
+                                image-rendering: pixelated;
+                            }
+                            tuile := TouchArea {
+                                mouse-cursor: pointer;
+                                clicked => {
+                                    EditorState.select(i);
+                                    clavier.focus();
+                                }
+                            }
+                        }
+                    }
+                    if EditorState.message != "": VerticalLayout {
+                        alignment: center;
+                        padding: 30px;
+                        BodyText {
+                            text: EditorState.message;
+                            horizontal-alignment: center;
+                            font-size: 14px;
+                        }
+                    }
+                }
+
+                // ═══ Éditeur ═══
+                GlassCard {
+                    width: 330px;
+                    if !EditorState.editor-visible: VerticalLayout {
+                        alignment: center;
+                        padding: 30px;
+                        spacing: 12px;
+                        HorizontalLayout {
+                            alignment: center;
+                            Image {
+                                width: 56px;
+                                height: 56px;
+                                source: Assets.grass;
+                                image-rendering: pixelated;
+                                opacity: 0.8;
+                            }
+                        }
+                        BodyText {
+                            text: Tr.t("Editeur_Vide");
+                            horizontal-alignment: center;
+                        }
+                    }
+                    if EditorState.editor-visible: ScrollView {
+                        x: 0;
+                        y: 0;
+                        content-width: self.visible-width;
+                        content-height: panneau.preferred-height;
+                        panneau := VerticalLayout {
+                            width: parent.visible-width;
+                            padding: 14px;
+                            spacing: 8px;
+
+                            HorizontalLayout {
+                                spacing: 8px;
+                                Text {
+                                    horizontal-stretch: 1;
+                                    text: EditorState.texture-title;
+                                    font-family: Theme.ui-font;
+                                    font-weight: 600;
+                                    font-size: 13px;
+                                    color: Theme.navy;
+                                    overflow: elide;
+                                }
+                                PetitLabel { text: EditorState.size-text; }
+                            }
+
+                            // Zone de dessin
+                            plateau := ScrollView {
+                                height: 280px;
+                                content-width: max(self.visible-width, EditorState.canvas-width);
+                                content-height: max(self.visible-height, EditorState.canvas-height);
+                                Rectangle {
+                                    x: max(0px, (plateau.visible-width - EditorState.canvas-width) / 2);
+                                    y: max(0px, (plateau.visible-height - EditorState.canvas-height) / 2);
+                                    width: EditorState.canvas-width;
+                                    height: EditorState.canvas-height;
+                                    Image {
+                                        width: parent.width;
+                                        height: parent.height;
+                                        source: EditorState.checker;
+                                        image-fit: fill;
+                                        image-rendering: pixelated;
+                                    }
+                                    Image {
+                                        width: parent.width;
+                                        height: parent.height;
+                                        source: EditorState.pixels;
+                                        image-fit: fill;
+                                        image-rendering: pixelated;
+                                    }
+                                    if EditorState.show-grid && EditorState.zoom >= 6: Image {
+                                        width: parent.width;
+                                        height: parent.height;
+                                        source: EditorState.grid;
+                                        image-fit: fill;
+                                        image-rendering: pixelated;
+                                    }
+                                    TouchArea {
+                                        mouse-cursor: crosshair;
+                                        pointer-event(e) => {
+                                            if (e.kind == PointerEventKind.down) {
+                                                clavier.focus();
+                                                EditorState.pointer-down(self.mouse-x, self.mouse-y, e.button == PointerEventButton.right);
+                                            } else if (e.kind == PointerEventKind.up) {
+                                                EditorState.pointer-up();
+                                            }
+                                        }
+                                        moved => {
+                                            if (self.pressed) {
+                                                EditorState.pointer-move(self.mouse-x, self.mouse-y);
+                                            }
+                                        }
+                                        scroll-event(e) => {
+                                            if (e.modifiers.control) {
+                                                EditorState.zoom-changed(EditorState.zoom + (e.delta-y > 0 ? 1 : -1));
+                                                return accept;
+                                            }
+                                            return reject;
+                                        }
+                                    }
+                                }
+                            }
+
+                            HorizontalLayout {
+                                spacing: 8px;
+                                Icon {
+                                    text: "\u{E71E}";
+                                    font-size: 13px;
+                                    color: Theme.slate;
+                                }
+                                GlassSlider {
+                                    horizontal-stretch: 1;
+                                    minimum: 1;
+                                    maximum: 40;
+                                    step: 1;
+                                    value: EditorState.zoom;
+                                    changed(v) => { EditorState.zoom-changed(v); }
+                                }
+                                ToggleSwitch {
+                                    text: Tr.t("Editeur_Grille");
+                                    checked <=> EditorState.show-grid;
+                                    toggled(v) => { EditorState.grid-toggled(v); }
+                                }
+                            }
+
+                            // Outils
+                            HorizontalLayout {
+                                spacing: 4px;
+                                OutilPill {
+                                    horizontal-stretch: 1;
+                                    icon: "\u{E76D}";
+                                    text: Tr.t("Editeur_Crayon");
+                                    checked: EditorState.tool == 0;
+                                    clicked => { EditorState.tool-changed(0); }
+                                }
+                                OutilPill {
+                                    horizontal-stretch: 1;
+                                    icon: "\u{E75C}";
+                                    text: Tr.t("Editeur_Gomme");
+                                    checked: EditorState.tool == 1;
+                                    clicked => { EditorState.tool-changed(1); }
+                                }
+                                OutilPill {
+                                    horizontal-stretch: 1;
+                                    icon: "\u{E771}";
+                                    text: Tr.t("Editeur_Pot");
+                                    checked: EditorState.tool == 2;
+                                    clicked => { EditorState.tool-changed(2); }
+                                }
+                                OutilPill {
+                                    horizontal-stretch: 1;
+                                    icon: "\u{EF3C}";
+                                    text: Tr.t("Editeur_Pipette");
+                                    checked: EditorState.tool == 3;
+                                    clicked => { EditorState.tool-changed(3); }
+                                }
+                            }
+
+                            // Couleur
+                            PetitLabel { text: Tr.t("Editeur_Couleur"); }
+                            HorizontalLayout {
+                                spacing: 12px;
+                                VerticalLayout {
+                                    spacing: 8px;
+                                    Rectangle {
+                                        width: 56px;
+                                        height: 56px;
+                                        border-radius: 14px;
+                                        background: EditorState.color;
+                                        border-width: 2px;
+                                        border-color: white;
+                                    }
+                                    GlassInput {
+                                        width: 70px;
+                                        height: 30px;
+                                        font-size: 11px;
+                                        align: center;
+                                        text <=> EditorState.hex-text;
+                                        edited(t) => { EditorState.hex-changed(t); }
+                                    }
+                                }
+                                VerticalLayout {
+                                    horizontal-stretch: 1;
+                                    alignment: center;
+                                    spacing: 8px;
+                                    HorizontalLayout {
+                                        spacing: 6px;
+                                        PetitLabel { text: "R"; width: 12px; }
+                                        GlassSlider {
+                                            horizontal-stretch: 1;
+                                            minimum: 0;
+                                            maximum: 255;
+                                            fill: #E0465A;
+                                            value <=> EditorState.red;
+                                            changed => { EditorState.rgb-changed(); }
+                                        }
+                                    }
+                                    HorizontalLayout {
+                                        spacing: 6px;
+                                        PetitLabel { text: "G"; width: 12px; }
+                                        GlassSlider {
+                                            horizontal-stretch: 1;
+                                            minimum: 0;
+                                            maximum: 255;
+                                            fill: #13B24C;
+                                            value <=> EditorState.green;
+                                            changed => { EditorState.rgb-changed(); }
+                                        }
+                                    }
+                                    HorizontalLayout {
+                                        spacing: 6px;
+                                        PetitLabel { text: "B"; width: 12px; }
+                                        GlassSlider {
+                                            horizontal-stretch: 1;
+                                            minimum: 0;
+                                            maximum: 255;
+                                            fill: #2F8CFF;
+                                            value <=> EditorState.blue;
+                                            changed => { EditorState.rgb-changed(); }
+                                        }
+                                    }
+                                }
+                            }
+
+                            if EditorState.recents.length > 0: PetitLabel { text: Tr.t("Editeur_Recentes"); }
+                            if EditorState.recents.length > 0: Rectangle {
+                                height: ceil(EditorState.recents.length / 9) * 30px;
+                                for c[i] in EditorState.recents: Pastille {
+                                    x: mod(i, 9) * 30px;
+                                    y: floor(i / 9) * 30px;
+                                    couleur: c;
+                                    choisi => { EditorState.pick-color(c); }
+                                }
+                            }
+
+                            if EditorState.palette.length > 0: PetitLabel { text: Tr.t("Editeur_Couleurs"); }
+                            if EditorState.palette.length > 0: Rectangle {
+                                height: ceil(EditorState.palette.length / 9) * 30px;
+                                for c[i] in EditorState.palette: Pastille {
+                                    x: mod(i, 9) * 30px;
+                                    y: floor(i / 9) * 30px;
+                                    couleur: c;
+                                    choisi => { EditorState.pick-color(c); }
+                                }
+                            }
+
+                            Rectangle { height: 4px; }
+                            HorizontalLayout {
+                                spacing: 6px;
+                                IconButton {
+                                    icon: "\u{E7A7}";
+                                    tooltip: Tr.t("Editeur_Annuler_Info");
+                                    clicked => { EditorState.undo(); }
+                                }
+                                IconButton {
+                                    icon: "\u{E7A6}";
+                                    tooltip: Tr.t("Editeur_Retablir_Info");
+                                    clicked => { EditorState.redo(); }
+                                }
+                                MButton {
+                                    horizontal-stretch: 1;
+                                    kind: 1;
+                                    icon: "\u{E74E}";
+                                    text: Tr.t("Editeur_Enregistrer");
+                                    clicked => { EditorState.save(); }
+                                }
+                            }
+                            HorizontalLayout {
+                                spacing: 8px;
+                                MButton {
+                                    horizontal-stretch: 1;
+                                    text: Tr.t("Editeur_Externe");
+                                    clicked => { EditorState.external(); }
+                                }
+                                MButton {
+                                    horizontal-stretch: 1;
+                                    kind: 2;
+                                    text: Tr.t("Editeur_Reinitialiser");
+                                    enabled: EditorState.reset-enabled;
+                                    clicked => { EditorState.reset(); }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

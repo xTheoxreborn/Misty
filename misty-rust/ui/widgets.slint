@@ -1,0 +1,771 @@
+// Composants réutilisables, dans le style « verre dépoli + pixel » de Misty.
+
+import { Theme, Tr, Assets, Bulle } from "theme.slint";
+import { ListView } from "std-widgets.slint";
+
+// ───────────────────────── Textes ─────────────────────────
+
+export component Icon inherits Text {
+    font-family: Theme.icon-font;
+    font-size: 16px;
+    color: Theme.navy;
+    horizontal-alignment: center;
+    vertical-alignment: center;
+}
+
+export component PixelLabel inherits Text {
+    font-family: Theme.pixel-font;
+    font-size: 13px;
+    color: Theme.slate-dark;
+    vertical-alignment: center;
+}
+
+export component SectionTitle inherits Text {
+    font-family: Theme.pixel-font;
+    font-size: 18px;
+    color: Theme.navy;
+}
+
+export component BodyText inherits Text {
+    font-family: Theme.ui-font;
+    font-size: 13px;
+    color: Theme.text-muted;
+    wrap: word-wrap;
+}
+
+/// Texte avec contour et ombre portée « en bloc » (style titre pixel).
+export component OutlinedText inherits Rectangle {
+    in property <string> text;
+    in property <length> font-size: 48px;
+    in property <color> fill: white;
+    in property <color> stroke-color: Theme.slate;
+    in property <length> thickness: 4px;
+    in property <color> shadow: Theme.slate-dark;
+    in property <length> depth: 0px;
+    in property <TextHorizontalAlignment> align: left;
+
+    min-width: principal.preferred-width + root.thickness * 2;
+    min-height: principal.preferred-height + root.thickness * 2 + root.depth;
+    preferred-width: self.min-width;
+    preferred-height: self.min-height;
+    max-height: self.min-height;
+    vertical-stretch: 0;
+
+    if root.depth > 0: Text {
+        x: root.thickness;
+        y: root.thickness + root.depth;
+        width: parent.width - root.thickness * 2;
+        text: root.text;
+        font-family: Theme.pixel-font;
+        font-size: root.font-size;
+        color: root.shadow;
+        stroke: root.shadow;
+        stroke-width: root.thickness;
+        stroke-style: outside;
+        horizontal-alignment: root.align;
+    }
+    principal := Text {
+        x: root.thickness;
+        y: root.thickness;
+        width: parent.width - root.thickness * 2;
+        text: root.text;
+        font-family: Theme.pixel-font;
+        font-size: root.font-size;
+        color: root.fill;
+        stroke: root.stroke-color;
+        stroke-width: root.thickness;
+        stroke-style: outside;
+        horizontal-alignment: root.align;
+    }
+}
+
+// ───────────────────────── Conteneurs ─────────────────────────
+
+export component GlassCard inherits Rectangle {
+    background: Theme.glass;
+    border-width: 1.5px;
+    border-color: Theme.glass-border;
+    border-radius: 20px;
+}
+
+/// Carré sombre avec une image (icône de projet, de profil…), le bloc d'herbe en attendant.
+export component Thumb inherits Rectangle {
+    in property <image> source;
+    in property <bool> has-image;
+    in property <length> radius: 14px;
+    in property <length> grass-margin: 14px;
+    in property <float> grass-opacity: 0.6;
+    in property <length> border: 0px;
+    in property <bool> pixel-art: false;
+
+    background: Theme.navy;
+    border-radius: root.radius;
+    border-width: root.border;
+    border-color: white;
+    clip: true;
+
+    Image {
+        x: root.grass-margin;
+        y: root.grass-margin;
+        width: parent.width - root.grass-margin * 2;
+        height: parent.height - root.grass-margin * 2;
+        source: Assets.grass;
+        image-rendering: pixelated;
+        opacity: root.grass-opacity;
+        visible: !root.has-image;
+    }
+    if root.has-image: Image {
+        width: parent.width;
+        height: parent.height;
+        source: root.source;
+        image-fit: cover;
+        image-rendering: root.pixel-art ? ImageRendering.pixelated : ImageRendering.smooth;
+    }
+}
+
+/// Petite étiquette colorée ("1.20.1", "FABRIC"…).
+export component Badge inherits Rectangle {
+    in property <string> text;
+    in property <color> couleur: Theme.navy;
+    in property <length> font-size: 11px;
+    background: root.couleur;
+    border-radius: 8px;
+    height: label.preferred-height + 8px;
+    width: label.preferred-width + 20px;
+    label := Text {
+        text: root.text;
+        font-family: Theme.pixel-font;
+        font-size: root.font-size;
+        color: white;
+        horizontal-alignment: center;
+        vertical-alignment: center;
+    }
+}
+
+// ───────────────────────── Boutons ─────────────────────────
+
+/// Bouton texte. kind : 0 = verre, 1 = principal (bleu nuit), 2 = danger, 3 = vert.
+export component MButton inherits Rectangle {
+    in property <string> text;
+    in property <string> icon;
+    in property <int> kind: 0;
+    in property <bool> enabled: true;
+    callback clicked;
+
+    height: 40px;
+    min-width: contenu.preferred-width;
+    border-radius: 12px;
+    border-width: 1.5px;
+    opacity: root.enabled ? 1 : 0.55;
+
+    property <color> fond: root.kind == 1 ? Theme.navy : root.kind == 2 ? Theme.danger : root.kind == 3 ? Theme.green-dark : Theme.glass-strong;
+    property <color> encre: root.kind == 0 ? Theme.text : white;
+    background: touch.pressed ? root.fond.darker(0.15) : touch.has-hover && root.enabled ? root.fond.brighter(0.12) : root.fond;
+    border-color: root.kind == 0 ? Theme.glass-border : root.kind == 2 ? #FFFFFF66 : root.fond;
+    animate background { duration: 120ms; }
+
+    contenu := HorizontalLayout {
+        padding-left: 16px;
+        padding-right: 16px;
+        spacing: 8px;
+        alignment: center;
+        if root.icon != "": Icon {
+            text: root.icon;
+            font-size: 12px;
+            color: root.encre;
+        }
+        Text {
+            text: root.text;
+            font-family: Theme.ui-font;
+            font-size: 13px;
+            font-weight: 600;
+            color: root.encre;
+            vertical-alignment: center;
+        }
+    }
+    touch := TouchArea {
+        enabled: root.enabled;
+        mouse-cursor: pointer;
+        clicked => { root.clicked(); }
+    }
+}
+
+/// Bouton carré avec une icône (et une bulle d'aide au survol).
+export component IconButton inherits Rectangle {
+    in property <string> icon;
+    in property <string> tooltip;
+    in property <bool> enabled: true;
+    in property <color> fond: Theme.glass-strong;
+    in property <color> encre: Theme.navy;
+    in property <color> bord: Theme.glass-border;
+    in property <length> icon-size: 15px;
+    callback clicked;
+
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    border-width: 1.5px;
+    border-color: root.bord;
+    background: touch.pressed ? root.fond.darker(0.15) : touch.has-hover && root.enabled ? root.fond.brighter(0.15) : root.fond;
+    opacity: root.enabled ? 1 : 0.5;
+    animate background { duration: 120ms; }
+
+    Icon {
+        text: root.icon;
+        font-size: root.icon-size;
+        color: root.encre;
+    }
+    touch := TouchArea {
+        enabled: root.enabled;
+        mouse-cursor: pointer;
+        clicked => {
+            Bulle.visible = false;
+            root.clicked();
+        }
+    }
+
+    // Bulle d'aide : affichée par la fenêtre, sous le bouton
+    property <bool> survol: touch.has-hover && root.tooltip != "";
+    changed survol => {
+        if (self.survol) {
+            Bulle.texte = root.tooltip;
+            Bulle.x = root.absolute-position.x + root.width / 2;
+            Bulle.y = root.absolute-position.y + root.height + 6px;
+            Bulle.a-droite = false;
+            Bulle.visible = true;
+        } else if (Bulle.texte == root.tooltip) {
+            Bulle.visible = false;
+        }
+    }
+}
+
+/// Bouton de la barre de titre (réduire / fermer).
+export component ChromeButton inherits Rectangle {
+    in property <string> icon;
+    in property <bool> close: false;
+    callback clicked;
+    width: 46px;
+    height: 34px;
+    border-radius: 10px;
+    background: touch.has-hover ? (root.close ? Theme.danger : #FFFFFF66) : transparent;
+    animate background { duration: 120ms; }
+    Icon {
+        text: root.icon;
+        font-size: 10px;
+        color: touch.has-hover && root.close ? white : Theme.navy;
+    }
+    touch := TouchArea {
+        mouse-cursor: pointer;
+        clicked => { root.clicked(); }
+    }
+}
+
+/// Le gros bouton vert « JOUER ».
+export component PlayButton inherits Rectangle {
+    in property <string> text;
+    in property <bool> enabled: true;
+    in property <length> font-size: 30px;
+    callback clicked;
+
+    border-radius: 22px;
+    background: root.enabled ? Theme.green-edge : #3E526A;
+    opacity: root.enabled ? 1 : 0.7;
+
+    face := Rectangle {
+        y: touch.pressed && root.enabled ? 3px : 0px;
+        height: parent.height - 6px;
+        border-radius: 22px;
+        background: !root.enabled ? @linear-gradient(180deg, #8B9BB0 0%, #6B7C93 100%)
+            : touch.has-hover ? @linear-gradient(180deg, #52F28D 0%, #1FCB5D 100%)
+            : @linear-gradient(180deg, #3BEB7B 0%, #16C052 100%);
+        border-width: 2px;
+        border-color: #FFFFFF55;
+        animate y { duration: 80ms; }
+        Text {
+            text: root.text;
+            font-family: Theme.pixel-font;
+            font-size: root.font-size;
+            color: white;
+            stroke: root.enabled ? Theme.green-edge : #3E526A;
+            stroke-width: 2px;
+            stroke-style: outside;
+            horizontal-alignment: center;
+            vertical-alignment: center;
+        }
+    }
+    touch := TouchArea {
+        enabled: root.enabled;
+        mouse-cursor: pointer;
+        clicked => { root.clicked(); }
+    }
+}
+
+/// Onglet en forme de pilule.
+export component TabPill inherits Rectangle {
+    in property <string> text;
+    in property <string> icon;
+    in property <bool> checked;
+    in property <bool> enabled: true;
+    in property <bool> has-dot;
+    in property <color> dot;
+    callback clicked;
+
+    height: 36px;
+    min-width: contenu.preferred-width;
+    horizontal-stretch: 0;
+    border-radius: 18px;
+    border-width: 1.5px;
+    border-color: root.checked ? Theme.navy : Theme.glass-border;
+    background: root.checked ? Theme.navy : touch.has-hover && root.enabled ? Theme.glass-hover : Theme.glass;
+    opacity: root.enabled ? 1 : 0.45;
+    animate background { duration: 120ms; }
+
+    contenu := HorizontalLayout {
+        padding-left: 14px;
+        padding-right: 14px;
+        spacing: 8px;
+        alignment: center;
+        if root.has-dot: VerticalLayout {
+            alignment: center;
+            Rectangle {
+                width: 9px;
+                height: 9px;
+                border-radius: 4.5px;
+                background: root.dot;
+            }
+        }
+        if root.icon != "": Icon {
+            text: root.icon;
+            font-size: 13px;
+            color: root.checked ? white : Theme.navy;
+        }
+        Text {
+            text: root.text;
+            font-family: Theme.ui-font;
+            font-size: 13px;
+            font-weight: 600;
+            color: root.checked ? white : Theme.navy;
+            vertical-alignment: center;
+        }
+    }
+    touch := TouchArea {
+        enabled: root.enabled;
+        mouse-cursor: pointer;
+        clicked => { root.clicked(); }
+    }
+}
+
+// ───────────────────────── Saisie ─────────────────────────
+
+/// Champ de texte en verre (avec loupe pour les recherches).
+export component GlassInput inherits Rectangle {
+    in-out property <string> text <=> input.text;
+    in property <string> placeholder;
+    in property <bool> search: false;
+    in property <bool> enabled: true;
+    in property <TextHorizontalAlignment> align: left;
+    in property <length> font-size: 13px;
+    out property <bool> has-focus: input.has-focus;
+    callback edited(string);
+    callback accepted(string);
+
+    height: 42px;
+    border-radius: 12px;
+    background: Theme.glass-strong;
+    border-width: 1.5px;
+    border-color: input.has-focus ? Theme.blue : Theme.glass-border;
+    opacity: root.enabled ? 1 : 0.6;
+
+    public function focus-input() {
+        input.focus();
+    }
+    public function select-all() {
+        input.select-all();
+    }
+
+    HorizontalLayout {
+        padding-left: 12px;
+        padding-right: 12px;
+        spacing: 8px;
+        if root.search: Icon {
+            text: "\u{E721}";
+            font-size: 13px;
+            color: Theme.slate;
+            width: 16px;
+        }
+        Rectangle {
+            input := TextInput {
+                width: parent.width;
+                height: parent.height;
+                enabled: root.enabled;
+                single-line: true;
+                vertical-alignment: center;
+                horizontal-alignment: root.align;
+                font-family: Theme.ui-font;
+                font-size: root.font-size;
+                color: Theme.text;
+                selection-background-color: Theme.blue;
+                selection-foreground-color: white;
+                edited => { root.edited(self.text); }
+                accepted => { root.accepted(self.text); }
+            }
+            Text {
+                width: parent.width;
+                height: parent.height;
+                text: root.placeholder;
+                visible: input.text == "";
+                vertical-alignment: center;
+                horizontal-alignment: root.align;
+                font-family: Theme.ui-font;
+                font-size: root.font-size;
+                color: Theme.text-muted;
+                overflow: elide;
+            }
+        }
+    }
+}
+
+/// Liste déroulante en verre.
+export component GlassCombo inherits Rectangle {
+    in property <[string]> model;
+    in-out property <int> current-index: -1;
+    in property <bool> enabled: true;
+    callback selected(int);
+
+    height: 44px;
+    border-radius: 12px;
+    border-width: 1.5px;
+    border-color: Theme.glass-border;
+    background: touch.has-hover && root.enabled ? #FFFFFFC8 : Theme.glass-strong;
+    opacity: root.enabled ? 1 : 0.55;
+
+    Text {
+        x: 14px;
+        width: parent.width - 44px;
+        text: root.current-index >= 0 && root.current-index < root.model.length ? root.model[root.current-index] : "";
+        font-family: Theme.ui-font;
+        font-size: 13px;
+        font-weight: 600;
+        color: Theme.text;
+        vertical-alignment: center;
+        overflow: elide;
+    }
+    Icon {
+        x: parent.width - 30px;
+        width: 18px;
+        text: "\u{E70D}";
+        font-size: 10px;
+    }
+    touch := TouchArea {
+        enabled: root.enabled;
+        mouse-cursor: pointer;
+        clicked => { popup.show(); }
+    }
+    popup := PopupWindow {
+        x: 0;
+        y: root.height + 4px;
+        width: root.width;
+        height: min(320px, root.model.length * 36px + 12px);
+        Rectangle {
+            background: #F6FAFF;
+            border-radius: 12px;
+            border-width: 1.5px;
+            border-color: white;
+            drop-shadow-blur: 16px;
+            drop-shadow-color: #1C233540;
+            drop-shadow-offset-y: 4px;
+            ListView {
+                x: 6px;
+                y: 6px;
+                width: parent.width - 12px;
+                height: parent.height - 12px;
+                // le contenu est recréé à chaque ouverture : on recentre la liste sur l'élément choisi
+                init => {
+                    if root.current-index >= 0 {
+                        self.content-y = -max(0px, min(root.current-index * 36px - (self.height - 36px) / 2, root.model.length * 36px - self.height));
+                    }
+                }
+                for item[i] in root.model: Rectangle {
+                    height: 36px;
+                    border-radius: 8px;
+                    background: ligne.has-hover ? #2F8CFF26 : i == root.current-index ? #1C233514 : transparent;
+                    Text {
+                        x: 10px;
+                        width: parent.width - 20px;
+                        text: item;
+                        font-family: Theme.ui-font;
+                        font-size: 13px;
+                        font-weight: i == root.current-index ? 700 : 500;
+                        color: Theme.text;
+                        vertical-alignment: center;
+                        overflow: elide;
+                    }
+                    ligne := TouchArea {
+                        mouse-cursor: pointer;
+                        clicked => {
+                            root.current-index = i;
+                            root.selected(i);
+                            popup.close();
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+/// Interrupteur (case à cocher en forme de bascule), avec un texte ou un contenu à droite.
+export component ToggleSwitch inherits Rectangle {
+    in-out property <bool> checked;
+    in property <string> text;
+    in property <bool> enabled: true;
+    /// false : l'état est piloté de l'extérieur (le clic demande seulement le changement)
+    in property <bool> auto: true;
+    callback toggled(bool);
+
+    min-height: 26px;
+    opacity: root.enabled ? 1 : 0.5;
+
+    HorizontalLayout {
+        spacing: 12px;
+        alignment: start;
+        VerticalLayout {
+            alignment: center;
+            Rectangle {
+                width: 44px;
+                height: 24px;
+                border-radius: 12px;
+                background: root.checked ? Theme.green-dark : #1C233533;
+                animate background { duration: 150ms; }
+                Rectangle {
+                    x: root.checked ? 22px : 2px;
+                    y: 2px;
+                    width: 20px;
+                    height: 20px;
+                    border-radius: 10px;
+                    background: white;
+                    drop-shadow-blur: 3px;
+                    drop-shadow-color: #0003;
+                    animate x { duration: 150ms; easing: ease-out; }
+                }
+            }
+        }
+        if root.text != "": Text {
+            text: root.text;
+            font-family: Theme.ui-font;
+            font-size: 13px;
+            font-weight: 600;
+            color: Theme.text;
+            vertical-alignment: center;
+        }
+        @children
+    }
+    TouchArea {
+        enabled: root.enabled;
+        mouse-cursor: pointer;
+        clicked => {
+            if (root.auto) {
+                root.checked = !root.checked;
+                root.toggled(root.checked);
+            } else {
+                root.toggled(!root.checked);
+            }
+        }
+    }
+}
+
+/// Curseur en verre.
+export component GlassSlider inherits Rectangle {
+    in property <float> minimum: 0;
+    in property <float> maximum: 100;
+    in-out property <float> value;
+    in property <float> step: 1;
+    in property <color> fill: Theme.navy;
+    in property <brush> track: #1C233526;
+    callback changed(float);
+
+    height: 24px;
+
+    function regler(px: length) {
+        if (root.maximum <= root.minimum) {
+            return;
+        }
+        let ratio = clamp((px - 10px) / (root.width - 20px), 0, 1);
+        let brut = root.minimum + ratio * (root.maximum - root.minimum);
+        let v = clamp(round(brut / root.step) * root.step, root.minimum, root.maximum);
+        if (v != root.value) {
+            root.value = v;
+            root.changed(v);
+        }
+    }
+
+    property <float> ratio: root.maximum > root.minimum ? (root.value - root.minimum) / (root.maximum - root.minimum) : 0;
+
+    Rectangle {
+        y: (parent.height - 8px) / 2;
+        height: 8px;
+        border-radius: 4px;
+        background: root.track;
+    }
+    Rectangle {
+        x: 0;
+        y: (parent.height - 8px) / 2;
+        height: 8px;
+        width: 10px + (root.width - 20px) * root.ratio;
+        border-radius: 4px;
+        background: root.fill;
+    }
+    Rectangle {
+        x: (root.width - 20px) * root.ratio;
+        y: 2px;
+        width: 20px;
+        height: 20px;
+        border-radius: 10px;
+        background: white;
+        border-width: 2.5px;
+        border-color: root.fill;
+        drop-shadow-blur: 4px;
+        drop-shadow-color: #0003;
+    }
+    TouchArea {
+        mouse-cursor: pointer;
+        pointer-event(e) => {
+            if (e.kind == PointerEventKind.down) {
+                root.regler(self.mouse-x);
+            }
+        }
+        moved => {
+            if (self.pressed) {
+                root.regler(self.mouse-x);
+            }
+        }
+    }
+}
+
+/// Barre de progression fine.
+export component SlimProgress inherits Rectangle {
+    in property <float> progress;
+    height: 8px;
+    border-radius: 4px;
+    background: #FFFFFF73;
+    clip: true;
+    Rectangle {
+        x: 0;
+        width: parent.width * clamp(root.progress, 0, 1);
+        border-radius: 4px;
+        background: @linear-gradient(90deg, #13B24C 0%, #3BEB7B 100%);
+        animate width { duration: 250ms; easing: ease-out; }
+    }
+}
+
+/// Icône qui tourne (chargement).
+export component Spinner inherits Rectangle {
+    min-height: 44px;
+    Icon {
+        text: "\u{E895}";
+        font-size: 30px;
+        color: Theme.green-dark;
+        transform-rotation: (animation-tick() / 1200ms) * 360deg;
+    }
+}
+
+/// Liste déroulante des langues (avec drapeaux).
+export struct LangItem {
+    name: string,
+    flag: image,
+}
+
+export component LangCombo inherits Rectangle {
+    in property <[LangItem]> model;
+    in-out property <int> current-index: -1;
+    callback selected(int);
+
+    height: 44px;
+    border-radius: 12px;
+    border-width: 1.5px;
+    border-color: Theme.glass-border;
+    background: touch.has-hover ? #FFFFFFC8 : Theme.glass-strong;
+
+    HorizontalLayout {
+        padding-left: 14px;
+        padding-right: 36px;
+        spacing: 10px;
+        if root.current-index >= 0 && root.current-index < root.model.length: VerticalLayout {
+            alignment: center;
+            Image {
+                width: 24px;
+                height: 16px;
+                source: root.model[root.current-index].flag;
+                image-fit: cover;
+            }
+        }
+        Text {
+            text: root.current-index >= 0 && root.current-index < root.model.length ? root.model[root.current-index].name : "";
+            font-family: Theme.ui-font;
+            font-size: 13px;
+            font-weight: 600;
+            color: Theme.text;
+            vertical-alignment: center;
+        }
+    }
+    Icon {
+        x: parent.width - 30px;
+        width: 18px;
+        text: "\u{E70D}";
+        font-size: 10px;
+    }
+    touch := TouchArea {
+        mouse-cursor: pointer;
+        clicked => { popup.show(); }
+    }
+    popup := PopupWindow {
+        x: 0;
+        y: root.height + 4px;
+        width: root.width;
+        height: root.model.length * 40px + 12px;
+        Rectangle {
+            background: #F6FAFF;
+            border-radius: 12px;
+            border-width: 1.5px;
+            border-color: white;
+            drop-shadow-blur: 16px;
+            drop-shadow-color: #1C233540;
+            VerticalLayout {
+                padding: 6px;
+                for item[i] in root.model: Rectangle {
+                    height: 40px;
+                    border-radius: 8px;
+                    background: ligne.has-hover ? #2F8CFF26 : i == root.current-index ? #1C233514 : transparent;
+                    HorizontalLayout {
+                        padding-left: 10px;
+                        spacing: 10px;
+                        VerticalLayout {
+                            alignment: center;
+                            Image {
+                                width: 24px;
+                                height: 16px;
+                                source: item.flag;
+                                image-fit: cover;
+                            }
+                        }
+                        Text {
+                            text: item.name;
+                            font-family: Theme.ui-font;
+                            font-size: 13px;
+                            color: Theme.text;
+                            vertical-alignment: center;
+                        }
+                    }
+                    ligne := TouchArea {
+                        mouse-cursor: pointer;
+                        clicked => {
+                            root.current-index = i;
+                            root.selected(i);
+                            popup.close();
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

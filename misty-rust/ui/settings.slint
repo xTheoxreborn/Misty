@@ -1,0 +1,324 @@
+// Options : comptes hors-ligne, compte Microsoft, RAM, raccourci, types de versions, stockage, langue.
+
+import { Theme, Tr } from "theme.slint";
+import { SettingsState } from "state.slint";
+import { Icon, PixelLabel, BodyText, SectionTitle, OutlinedText, GlassCard, IconButton, MButton, GlassInput, ToggleSwitch, GlassSlider, LangCombo, ChromeButton } from "widgets.slint";
+import { ScrollView } from "std-widgets.slint";
+
+component Carte inherits GlassCard {
+    min-height: contenu.preferred-height;
+    contenu := VerticalLayout {
+        padding: 22px;
+        spacing: 4px;
+        @children
+    }
+}
+
+component Pseudo inherits Rectangle {
+    in property <string> text;
+    callback remove();
+    height: 38px;
+    width: t.preferred-width + 54px;
+    border-radius: 12px;
+    background: Theme.glass-strong;
+    border-width: 1.5px;
+    border-color: Theme.glass-border;
+    t := Text {
+        x: 12px;
+        text: root.text;
+        font-family: Theme.ui-font;
+        font-weight: 600;
+        font-size: 13px;
+        color: Theme.navy;
+        vertical-alignment: center;
+    }
+    ChromeButton {
+        x: parent.width - 32px;
+        y: 5px;
+        width: 28px;
+        height: 28px;
+        icon: "\u{E8BB}";
+        close: true;
+        clicked => { root.remove(); }
+    }
+}
+
+export component SettingsPage inherits Rectangle {
+    VerticalLayout {
+        padding-left: 26px;
+        padding-right: 30px;
+        padding-bottom: 26px;
+        spacing: 18px;
+
+        HorizontalLayout {
+            padding-left: 6px;
+            alignment: start;
+            OutlinedText {
+                text: Tr.t("Options_Title");
+                font-size: 48px;
+                depth: 5px;
+            }
+        }
+
+        ScrollView {
+            vertical-stretch: 1;
+            content-width: self.visible-width;
+            content-height: colonnes.preferred-height;
+
+            colonnes := HorizontalLayout {
+                width: parent.visible-width - 12px;
+                spacing: 18px;
+                alignment: stretch;
+
+                // ═══ Colonne gauche ═══
+                VerticalLayout {
+                    horizontal-stretch: 1;
+                    alignment: start;
+                    spacing: 18px;
+
+                    // Comptes hors-ligne
+                    Carte {
+                        SectionTitle { text: Tr.t("Options_hors_ligne"); }
+                        BodyText { text: Tr.t("Options_hors_ligne_text"); }
+                        Rectangle { height: 10px; }
+                        // Liste des pseudos, découpée en lignes par Rust
+                        for ligne in SettingsState.pseudo-rows: HorizontalLayout {
+                            spacing: 8px;
+                            padding-bottom: 8px;
+                            alignment: start;
+                            for p in ligne.items: Pseudo {
+                                text: p;
+                                remove => { SettingsState.remove-pseudo(p); }
+                            }
+                        }
+                        HorizontalLayout {
+                            spacing: 10px;
+                            GlassInput {
+                                horizontal-stretch: 1;
+                                text <=> SettingsState.new-pseudo;
+                                accepted => { SettingsState.add-pseudo(); }
+                            }
+                            MButton {
+                                kind: 1;
+                                icon: "\u{E710}";
+                                text: Tr.t("Options_bouton_ajout");
+                                clicked => { SettingsState.add-pseudo(); }
+                            }
+                        }
+                    }
+
+                    // Compte Microsoft
+                    Carte {
+                        SectionTitle { text: Tr.t("Options_Compte_Microsoft"); }
+                        BodyText { text: SettingsState.ms-state; }
+                        Rectangle { height: 10px; }
+                        HorizontalLayout {
+                            spacing: 10px;
+                            alignment: start;
+                            if !SettingsState.ms-connected: MButton {
+                                kind: 1;
+                                text: Tr.t("Compte_SeConnecter");
+                                enabled: !SettingsState.ms-busy;
+                                clicked => { SettingsState.connect(); }
+                            }
+                            if SettingsState.ms-connected: MButton {
+                                text: Tr.t("Compte_SeDeconnecter");
+                                clicked => { SettingsState.disconnect(); }
+                            }
+                            MButton {
+                                text: Tr.t("Compte_DeconnexionTotale");
+                                clicked => { SettingsState.disconnect-all(); }
+                            }
+                        }
+                    }
+
+                    // Raccourci
+                    Carte {
+                        ToggleSwitch {
+                            checked <=> SettingsState.shortcut-enabled;
+                            toggled(v) => { SettingsState.shortcut-toggled(v); }
+                            VerticalLayout {
+                                spacing: 2px;
+                                SectionTitle { text: Tr.t("Options_Raccourci"); }
+                                BodyText { text: Tr.t("Options_Raccourci_Texte"); }
+                            }
+                        }
+                        if SettingsState.shortcut-enabled: VerticalLayout {
+                            padding-top: 14px;
+                            spacing: 10px;
+                            Rectangle {
+                                height: 34px;
+                                border-radius: 10px;
+                                background: #FFFFFF40;
+                                Text {
+                                    x: 12px;
+                                    width: parent.width - 24px;
+                                    text: SettingsState.shortcut-path;
+                                    font-family: Theme.ui-font;
+                                    font-size: 13px;
+                                    color: Theme.navy2;
+                                    vertical-alignment: center;
+                                    overflow: elide;
+                                }
+                            }
+                            HorizontalLayout {
+                                spacing: 10px;
+                                alignment: start;
+                                MButton {
+                                    text: Tr.t("Options_ChoisirDossier");
+                                    clicked => { SettingsState.choose-shortcut(); }
+                                }
+                                MButton {
+                                    text: Tr.t("Options_Recreer");
+                                    clicked => { SettingsState.recreate-shortcut(); }
+                                }
+                            }
+                        }
+                    }
+
+                    // Langue
+                    Carte {
+                        SectionTitle { text: Tr.t("Options_Langue"); }
+                        BodyText { text: Tr.t("Options_Langue_Texte"); }
+                        Rectangle { height: 8px; }
+                        LangCombo {
+                            model: SettingsState.langs;
+                            current-index <=> SettingsState.lang-index;
+                            selected(i) => { SettingsState.lang-selected(i); }
+                        }
+                    }
+                }
+
+                // ═══ Colonne droite ═══
+                VerticalLayout {
+                    horizontal-stretch: 1;
+                    alignment: start;
+                    spacing: 18px;
+
+                    // Mémoire
+                    Carte {
+                        HorizontalLayout {
+                            VerticalLayout {
+                                horizontal-stretch: 1;
+                                spacing: 4px;
+                                SectionTitle { text: Tr.t("Options_Ram"); }
+                                BodyText { text: SettingsState.ram-total-text; }
+                            }
+                            VerticalLayout {
+                                alignment: start;
+                                Rectangle {
+                                    border-radius: 10px;
+                                    background: Theme.navy;
+                                    width: ram.preferred-width + 24px;
+                                    height: 32px;
+                                    ram := PixelLabel {
+                                        text: SettingsState.ram-text;
+                                        color: white;
+                                        font-size: 14px;
+                                        horizontal-alignment: center;
+                                    }
+                                }
+                            }
+                        }
+                        Rectangle { height: 12px; }
+                        GlassSlider {
+                            minimum: 1024;
+                            maximum: SettingsState.ram-max;
+                            step: 1024;
+                            value <=> SettingsState.ram-value;
+                            changed(v) => { SettingsState.ram-changed(v); }
+                        }
+                    }
+
+                    // Versions
+                    Carte {
+                        SectionTitle { text: Tr.t("Options_Versions"); }
+                        BodyText { text: Tr.t("Options_Versions_Texte"); }
+                        Rectangle { height: 8px; }
+                        ToggleSwitch {
+                            text: "Snapshots";
+                            checked <=> SettingsState.snapshot;
+                            toggled => { SettingsState.types-changed(); }
+                        }
+                        Rectangle { height: 4px; }
+                        ToggleSwitch {
+                            text: Tr.t("Options_Betas");
+                            checked <=> SettingsState.beta;
+                            toggled => { SettingsState.types-changed(); }
+                        }
+                        Rectangle { height: 4px; }
+                        ToggleSwitch {
+                            text: Tr.t("Options_indev");
+                            checked <=> SettingsState.alpha;
+                            toggled => { SettingsState.types-changed(); }
+                        }
+                    }
+
+                    // Stockage
+                    Carte {
+                        SectionTitle { text: Tr.t("Options_Stockage"); }
+                        Text {
+                            text: SettingsState.data-dir;
+                            font-family: Theme.ui-font;
+                            font-size: 13px;
+                            color: Theme.text-muted;
+                            overflow: elide;
+                        }
+                        PixelLabel {
+                            text: SettingsState.size-text;
+                            font-size: 14px;
+                            color: Theme.navy;
+                            height: 44px;
+                        }
+                        HorizontalLayout {
+                            spacing: 10px;
+                            alignment: start;
+                            MButton {
+                                text: Tr.t("Commun_OuvrirDossier");
+                                clicked => { SettingsState.open-folder(); }
+                            }
+                            MButton {
+                                kind: 2;
+                                text: Tr.t("Options_ToutSupprimer");
+                                clicked => { SettingsState.delete-all(); }
+                            }
+                        }
+                    }
+
+                    // Rich Presence Discord
+                    Carte {
+                        ToggleSwitch {
+                            checked <=> SettingsState.rich;
+                            toggled(v) => { SettingsState.rich-toggled(v); }
+                            VerticalLayout {
+                                spacing: 2px;
+                                SectionTitle { text: "RICH PRESENCE DISCORD"; }
+                                BodyText { text: Tr.t("Options_Discord_Texte"); }
+                            }
+                        }
+                    }
+
+                    // À propos
+                    Carte {
+                        HorizontalLayout {
+                            spacing: 10px;
+                            VerticalLayout {
+                                horizontal-stretch: 1;
+                                spacing: 4px;
+                                SectionTitle { text: Tr.t("Options_APropos"); }
+                                BodyText { text: SettingsState.about-text; }
+                            }
+                            VerticalLayout {
+                                alignment: center;
+                                MButton {
+                                    text: "GitHub";
+                                    clicked => { SettingsState.github(); }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

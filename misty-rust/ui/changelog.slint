@@ -1,0 +1,94 @@
+// Notes de version, lues depuis CHANGELOG.md (intégré à l'exe).
+
+import { Theme, Tr } from "theme.slint";
+import { ChangelogState } from "state.slint";
+import { PixelLabel, OutlinedText, GlassCard } from "widgets.slint";
+import { ListView } from "std-widgets.slint";
+
+export component ChangelogPage inherits Rectangle {
+    VerticalLayout {
+        padding-left: 26px;
+        padding-right: 30px;
+        padding-bottom: 26px;
+        spacing: 18px;
+
+        HorizontalLayout {
+            padding-left: 6px;
+            alignment: start;
+            OutlinedText {
+                text: Tr.t("Notes_Titre");
+                font-size: 48px;
+                depth: 5px;
+            }
+        }
+
+        liste := ListView {
+            vertical-stretch: 1;
+            // Largeur du texte des lignes, connue à l'avance : la hauteur du texte replié en dépend
+            // (carte − marges − colonne du titre − puce − barre de défilement)
+            property <length> largeur-texte: self.width - 12px - 40px - 170px - 16px - 14px;
+            for s in ChangelogState.sections: Rectangle {
+                // hauteur du contenu (texte replié compris) + marge sous la carte
+                height: contenu.preferred-height + 14px;
+                GlassCard {
+                    y: 0;
+                    width: parent.width - 12px;
+                    height: parent.height - 14px;
+                    background: s.recent ? #FFFFFF8C : Theme.glass;
+                    contenu := HorizontalLayout {
+                        padding-left: 20px;
+                        padding-right: 20px;
+                        padding-top: 18px;
+                        padding-bottom: 18px;
+                        spacing: 0px;
+                        VerticalLayout {
+                            width: 170px;
+                            alignment: start;
+                            HorizontalLayout {
+                                alignment: start;
+                                Rectangle {
+                                    border-radius: 10px;
+                                    background: s.recent ? Theme.green : Theme.navy;
+                                    width: titre.preferred-width + 24px;
+                                    height: 30px;
+                                    titre := PixelLabel {
+                                        text: s.title;
+                                        color: white;
+                                        font-size: 12px;
+                                        horizontal-alignment: center;
+                                    }
+                                }
+                            }
+                        }
+                        VerticalLayout {
+                            horizontal-stretch: 1;
+                            padding-top: 4px;
+                            spacing: 6px;
+                            for ligne in s.lines: Rectangle {
+                                height: t.preferred-height;
+                                Rectangle {
+                                    x: 0;
+                                    y: 7px;
+                                    width: 6px;
+                                    height: 6px;
+                                    border-radius: 1px;
+                                    background: Theme.green;
+                                }
+                                t := Text {
+                                    x: 16px;
+                                    y: 0;
+                                    width: liste.largeur-texte;
+                                    text: ligne;
+                                    font-family: Theme.ui-font;
+                                    font-size: 13.5px;
+                                    color: Theme.navy2;
+                                    wrap: word-wrap;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

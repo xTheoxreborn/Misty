@@ -186,6 +186,9 @@ fn drapeau(pays: &str) -> slint::Image {
     let octets: &[u8] = match pays {
         "fr" => include_bytes!("../../assets/flags/fr.png"),
         "us" => include_bytes!("../../assets/flags/us.png"),
+        "es" => include_bytes!("../../assets/flags/es.png"),
+        "ru" => include_bytes!("../../assets/flags/ru.png"),
+        "it" => include_bytes!("../../assets/flags/it.png"),
         _ => &[],
     };
     super::images::decoder(octets, 0).map(slint::Image::from_rgba8).unwrap_or_default()

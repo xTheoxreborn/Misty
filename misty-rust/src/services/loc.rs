@@ -13,6 +13,9 @@ const DEFAUT: &str = "fr";
 const LANGUES: &[(&str, &str)] = &[
     ("fr", include_str!("../../lang/fr.json")),
     ("en", include_str!("../../lang/en.json")),
+    ("es", include_str!("../../lang/es.json")),
+    ("ru", include_str!("../../lang/ru.json")),
+    ("it", include_str!("../../lang/it.json")),
 ];
 
 #[derive(Clone)]

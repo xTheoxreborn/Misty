@@ -345,5 +345,24 @@
   "Cat_Interface": "Interface",
   "Cat_Environnement": "Environment",
   "Cat_Particules": "Particles",
-  "Cat_Autres": "Other"
+  "Cat_Autres": "Other",
+
+  "Skin_Onglet": "Skin",
+  "Skin_Titre": "Skin",
+  "Skin_Classique": "Classic (Steve)",
+  "Skin_Fin": "Slim (Alex)",
+  "Skin_Fichier": "Choose a skin (PNG)…",
+  "Skin_AucunFichier": "No file chosen",
+  "Skin_Appliquer": "Apply skin",
+  "Skin_Capes": "Capes",
+  "Skin_AucuneCape": "None",
+  "Skin_Connexion": "Sign in with a Microsoft account to change your skin and cape.",
+  "Skin_Connecter": "Sign in",
+  "Skin_Applique": "Skin updated!",
+  "Skin_CapeChangee": "Cape updated!",
+  "Skin_Erreur": "Could not change the skin",
+  "Skin_ErreurCape": "Could not change the cape",
+  "Skin_ErreurChargement": "Could not load the skin and capes: {0}",
+  "Skin_Invalide": "Invalid image: a skin is 64×64 or 64×32 pixels (PNG).",
+  "Skin_Tourner": "Drag to rotate"
 }

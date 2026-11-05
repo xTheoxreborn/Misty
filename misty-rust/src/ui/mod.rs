@@ -16,6 +16,7 @@ pub mod instance;
 pub mod packs;
 pub mod profiles;
 pub mod settings;
+pub mod skin;
 
 use crate::services::{discord, loc, paths, system_info, Progress};
 use crate::*;
@@ -50,6 +51,7 @@ pub struct App {
     pub settings: RefCell<settings::Etat>,
     pub packs: RefCell<packs::Etat>,
     pub editor: RefCell<editor::Etat>,
+    pub skin: RefCell<skin::Etat>,
     /// Avertissement « expérimental » des packs déjà montré
     pub averti_packs: Cell<bool>,
 }
@@ -68,6 +70,7 @@ impl App {
             settings: RefCell::default(),
             packs: RefCell::default(),
             editor: RefCell::default(),
+            skin: RefCell::default(),
             averti_packs: Cell::new(false),
         })
     }
@@ -159,6 +162,7 @@ pub fn installer(app: &Rc<App>) {
     changelog::installer(app);
     packs::installer(app);
     editor::installer(app);
+    skin::installer(app);
 }
 
 /// Accès à la fenêtre winit (déplacement, réduction).
@@ -309,4 +313,5 @@ pub fn langue_changee(app: &Rc<App>) {
     browser::langue_changee(app);
     settings::maj_textes(app);
     editor::langue_changee(app);
+    skin::langue_changee(app);
 }

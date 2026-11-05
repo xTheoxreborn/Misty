@@ -74,3 +74,23 @@ async fn fabric_et_forge() {
         verifier(&nom).await;
     }
 }
+
+/// Dev tool: MISTY_SKIN=<skin.png> MISTY_OUT=<out.png> cargo test apercu_3d -- --ignored
+#[test]
+#[ignore]
+fn apercu_3d() {
+    let png = std::fs::read(std::env::var("MISTY_SKIN").unwrap()).unwrap();
+    let mut cape = image::RgbaImage::from_pixel(64, 32, image::Rgba([60, 200, 240, 255]));
+    for x in 0..64 {
+        cape.put_pixel(x, 5, image::Rgba([255, 255, 255, 255]));
+    }
+    let mut octets = std::io::Cursor::new(Vec::new());
+    cape.write_to(&mut octets, image::ImageFormat::Png).unwrap();
+    let vues = crate::services::skins::rendre_tour(&png, false, Some(&octets.into_inner())).unwrap();
+    let choix = [0usize, 5, 9, 14, 18, 27];
+    let mut feuille = image::RgbaImage::from_pixel(160 * choix.len() as u32, 320, image::Rgba([90, 120, 160, 255]));
+    for (i, k) in choix.iter().enumerate() {
+        image::imageops::overlay(&mut feuille, &vues[*k], 160 * i as i64, 0);
+    }
+    feuille.save(std::env::var("MISTY_OUT").unwrap()).unwrap();
+}

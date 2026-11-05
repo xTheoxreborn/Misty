@@ -170,6 +170,7 @@ async fn se_connecter(app: &Rc<App>) {
 pub fn session_changee(app: &Rc<App>) {
     maj_compte(app);
     super::settings::maj_microsoft(app);
+    super::skin::session_changee(app);
 }
 
 fn maj_compte(app: &Rc<App>) {

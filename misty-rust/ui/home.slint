@@ -3,6 +3,40 @@
 import { Theme, Tr, Assets } from "theme.slint";
 import { HomeState } from "state.slint";
 import { Icon, PixelLabel, BodyText, OutlinedText, GlassCard, Thumb, IconButton, PlayButton, GlassCombo, SlimProgress } from "widgets.slint";
+import { SkinState, SkinPanel } from "skin.slint";
+
+/// Onglet vertical (« JOUER », « SKIN ») : le texte est écrit de haut en bas.
+component VTab inherits Rectangle {
+    in property <string> text;
+    in property <bool> active;
+    callback clicked;
+
+    width: 64px;
+    height: lab.preferred-width + 20px;
+    opacity: root.active ? 1 : touch.has-hover ? 0.85 : 0.5;
+    animate opacity { duration: 150ms; }
+
+    // La rotation s'applique à un rectangle qui contient le texte
+    // (elle est ignorée sur l'élément racine d'un composant)
+    Rectangle {
+        width: lab.preferred-width;
+        height: lab.preferred-height;
+        x: 36px - self.width / 2;
+        y: (parent.height - self.height) / 2;
+        transform-rotation: 90deg;
+        lab := OutlinedText {
+            text: root.text;
+            font-size: 30px;
+            thickness: 3px;
+            depth: 4px;
+        }
+    }
+    // la zone cliquable ne tourne pas
+    touch := TouchArea {
+        mouse-cursor: pointer;
+        clicked => { root.clicked(); }
+    }
+}
 
 component Chip inherits Rectangle {
     in property <string> text;
@@ -167,9 +201,10 @@ export component HomePage inherits Rectangle {
         // ═══════════ Héros ═══════════
         HorizontalLayout {
             vertical-stretch: 1;
+            min-height: 480px;
             spacing: 0px;
 
-            VerticalLayout {
+            if SkinState.tab == 0: VerticalLayout {
                 alignment: center;
                 padding-left: 14px;
                 spacing: 0px;
@@ -219,31 +254,43 @@ export component HomePage inherits Rectangle {
                 }
             }
 
-            Rectangle { horizontal-stretch: 1; }
+            if SkinState.tab == 0: Rectangle { horizontal-stretch: 1; }
 
-            // Carte + texte vertical
+            // Onglet « Jouer » : la carte de la version
+            if SkinState.tab == 0: VerticalLayout {
+                alignment: center;
+                VersionCard { }
+            }
+
+            // Onglet « Skin » : aperçu, skin et capes
+            if SkinState.tab == 1: VerticalLayout {
+                horizontal-stretch: 1;
+                alignment: center;
+                SkinPanel {
+                    height: 400px;
+                }
+            }
+
+            // Onglets écrits à la verticale, tout à droite
             VerticalLayout {
                 alignment: center;
-                HorizontalLayout {
-                    spacing: 0px;
-                    VersionCard { }
-                    // « JOUER » écrit à la verticale
-                    Rectangle {
-                        width: 64px;
-                        height: 350px;
-                        // La rotation s'applique à un rectangle qui contient le texte
-                        // (elle est ignorée sur l'élément racine d'un composant)
-                        Rectangle {
-                            width: vertical.preferred-width;
-                            height: vertical.preferred-height;
-                            x: (parent.width - self.width) / 2 + 4px;
-                            y: self.width / 2 - self.height / 2;
-                            transform-rotation: 90deg;
-                            vertical := OutlinedText {
-                                text: Tr.t("Home_Bouton_Jouer");
-                                font-size: 30px;
-                                thickness: 3px;
-                                depth: 4px;
+                Rectangle {
+                    width: 64px;
+                    height: 350px;
+                    VerticalLayout {
+                        alignment: start;
+                        spacing: 16px;
+                        VTab {
+                            text: Tr.t("Home_Bouton_Jouer");
+                            active: SkinState.tab == 0;
+                            clicked => { SkinState.tab = 0; }
+                        }
+                        VTab {
+                            text: Tr.t("Skin_Onglet");
+                            active: SkinState.tab == 1;
+                            clicked => {
+                                SkinState.tab = 1;
+                                SkinState.open();
                             }
                         }
                     }

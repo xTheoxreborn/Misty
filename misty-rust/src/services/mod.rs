@@ -18,6 +18,7 @@ pub mod paths;
 pub mod pseudos;
 pub mod settings;
 pub mod shortcut;
+pub mod skins;
 pub mod system_info;
 pub mod texture_categories;
 pub mod update;

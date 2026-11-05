@@ -90,6 +90,10 @@ fn capture(app: &Rc<ui::App>, dossier: std::path::PathBuf) {
     ui::lancer(async move {
         attendre(6000).await;
         photo(&app, "0-accueil", &dossier);
+        app.ui.global::<SkinState>().set_tab(1);
+        attendre(1500).await;
+        photo(&app, "0b-skin", &dossier);
+        app.ui.global::<SkinState>().set_tab(0);
         let etat = app.ui.global::<AppState>();
         for (page, nom) in [(1, "1-profils"), (2, "2-options"), (3, "3-notes"), (4, "4-packs")] {
             match page {

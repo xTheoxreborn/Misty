@@ -1,4 +1,13 @@
 # Changelog
+## 0.3.2
+- New SKIN tab on the home page, next to PLAY (vertical text on the far right): change your skin and your cape from the launcher
+- The character preview is now a real 3D model: drag it to turn it around and see your cape from behind
+- Skin change: pick a PNG file (64x64 or 64x32), choose classic (Steve) or slim (Alex) arms, and it is sent straight to your Microsoft account; the chosen skin is previewed before sending
+- Capes: every cape on your account is shown with a clear preview, 4 per row, one click equips it and None removes it
+- The account badge on the home page shows the new head as soon as the skin is changed
+- The tab needs a Microsoft account (otherwise a message offers to sign in) and is translated in every language
+- Added new languages: Spanish, Italian and Russian, with their flags in the language selector
+
 ## 0.3.1
 - Fenêtre aux coins arrondis : le fond de l'application épouse maintenant des angles arrondis, avec un affichage net sur tous les bords
 - Amélioration : le sélecteur de version (menu général) s'ouvre directement sur la version choisie au lieu de revenir tout en haut de la liste, ce qui permet de choisir facilement la version juste avant ou après

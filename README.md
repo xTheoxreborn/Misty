@@ -22,7 +22,7 @@ Interface « verre dépoli » sur fond ciel, fenêtre aux coins arrondis, titres
 
 ## Installation (utilisateur)
 
-**Recommandé :** télécharger `Misty-Setup-<version>.exe` depuis la [dernière release](https://github.com/xTheoxreborn/Misty/releases/latest) et le lancer.
+**Recommandé :** télécharger `Misty-Setup-<version>.exe` depuis la [dernière release](https://github.com/Misty-MC/Misty/releases/latest) et le lancer.
 
 - Pas besoin de droits administrateur : Misty s'installe dans `%LOCALAPPDATA%\Programs\Misty`.
 - Rien d'autre à installer : `Misty.exe` contient tout (polices, traductions, images), et Java est téléchargé automatiquement quand le jeu en a besoin.

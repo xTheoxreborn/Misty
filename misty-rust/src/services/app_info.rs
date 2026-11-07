@@ -5,7 +5,7 @@
 pub const VERSION: &str = "0.3.2";
 /// Version du format de data.txt. À incrémenter quand on ajoute/retire une clé.
 pub const DATA_VERSION: &str = "1.2.4";
-pub const GITHUB_REPO: &str = "xTheoxreborn/Misty";
+pub const GITHUB_REPO: &str = "Misty-MC/Misty";
 pub const DISCORD_APP_ID: &str = "1536551827640680528";
 pub const RAM_PAR_DEFAUT_MO: u32 = 4096;
 

@@ -5,7 +5,7 @@ edition = "2021"
 description = "Launcher Minecraft"
 authors = ["xTheoxreborn"]
 license = "MIT"
-repository = "https://github.com/xTheoxreborn/Misty"
+repository = "https://github.com/Misty-MC/Misty"
 build = "build.rs"
 
 # L'exe s'appelle Misty.exe (attendu par la mise à jour automatique et les raccourcis)

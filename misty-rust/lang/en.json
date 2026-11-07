@@ -364,5 +364,19 @@
   "Skin_ErreurCape": "Could not change the cape",
   "Skin_ErreurChargement": "Could not load the skin and capes: {0}",
   "Skin_Invalide": "Invalid image: a skin is 64×64 or 64×32 pixels (PNG).",
-  "Skin_Tourner": "Drag to rotate"
+  "Skin_Tourner": "Drag to rotate",
+  "Profil_VersionPack_Titre": "Choose a version",
+  "Profil_VersionPack_Texte": "Which version of {0} do you want to install?",
+  "Profil_ConfirmerPack_Titre": "Install this modpack?",
+  "Profil_ConfirmerPack_Texte": "{0}\n\nVersion: {1}\n\nA new profile will be created and the files will be downloaded.",
+  "Profil_ConfirmerPack_Oui": "Install",
+  "Compte_Utiliser": "Use",
+  "Compte_Ajouter": "Add an account",
+  "Compte_Oublier": "Forget this account",
+  "Compte_Oublier_Texte": "Forget the account {0}? You will have to sign in again to use it.",
+  "Maj_Rechercher": "Check for updates",
+  "Maj_Verification": "Checking…",
+  "Maj_AJour": "Misty is up to date",
+  "Maj_AJour_Texte": "You already have the latest version ({0}).",
+  "Maj_VerifImpossible": "Could not check for updates"
 }

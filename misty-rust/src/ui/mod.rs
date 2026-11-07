@@ -207,7 +207,7 @@ pub async fn demarrer(app: Rc<App>) {
     crate::services::settings::initialiser();
     crate::services::pseudos::initialiser();
 
-    verifier_mise_a_jour(&app).await;
+    verifier_mise_a_jour(&app, false).await;
     match app.bg(crate::services::update::finaliser()).await {
         Ok(true) => {
             dialogs::info(&app, &loc::t("Maj_Terminee"), &loc::tf("Maj_Terminee_Texte", &[&crate::services::app_info::VERSION])).await
@@ -219,8 +219,30 @@ pub async fn demarrer(app: Rc<App>) {
     home::initialiser(&app).await;
 }
 
-async fn verifier_mise_a_jour(app: &Rc<App>) {
-    let Ok(Some(release)) = app.bg(crate::services::update::verifier()).await else { return };
+/// `manuel` : lancé depuis les options (on affiche aussi « à jour » et les erreurs).
+async fn verifier_mise_a_jour(app: &Rc<App>, manuel: bool) {
+    if manuel {
+        app.ui.global::<SettingsState>().set_checking_update(true);
+    }
+    let resultat = app.bg(crate::services::update::verifier()).await;
+    if manuel {
+        app.ui.global::<SettingsState>().set_checking_update(false);
+    }
+    let release = match resultat {
+        Ok(Some(r)) => r,
+        Ok(None) => {
+            if manuel {
+                dialogs::info(app, &loc::t("Maj_AJour"), &loc::tf("Maj_AJour_Texte", &[&crate::services::app_info::VERSION])).await;
+            }
+            return;
+        }
+        Err(e) => {
+            if manuel {
+                dialogs::erreur(app, &loc::t("Maj_VerifImpossible"), &e.to_string()).await;
+            }
+            return;
+        }
+    };
     let installer = dialogs::confirmer(
         app,
         &loc::t("Maj_Disponible"),

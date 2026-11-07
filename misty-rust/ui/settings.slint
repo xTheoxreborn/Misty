@@ -43,6 +43,57 @@ component Pseudo inherits Rectangle {
     }
 }
 
+/// Ligne d'un compte Microsoft : pseudo, « utiliser » si ce n'est pas le compte actif, oublier.
+component LigneCompte inherits Rectangle {
+    in property <string> pseudo;
+    in property <bool> active;
+    callback use();
+    callback forget();
+    height: 44px;
+    border-radius: 12px;
+    background: root.active ? Theme.navy : Theme.glass-strong;
+    border-width: 1.5px;
+    border-color: root.active ? Theme.navy : Theme.glass-border;
+    HorizontalLayout {
+        padding-left: 14px;
+        padding-right: 8px;
+        spacing: 10px;
+        if root.active: Icon {
+            text: "\u{E73E}";
+            color: Theme.green;
+            font-size: 13px;
+        }
+        Text {
+            horizontal-stretch: 1;
+            text: root.pseudo;
+            font-family: Theme.ui-font;
+            font-weight: 600;
+            font-size: 13px;
+            color: root.active ? white : Theme.navy;
+            vertical-alignment: center;
+            overflow: elide;
+        }
+        if !root.active: VerticalLayout {
+            alignment: center;
+            MButton {
+                text: Tr.t("Compte_Utiliser");
+                clicked => { root.use(); }
+            }
+        }
+        VerticalLayout {
+            alignment: center;
+            ChromeButton {
+                width: 28px;
+                height: 28px;
+                icon: "\u{E8BB}";
+                close: true;
+                encre: root.active ? white : Theme.navy;
+                clicked => { root.forget(); }
+            }
+        }
+    }
+}
+
 export component SettingsPage inherits Rectangle {
     VerticalLayout {
         padding-left: 26px;
@@ -112,12 +163,22 @@ export component SettingsPage inherits Rectangle {
                         SectionTitle { text: Tr.t("Options_Compte_Microsoft"); }
                         BodyText { text: SettingsState.ms-state; }
                         Rectangle { height: 10px; }
+                        for c in SettingsState.ms-accounts: VerticalLayout {
+                            padding-bottom: 8px;
+                            LigneCompte {
+                                pseudo: c.pseudo;
+                                active: c.active && SettingsState.ms-connected;
+                                use => { SettingsState.ms-switch(c.uuid); }
+                                forget => { SettingsState.ms-forget(c.uuid); }
+                            }
+                        }
                         HorizontalLayout {
                             spacing: 10px;
                             alignment: start;
-                            if !SettingsState.ms-connected: MButton {
+                            MButton {
                                 kind: 1;
-                                text: Tr.t("Compte_SeConnecter");
+                                icon: "\u{E710}";
+                                text: SettingsState.ms-accounts.length == 0 ? Tr.t("Compte_SeConnecter") : Tr.t("Compte_Ajouter");
                                 enabled: !SettingsState.ms-busy;
                                 clicked => { SettingsState.connect(); }
                             }
@@ -307,6 +368,15 @@ export component SettingsPage inherits Rectangle {
                                 spacing: 4px;
                                 SectionTitle { text: Tr.t("Options_APropos"); }
                                 BodyText { text: SettingsState.about-text; }
+                            }
+                            VerticalLayout {
+                                alignment: center;
+                                MButton {
+                                    icon: "\u{E895}";
+                                    text: SettingsState.checking-update ? Tr.t("Maj_Verification") : Tr.t("Maj_Rechercher");
+                                    enabled: !SettingsState.checking-update;
+                                    clicked => { SettingsState.check-update(); }
+                                }
                             }
                             VerticalLayout {
                                 alignment: center;

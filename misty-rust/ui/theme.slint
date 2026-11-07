@@ -57,6 +57,8 @@ export global Bulle {
     /// true : à droite du bouton (barre latérale) ; false : centrée sous le bouton
     in-out property <bool> a-droite;
     in-out property <bool> visible;
+    /// Hauteur de la fenêtre : les listes déroulantes s'ouvrent vers le haut si elles n'ont pas la place en dessous.
+    in property <length> fenetre-hauteur: 720px;
 }
 
 // Images générées en Rust (bloc d'herbe en pixel art…).

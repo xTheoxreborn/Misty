@@ -58,6 +58,10 @@ pub struct VersionModrinth {
     #[serde(default)]
     pub version_number: String,
     #[serde(default)]
+    pub name: String,
+    #[serde(default)]
+    pub game_versions: Vec<String>,
+    #[serde(default)]
     pub version_type: String,
     #[serde(default)]
     pub files: Vec<FichierModrinth>,

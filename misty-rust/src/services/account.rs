@@ -36,8 +36,8 @@ pub struct Session {
     pub xuid: String,
 }
 
-/// Cache disque (DataDir\msa.json).
-#[derive(Serialize, Deserialize, Default)]
+/// Un compte Microsoft mis en cache.
+#[derive(Serialize, Deserialize, Default, Clone)]
 struct Cache {
     refresh_token: String,
     mc_token: String,
@@ -45,6 +45,24 @@ struct Cache {
     pseudo: String,
     uuid: String,
     xuid: String,
+}
+
+/// Contenu de DataDir\msa.json : tous les comptes + celui qui est utilisé.
+/// (L'ancien format, avec un seul compte, est encore lu.)
+#[derive(Serialize, Deserialize, Default)]
+struct Fichier {
+    #[serde(default)]
+    actif: String,
+    #[serde(default)]
+    comptes: Vec<Cache>,
+}
+
+/// Compte affiché dans les listes.
+#[derive(Clone, Debug)]
+pub struct CompteInfo {
+    pub pseudo: String,
+    pub uuid: String,
+    pub actif: bool,
 }
 
 static SESSION: RwLock<Option<Session>> = RwLock::new(None);
@@ -57,12 +75,81 @@ fn fichier_cache() -> std::path::PathBuf {
     paths::data_dir().join("msa.json")
 }
 
-fn lire_cache() -> Option<Cache> {
-    serde_json::from_str(&std::fs::read_to_string(fichier_cache()).ok()?).ok()
+fn lire_fichier() -> Fichier {
+    let Ok(texte) = std::fs::read_to_string(fichier_cache()) else { return Fichier::default() };
+    if let Ok(f) = serde_json::from_str::<Fichier>(&texte) {
+        if !f.comptes.is_empty() {
+            return f;
+        }
+    }
+    // Ancien format : un seul compte à la racine
+    match serde_json::from_str::<Cache>(&texte) {
+        Ok(c) if !c.uuid.is_empty() => Fichier { actif: c.uuid.clone(), comptes: vec![c] },
+        _ => Fichier::default(),
+    }
 }
 
-fn ecrire_cache(cache: &Cache) {
-    let _ = std::fs::write(fichier_cache(), serde_json::to_string_pretty(cache).unwrap_or_default());
+fn ecrire_fichier(f: &Fichier) {
+    let _ = std::fs::write(fichier_cache(), serde_json::to_string_pretty(f).unwrap_or_default());
+}
+
+/// Ajoute ou met à jour un compte, et le rend actif.
+fn enregistrer(cache: Cache) {
+    let mut f = lire_fichier();
+    f.actif = cache.uuid.clone();
+    match f.comptes.iter_mut().find(|c| c.uuid == cache.uuid) {
+        Some(existant) => *existant = cache,
+        None => f.comptes.push(cache),
+    }
+    ecrire_fichier(&f);
+}
+
+/// Compte actif en cache (sinon le premier).
+fn compte_actif() -> Option<Cache> {
+    let f = lire_fichier();
+    f.comptes.iter().find(|c| c.uuid == f.actif).or_else(|| f.comptes.first()).cloned()
+}
+
+/// Tous les comptes Microsoft connus.
+pub fn comptes() -> Vec<CompteInfo> {
+    let f = lire_fichier();
+    let actif = f.comptes.iter().find(|c| c.uuid == f.actif).or_else(|| f.comptes.first()).map(|c| c.uuid.clone()).unwrap_or_default();
+    f.comptes.iter().map(|c| CompteInfo { pseudo: c.pseudo.clone(), uuid: c.uuid.clone(), actif: c.uuid == actif }).collect()
+}
+
+/// Choisit le compte à utiliser, puis s'y connecte.
+pub async fn activer(uuid: &str) -> anyhow::Result<Session> {
+    let mut f = lire_fichier();
+    if f.comptes.iter().any(|c| c.uuid == uuid) {
+        f.actif = uuid.to_string();
+        ecrire_fichier(&f);
+    }
+    connecter().await
+}
+
+/// Ajoute un autre compte : ouvre toujours la fenêtre de connexion.
+pub async fn ajouter() -> anyhow::Result<Session> {
+    let session = connexion_interactive().await?;
+    *SESSION.write().unwrap() = Some(session.clone());
+    settings::set(settings::PREMIUM, "True");
+    Ok(session)
+}
+
+/// Oublie un seul compte. S'il était connecté, on se déconnecte.
+pub fn oublier(uuid: &str) {
+    let mut f = lire_fichier();
+    f.comptes.retain(|c| c.uuid != uuid);
+    if f.actif == uuid {
+        f.actif = f.comptes.first().map(|c| c.uuid.clone()).unwrap_or_default();
+    }
+    if f.comptes.is_empty() {
+        let _ = std::fs::remove_file(fichier_cache());
+    } else {
+        ecrire_fichier(&f);
+    }
+    if session().is_some_and(|s| s.uuid == uuid) {
+        deconnecter();
+    }
 }
 
 /// Dossier des données de la fenêtre de connexion (cookies du compte Microsoft).
@@ -73,7 +160,7 @@ pub fn dossier_webview() -> std::path::PathBuf {
 /// Connexion : session en cache si elle est encore valide, sinon renouvellement, sinon fenêtre de connexion.
 pub async fn connecter() -> anyhow::Result<Session> {
     let maintenant = chrono::Utc::now().timestamp();
-    let cache = lire_cache();
+    let cache = compte_actif();
 
     let session = match cache {
         Some(c) if !c.mc_token.is_empty() && c.mc_expire > maintenant + 300 => {
@@ -223,7 +310,7 @@ async fn terminer(jetons: JetonsMs) -> anyhow::Result<Session> {
         xuid: xuid.clone(),
     };
 
-    ecrire_cache(&Cache {
+    enregistrer(Cache {
         refresh_token: jetons.refresh_token,
         mc_token: jeton_mc,
         mc_expire: expire,

@@ -55,6 +55,8 @@ export global HomeState {
     in property <bool> premium;
     in property <string> premium-name;
     in property <bool> ms-busy;
+    in property <[string]> ms-names;
+    in-out property <int> ms-index;
     in property <image> avatar;
     in property <bool> has-avatar;
 
@@ -88,6 +90,7 @@ export global HomeState {
     callback version-selected(int);
     callback mode-selected(int);
     callback ms-clicked();
+    callback ms-selected(int);
     callback reload();
     callback manage();
     callback play();
@@ -229,7 +232,14 @@ export struct PseudoRow {
     items: [string],
 }
 
+export struct MsCompte {
+    pseudo: string,
+    uuid: string,
+    active: bool,
+}
+
 export global SettingsState {
+    in property <[MsCompte]> ms-accounts;
     in property <[PseudoRow]> pseudo-rows;
     in-out property <string> new-pseudo;
     in property <string> ms-state;
@@ -250,10 +260,13 @@ export global SettingsState {
     in property <string> size-text;
     in-out property <bool> rich;
     in property <string> about-text;
+    in property <bool> checking-update;
 
     callback add-pseudo();
     callback remove-pseudo(string);
     callback connect();
+    callback ms-switch(string);
+    callback ms-forget(string);
     callback disconnect();
     callback disconnect-all();
     callback shortcut-toggled(bool);
@@ -266,6 +279,7 @@ export global SettingsState {
     callback delete-all();
     callback rich-toggled(bool);
     callback github();
+    callback check-update();
 }
 
 // ───────────────────────── Notes de version ─────────────────────────

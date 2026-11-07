@@ -364,5 +364,19 @@
   "Skin_ErreurCape": "Impossible de modifier la cape",
   "Skin_ErreurChargement": "Impossible de charger le skin et les capes : {0}",
   "Skin_Invalide": "Image invalide : un skin fait 64×64 ou 64×32 pixels (PNG).",
-  "Skin_Tourner": "Glisse pour tourner"
+  "Skin_Tourner": "Glisse pour tourner",
+  "Profil_VersionPack_Titre": "Choisir une version",
+  "Profil_VersionPack_Texte": "Quelle version de {0} veux-tu installer ?",
+  "Profil_ConfirmerPack_Titre": "Installer ce modpack ?",
+  "Profil_ConfirmerPack_Texte": "{0}\n\nVersion : {1}\n\nUn nouveau profil sera créé et les fichiers seront téléchargés.",
+  "Profil_ConfirmerPack_Oui": "Installer",
+  "Compte_Utiliser": "Utiliser",
+  "Compte_Ajouter": "Ajouter un compte",
+  "Compte_Oublier": "Oublier ce compte",
+  "Compte_Oublier_Texte": "Oublier le compte {0} ? Il faudra se reconnecter pour le réutiliser.",
+  "Maj_Rechercher": "Rechercher les mises à jour",
+  "Maj_Verification": "Recherche…",
+  "Maj_AJour": "Misty est à jour",
+  "Maj_AJour_Texte": "Tu utilises déjà la dernière version ({0}).",
+  "Maj_VerifImpossible": "Recherche impossible"
 }

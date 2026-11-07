@@ -186,10 +186,9 @@ export component MainWindow inherits Window {
                                     border-width: 2px;
                                     border-color: #FFFFFF66;
                                     Image {
-                                        width: 28px;
-                                        height: 28px;
-                                        source: Assets.grass;
-                                        image-rendering: pixelated;
+                                        width: 34px;
+                                        height: 34px;
+                                        source: @image-url("../assets/logo-nuage.png");
                                     }
                                 }
                             }
@@ -209,15 +208,6 @@ export component MainWindow inherits Window {
                                     tooltip: Tr.t("Nav_Profils");
                                     checked: AppState.nav == 1;
                                     clicked => { AppState.nav-clicked(1); }
-                                }
-                            }
-                            HorizontalLayout {
-                                alignment: center;
-                                NavButton {
-                                    icon: "\u{E713}";
-                                    tooltip: Tr.t("Nav_Options");
-                                    checked: AppState.nav == 2;
-                                    clicked => { AppState.nav-clicked(2); }
                                 }
                             }
                             HorizontalLayout {
@@ -243,6 +233,15 @@ export component MainWindow inherits Window {
                         // bas : dossier + version
                         VerticalLayout {
                             spacing: 12px;
+                            HorizontalLayout {
+                                alignment: center;
+                                NavButton {
+                                    icon: "\u{E713}";
+                                    tooltip: Tr.t("Nav_Options");
+                                    checked: AppState.nav == 2;
+                                    clicked => { AppState.nav-clicked(2); }
+                                }
+                            }
                             HorizontalLayout {
                                 alignment: center;
                                 IconButton {
@@ -338,7 +337,7 @@ export component MainWindow inherits Window {
 
         // ═══ Boîte de dialogue ═══
         if DialogState.visible: Rectangle {
-            background: #1C23358C;
+            background: @linear-gradient(180deg, #14203A73 0%, #14203AA6 100%);
             opacity: 0;
             animate opacity { duration: 200ms; }
             init => {

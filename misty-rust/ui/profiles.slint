@@ -150,35 +150,26 @@ export component ProfilesPage inherits Rectangle {
                 delete => { ProfilesState.delete(p.id); }
             }
 
-            // État vide
-            if ProfilesState.list.length == 0: GlassCard {
+            // État vide : centré, sans icône
+            if ProfilesState.list.length == 0: VerticalLayout {
                 x: 0;
                 y: 0;
-                width: 500px;
-                height: vide.preferred-height;
-                vide := VerticalLayout {
-                    padding: 40px;
-                    spacing: 6px;
-                    HorizontalLayout {
-                        alignment: start;
-                        Image {
-                            width: 64px;
-                            height: 64px;
-                            source: Assets.grass;
-                            image-rendering: pixelated;
-                        }
-                    }
-                    SectionTitle {
-                        text: Tr.t("Profil_Aucun");
-                        height: 40px;
-                        vertical-alignment: bottom;
-                    }
-                    BodyText { text: Tr.t("Profil_Aucun_Texte"); }
+                width: zone.visible-width;
+                height: zone.visible-height;
+                alignment: center;
+                spacing: 8px;
+                SectionTitle {
+                    text: Tr.t("Profil_Aucun");
+                    horizontal-alignment: center;
+                }
+                BodyText {
+                    text: Tr.t("Profil_Aucun_Texte");
+                    horizontal-alignment: center;
+                    wrap: word-wrap;
                 }
             }
         }
     }
-
     // ═══════════ Modpacks ═══════════
     if ProfilesState.view == 1: VerticalLayout {
         padding-left: 26px;

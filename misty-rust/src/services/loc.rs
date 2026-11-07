@@ -7,7 +7,7 @@ use super::settings;
 use std::collections::HashMap;
 use std::sync::RwLock;
 
-const DEFAUT: &str = "fr";
+const DEFAUT: &str = "en";
 
 /// (code, contenu JSON) de chaque langue intégrée.
 const LANGUES: &[(&str, &str)] = &[
@@ -46,18 +46,16 @@ fn existe(code: &str) -> bool {
     LANGUES.iter().any(|(c, _)| *c == code)
 }
 
-/// À appeler une fois au démarrage : langue enregistrée, sinon celle de Windows.
+/// À appeler une fois au démarrage : langue enregistrée, sinon l'anglais (la langue se change dans les options).
 pub fn initialiser() {
     let mut code = settings::get(settings::LANGUE);
     if code.trim().is_empty() {
-        code = sys_locale::get_locale()
-            .map(|l| l.chars().take(2).collect::<String>().to_lowercase())
-            .unwrap_or_else(|| DEFAUT.to_string());
+        code = DEFAUT.to_string();
     }
     charger(&code);
 }
 
-/// Change la langue. Langue non traduite : anglais (plus universel), sinon la langue par défaut.
+/// Change la langue. Langue inconnue : anglais.
 pub fn charger(code: &str) {
     let code = if existe(code) {
         code

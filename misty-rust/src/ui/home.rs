@@ -54,6 +54,15 @@ pub fn installer(app: &Rc<App>) {
             }
         });
     });
+    // Liste des comptes Microsoft de l'accueil : on change de compte
+    let a = app.clone();
+    s.on_ms_selected(move |i| {
+        let uuid = account::comptes().get(i as usize).map(|c| c.uuid.clone());
+        if let Some(uuid) = uuid {
+            let a = a.clone();
+            lancer(async move { changer_compte_microsoft(&a, uuid).await });
+        }
+    });
     let a = app.clone();
     s.on_profile_selected(move |i| {
         let profil = a.home.borrow().profils.get(i as usize).cloned().flatten();
@@ -166,6 +175,18 @@ async fn se_connecter(app: &Rc<App>) {
     session_changee(app);
 }
 
+/// Passe sur un autre compte Microsoft déjà ajouté.
+pub async fn changer_compte_microsoft(app: &Rc<App>, uuid: String) {
+    h(app).set_ms_busy(true);
+    super::settings::occupe_microsoft(app, true);
+    if let Err(e) = app.bg(async move { account::activer(&uuid).await }).await {
+        dialogs::erreur(app, &loc::t("Compte_ConnexionImpossible"), &e.to_string()).await;
+    }
+    h(app).set_ms_busy(false);
+    super::settings::occupe_microsoft(app, false);
+    session_changee(app);
+}
+
 /// Connexion / déconnexion : met à jour l'accueil et les options.
 pub fn session_changee(app: &Rc<App>) {
     maj_compte(app);
@@ -176,7 +197,12 @@ pub fn session_changee(app: &Rc<App>) {
 fn maj_compte(app: &Rc<App>) {
     let session = account::session();
     h(app).set_premium(session.is_some());
+    let courant = session.as_ref().map(|s| s.uuid.clone()).unwrap_or_default();
     h(app).set_premium_name(session.map(|s| s.pseudo).unwrap_or_default().into());
+    let comptes = account::comptes();
+    h(app).set_ms_index(comptes.iter().position(|c| c.uuid == courant).map(|i| i as i32).unwrap_or(-1));
+    let noms: Vec<String> = comptes.into_iter().map(|c| c.pseudo).collect();
+    h(app).set_ms_names(modele_textes(&noms));
     maj_avatar(app);
 }
 
@@ -198,7 +224,29 @@ pub fn pseudo_actuel(app: &App) -> String {
 fn maj_avatar(app: &Rc<App>) {
     let pseudo = pseudo_actuel(app);
     let a = app.clone();
+    let premium = account::session().is_some();
     lancer(async move {
+        // Compte Microsoft : tête tirée du vrai skin (Mojang), pas du cache de mc-heads qui renvoie Steve
+        if premium {
+            let tete = a
+                .bg(async {
+                    let p = crate::services::skins::profil().await.ok()?;
+                    if p.skin_url.is_empty() {
+                        return None;
+                    }
+                    let png = crate::services::skins::telecharger(&p.skin_url).await.ok()?;
+                    crate::services::skins::rendre_tete(&png)
+                })
+                .await;
+            if pseudo_actuel(&a) != pseudo {
+                return;
+            }
+            if let Some(tete) = tete {
+                h(&a).set_has_avatar(true);
+                h(&a).set_avatar(slint::Image::from_rgba8(images::tampon(&tete)));
+                return;
+            }
+        }
         let url = format!("https://mc-heads.net/avatar/{}/64", urlencoding::encode(&pseudo));
         let image = images::depuis_url(&a, &url).await;
         if pseudo_actuel(&a) != pseudo {

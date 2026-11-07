@@ -52,16 +52,42 @@ pub fn installer(app: &Rc<App>) {
     });
 
     // Microsoft
+    // « Ajouter un compte » : ouvre toujours la fenêtre de connexion
     let a = app.clone();
     st.on_connect(move || {
         let a = a.clone();
         lancer(async move {
             occupe_microsoft(&a, true);
-            if let Err(e) = a.bg(account::connecter()).await {
+            if let Err(e) = a.bg(account::ajouter()).await {
                 dialogs::erreur(&a, &loc::t("Compte_ConnexionImpossible"), &e.to_string()).await;
             }
             occupe_microsoft(&a, false);
             super::home::session_changee(&a);
+        });
+    });
+    let a = app.clone();
+    st.on_ms_switch(move |uuid| {
+        let a = a.clone();
+        lancer(async move { super::home::changer_compte_microsoft(&a, uuid.to_string()).await });
+    });
+    let a = app.clone();
+    st.on_ms_forget(move |uuid| {
+        let a = a.clone();
+        lancer(async move {
+            let pseudo = account::comptes().into_iter().find(|c| c.uuid == uuid.as_str()).map(|c| c.pseudo).unwrap_or_default();
+            let ok = dialogs::confirmer(
+                &a,
+                &loc::t("Compte_Oublier"),
+                &loc::tf("Compte_Oublier_Texte", &[&pseudo]),
+                Some(&loc::t("Commun_Supprimer")),
+                None,
+                true,
+            )
+            .await;
+            if ok {
+                account::oublier(&uuid);
+                super::home::session_changee(&a);
+            }
         });
     });
     let a = app.clone();
@@ -149,6 +175,12 @@ pub fn installer(app: &Rc<App>) {
         discord::reappliquer();
     });
 
+    let a = app.clone();
+    st.on_check_update(move || {
+        let a = a.clone();
+        lancer(async move { super::verifier_mise_a_jour(&a, true).await });
+    });
+
     st.on_github(|| system_info::ouvrir(&format!("https://github.com/{}", app_info::GITHUB_REPO)));
 }
 
@@ -233,6 +265,11 @@ pub fn maj_microsoft(app: &App) {
         .into(),
     );
     st.set_ms_connected(session.is_some());
+    let comptes: Vec<crate::MsCompte> = account::comptes()
+        .into_iter()
+        .map(|c| crate::MsCompte { pseudo: c.pseudo.into(), uuid: c.uuid.into(), active: c.actif })
+        .collect();
+    st.set_ms_accounts(modele(comptes));
 }
 
 pub fn occupe_microsoft(app: &App, occupe: bool) {

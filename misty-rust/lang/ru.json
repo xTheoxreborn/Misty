@@ -364,5 +364,19 @@
   "Skin_ErreurCape": "Не удалось изменить плащ",
   "Skin_ErreurChargement": "Не удалось загрузить скин и плащи: {0}",
   "Skin_Invalide": "Недопустимое изображение: скин должен быть 64×64 или 64×32 пикселей (PNG).",
-  "Skin_Tourner": "Перетащите, чтобы повернуть"
+  "Skin_Tourner": "Перетащите, чтобы повернуть",
+  "Profil_VersionPack_Titre": "Выберите версию",
+  "Profil_VersionPack_Texte": "Какую версию {0} установить?",
+  "Profil_ConfirmerPack_Titre": "Установить этот модпак?",
+  "Profil_ConfirmerPack_Texte": "{0}\n\nВерсия: {1}\n\nБудет создан новый профиль, а файлы будут загружены.",
+  "Profil_ConfirmerPack_Oui": "Установить",
+  "Compte_Utiliser": "Выбрать",
+  "Compte_Ajouter": "Добавить аккаунт",
+  "Compte_Oublier": "Забыть этот аккаунт",
+  "Compte_Oublier_Texte": "Забыть аккаунт {0}? Чтобы снова его использовать, нужно будет войти заново.",
+  "Maj_Rechercher": "Проверить обновления",
+  "Maj_Verification": "Проверка…",
+  "Maj_AJour": "Misty обновлён",
+  "Maj_AJour_Texte": "У вас уже установлена последняя версия ({0}).",
+  "Maj_VerifImpossible": "Не удалось проверить обновления"
 }

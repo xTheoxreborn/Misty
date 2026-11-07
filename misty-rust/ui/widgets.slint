@@ -243,6 +243,7 @@ export component IconButton inherits Rectangle {
 export component ChromeButton inherits Rectangle {
     in property <string> icon;
     in property <bool> close: false;
+    in property <color> encre: Theme.navy;
     callback clicked;
     width: 46px;
     height: 34px;
@@ -252,7 +253,7 @@ export component ChromeButton inherits Rectangle {
     Icon {
         text: root.icon;
         font-size: 10px;
-        color: touch.has-hover && root.close ? white : Theme.navy;
+        color: touch.has-hover && root.close ? white : root.encre;
     }
     touch := TouchArea {
         mouse-cursor: pointer;
@@ -461,11 +462,14 @@ export component GlassCombo inherits Rectangle {
         mouse-cursor: pointer;
         clicked => { popup.show(); }
     }
+    property <length> hauteur-liste: min(320px, root.model.length * 36px + 12px);
+    // pas la place en dessous du bouton : la liste s'ouvre au-dessus
+    property <bool> vers-le-haut: root.absolute-position.y + root.height + 4px + self.hauteur-liste > Bulle.fenetre-hauteur - 8px && root.absolute-position.y > self.hauteur-liste + 8px;
     popup := PopupWindow {
         x: 0;
-        y: root.height + 4px;
+        y: root.vers-le-haut ? -self.height - 4px : root.height + 4px;
         width: root.width;
-        height: min(320px, root.model.length * 36px + 12px);
+        height: root.hauteur-liste;
         Rectangle {
             background: #F6FAFF;
             border-radius: 12px;
@@ -718,11 +722,13 @@ export component LangCombo inherits Rectangle {
         mouse-cursor: pointer;
         clicked => { popup.show(); }
     }
+    property <length> hauteur-liste: root.model.length * 40px + 12px;
+    property <bool> vers-le-haut: root.absolute-position.y + root.height + 4px + self.hauteur-liste > Bulle.fenetre-hauteur - 8px && root.absolute-position.y > self.hauteur-liste + 8px;
     popup := PopupWindow {
         x: 0;
-        y: root.height + 4px;
+        y: root.vers-le-haut ? -self.height - 4px : root.height + 4px;
         width: root.width;
-        height: root.model.length * 40px + 12px;
+        height: root.hauteur-liste;
         Rectangle {
             background: #F6FAFF;
             border-radius: 12px;

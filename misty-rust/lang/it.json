@@ -364,5 +364,19 @@
   "Skin_ErreurCape": "Impossibile modificare il mantello",
   "Skin_ErreurChargement": "Impossibile caricare skin e mantelli: {0}",
   "Skin_Invalide": "Immagine non valida: una skin è di 64×64 o 64×32 pixel (PNG).",
-  "Skin_Tourner": "Trascina per ruotare"
+  "Skin_Tourner": "Trascina per ruotare",
+  "Profil_VersionPack_Titre": "Scegli una versione",
+  "Profil_VersionPack_Texte": "Quale versione di {0} vuoi installare?",
+  "Profil_ConfirmerPack_Titre": "Installare questo modpack?",
+  "Profil_ConfirmerPack_Texte": "{0}\n\nVersione: {1}\n\nVerrà creato un nuovo profilo e i file verranno scaricati.",
+  "Profil_ConfirmerPack_Oui": "Installa",
+  "Compte_Utiliser": "Usa",
+  "Compte_Ajouter": "Aggiungi un account",
+  "Compte_Oublier": "Dimentica questo account",
+  "Compte_Oublier_Texte": "Dimenticare l'account {0}? Dovrai accedere di nuovo per usarlo.",
+  "Maj_Rechercher": "Cerca aggiornamenti",
+  "Maj_Verification": "Ricerca…",
+  "Maj_AJour": "Misty è aggiornato",
+  "Maj_AJour_Texte": "Hai già l'ultima versione ({0}).",
+  "Maj_VerifImpossible": "Impossibile cercare aggiornamenti"
 }

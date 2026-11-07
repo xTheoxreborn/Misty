@@ -236,12 +236,52 @@ pub fn modpack_installe(projet: &ProjetDistant) -> bool {
 /// Installation depuis l'explorateur de modpacks. Renvoie true si elle a réussi.
 pub async fn installer_modpack(app: &Rc<App>, projet: ProjetDistant) -> bool {
     let s = p(app);
+
+    // 1. Liste des versions du modpack
+    s.set_wait_title(projet.titre.to_uppercase().into());
+    s.set_wait_text(loc::t("Commun_Preparation").into());
+    s.set_waiting(true);
+    let a_lister = projet.clone();
+    let versions = app.bg(async move { modpack::versions_disponibles(&a_lister).await }).await;
+    s.set_waiting(false);
+    let versions = match versions {
+        Ok(v) if !v.is_empty() => v,
+        Ok(_) => {
+            dialogs::erreur(app, &loc::t("Profil_ModpackImpossible"), &loc::t("Erreur_ModpackSansVersion")).await;
+            return false;
+        }
+        Err(e) => {
+            dialogs::erreur(app, &loc::t("Profil_ModpackImpossible"), &format!("{e:#}")).await;
+            return false;
+        }
+    };
+
+    // 2. Choix de la version (la plus récente est en haut), puis confirmation
+    let libelles: Vec<String> = versions.iter().map(|v| v.libelle.clone()).collect();
+    let Some(choix) = dialogs::choisir(app, &loc::t("Profil_VersionPack_Titre"), &loc::tf("Profil_VersionPack_Texte", &[&projet.titre]), &libelles).await else {
+        return false;
+    };
+    let Some(version) = versions.get(choix).cloned() else { return false };
+    let ok = dialogs::confirmer(
+        app,
+        &loc::t("Profil_ConfirmerPack_Titre"),
+        &loc::tf("Profil_ConfirmerPack_Texte", &[&projet.titre, &version.libelle]),
+        Some(&loc::t("Profil_ConfirmerPack_Oui")),
+        None,
+        false,
+    )
+    .await;
+    if !ok {
+        return false;
+    }
+    let version_id = Some(version.id);
+
     s.set_wait_title(projet.titre.to_uppercase().into());
     s.set_wait_text(loc::t("Commun_Preparation").into());
     s.set_waiting(true);
 
     let progression = app.progression(|ui, texte| ui.global::<ProfilesState>().set_wait_text(texte.into()));
-    let resultat = app.bg(async move { modpack::installer(&projet, progression).await }).await;
+    let resultat = app.bg(async move { modpack::installer(&projet, version_id, progression).await }).await;
     s.set_waiting(false);
 
     match resultat {

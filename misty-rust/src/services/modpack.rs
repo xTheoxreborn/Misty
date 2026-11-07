@@ -27,14 +27,60 @@ pub struct Resultat {
     pub bloques: Vec<FichierBloque>,
 }
 
-pub async fn installer(projet: &ProjetDistant, progression: Progress) -> anyhow::Result<Resultat> {
+/// Version d'un modpack proposée à l'utilisateur.
+#[derive(Clone)]
+pub struct VersionPack {
+    pub id: String,
+    pub libelle: String,
+}
+
+fn etiquette_type(type_: &str) -> &'static str {
+    match type_ {
+        "beta" | "2" => " [beta]",
+        "alpha" | "3" => " [alpha]",
+        _ => "",
+    }
+}
+
+/// Versions disponibles du modpack, de la plus récente à la plus ancienne.
+pub async fn versions_disponibles(projet: &ProjetDistant) -> anyhow::Result<Vec<VersionPack>> {
+    let mut liste = Vec::new();
+    if projet.source == CURSEFORGE {
+        for f in curseforge::fichiers(projet.id.parse()?, None).await? {
+            if !f.is_available {
+                continue;
+            }
+            let mc = f.game_versions.iter().find(|v| v.chars().next().is_some_and(|c| c.is_ascii_digit())).cloned().unwrap_or_default();
+            let nom = if f.display_name.is_empty() { f.file_name.clone() } else { f.display_name.clone() };
+            let libelle = if mc.is_empty() { nom } else { format!("{nom} · {mc}") };
+            liste.push(VersionPack { id: f.id.to_string(), libelle: format!("{libelle}{}", etiquette_type(&f.release_type.to_string())) });
+        }
+    } else {
+        for v in modrinth::versions(&projet.id, None, None).await? {
+            if !v.files.iter().any(|f| f.filename.to_lowercase().ends_with(".mrpack")) {
+                continue;
+            }
+            let nom = if v.version_number.is_empty() { v.name.clone() } else { v.version_number.clone() };
+            let libelle = match v.game_versions.last() {
+                Some(mc) => format!("{nom} · {mc}"),
+                None => nom,
+            };
+            liste.push(VersionPack { id: v.id.clone(), libelle: format!("{libelle}{}", etiquette_type(&v.version_type)) });
+        }
+    }
+    liste.truncate(60);
+    Ok(liste)
+}
+
+/// `version_id` : version choisie (None = la dernière stable).
+pub async fn installer(projet: &ProjetDistant, version_id: Option<String>, progression: Progress) -> anyhow::Result<Resultat> {
     let mut instance: Option<Instance> = None;
     let mut temporaire: Option<PathBuf> = None;
 
     let resultat = if projet.source == CURSEFORGE {
-        installer_curseforge(projet, &progression, &mut instance, &mut temporaire).await
+        installer_curseforge(projet, version_id.as_deref(), &progression, &mut instance, &mut temporaire).await
     } else {
-        installer_modrinth(projet, &progression, &mut instance, &mut temporaire).await
+        installer_modrinth(projet, version_id.as_deref(), &progression, &mut instance, &mut temporaire).await
     };
 
     if let Some(t) = temporaire {
@@ -78,6 +124,7 @@ fn creer(projet: &ProjetDistant, version_mc: &str, loader: &str, version_loader:
 
 async fn installer_modrinth(
     projet: &ProjetDistant,
+    version_id: Option<&str>,
     progression: &Progress,
     sortie: &mut Option<Instance>,
     temporaire: &mut Option<PathBuf>,
@@ -86,7 +133,8 @@ async fn installer_modrinth(
     let versions = modrinth::versions(&projet.id, None, None).await?;
     let version = versions
         .iter()
-        .find(|v| v.version_type == "release")
+        .find(|v| version_id == Some(v.id.as_str()))
+        .or_else(|| versions.iter().find(|v| version_id.is_none() && v.version_type == "release"))
         .or_else(|| versions.first())
         .ok_or_else(|| anyhow::anyhow!(loc::t("Erreur_ModpackSansVersion")))?;
     let fichier = version
@@ -151,6 +199,7 @@ fn loader_modrinth(dependances: &HashMap<String, String>) -> (&'static str, Opti
 
 async fn installer_curseforge(
     projet: &ProjetDistant,
+    version_id: Option<&str>,
     progression: &Progress,
     sortie: &mut Option<Instance>,
     temporaire: &mut Option<PathBuf>,
@@ -159,7 +208,8 @@ async fn installer_curseforge(
     let fichiers_pack = curseforge::fichiers(projet.id.parse()?, None).await?;
     let fichier_pack = fichiers_pack
         .iter()
-        .find(|f| f.release_type == 1 && f.is_available)
+        .find(|f| version_id == Some(f.id.to_string().as_str()))
+        .or_else(|| fichiers_pack.iter().find(|f| version_id.is_none() && f.release_type == 1 && f.is_available))
         .or_else(|| fichiers_pack.first())
         .ok_or_else(|| anyhow::anyhow!(loc::t("Erreur_ModpackSansVersion")))?;
     let Some(url) = fichier_pack.download_url.clone().filter(|u| !u.is_empty()) else {

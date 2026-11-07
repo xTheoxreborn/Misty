@@ -351,7 +351,12 @@ export component HomePage inherits Rectangle {
                                             current-index <=> HomeState.account-index;
                                             selected(i) => { HomeState.account-selected(i); }
                                         }
-                                        if HomeState.premium: Rectangle {
+                                        if HomeState.premium && HomeState.ms-names.length > 1: GlassCombo {
+                                            model: HomeState.ms-names;
+                                            current-index <=> HomeState.ms-index;
+                                            selected(i) => { HomeState.ms-selected(i); }
+                                        }
+                                        if HomeState.premium && HomeState.ms-names.length <= 1: Rectangle {
                                             border-radius: 12px;
                                             background: Theme.navy;
                                             HorizontalLayout {

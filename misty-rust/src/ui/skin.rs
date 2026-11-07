@@ -36,6 +36,8 @@ pub fn installer(app: &Rc<App>) {
         // Premier affichage (ou compte changé) : on va chercher le skin et les capes
         if account::session().is_some() && a.skin.borrow().profil.is_none() {
             charger(&a);
+        } else if account::session().is_none() {
+            afficher_steve(&a);
         }
     });
 
@@ -74,7 +76,29 @@ pub fn session_changee(app: &Rc<App>) {
     st.set_info("".into());
     if account::session().is_some() && st.get_tab() == 1 {
         charger(app);
+    } else if account::session().is_none() {
+        afficher_steve(app);
     }
+}
+
+/// Pas de compte connecté : on montre Steve en entier (skin par défaut de Minecraft).
+fn afficher_steve(app: &Rc<App>) {
+    let generation = {
+        let mut e = app.skin.borrow_mut();
+        e.generation += 1;
+        e.generation
+    };
+    let a = app.clone();
+    lancer(async move {
+        let vues = a.bloquant(|| skins::rendre_tour(include_bytes!("../../assets/steve.png"), false, None)).await;
+        if a.skin.borrow().generation != generation || account::session().is_some() {
+            return;
+        }
+        let st = s(&a);
+        st.set_has_figure(vues.is_some());
+        let images: Vec<Image> = vues.unwrap_or_default().iter().map(|v| Image::from_rgba8(images::tampon(v))).collect();
+        st.set_frames(modele(images));
+    });
 }
 
 pub fn langue_changee(app: &Rc<App>) {

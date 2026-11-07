@@ -21,7 +21,7 @@ pub mod skin;
 use crate::services::{discord, loc, paths, system_info, Progress};
 use crate::*;
 use slint::{ComponentHandle, Model, ModelRc, SharedString, VecModel};
-use std::cell::{Cell, RefCell};
+use std::cell::RefCell;
 use std::future::Future;
 use std::rc::Rc;
 use std::sync::Arc;
@@ -52,8 +52,6 @@ pub struct App {
     pub packs: RefCell<packs::Etat>,
     pub editor: RefCell<editor::Etat>,
     pub skin: RefCell<skin::Etat>,
-    /// Avertissement « expérimental » des packs déjà montré
-    pub averti_packs: Cell<bool>,
 }
 
 impl App {
@@ -71,7 +69,6 @@ impl App {
             packs: RefCell::default(),
             editor: RefCell::default(),
             skin: RefCell::default(),
-            averti_packs: Cell::new(false),
         })
     }
 
@@ -296,11 +293,7 @@ fn nav_clicked(app: &Rc<App>, i: i32) {
     if i == page::PACKS {
         packs::rafraichir(app); // après naviguer : l'éditeur a pu enregistrer une texture
         discord::definir(discord::Statut::PackEditeur);
-        // Avertissement montré une seule fois par session
-        if !app.averti_packs.replace(true) {
-            let a = app.clone();
-            lancer(async move { dialogs::info(&a, &loc::t("Pack_Experimental"), &loc::t("Pack_Experimental_Texte")).await });
-        }
+
     } else if !app.home.borrow().jeu_en_cours {
         discord::definir(discord::Statut::Launcher);
     }

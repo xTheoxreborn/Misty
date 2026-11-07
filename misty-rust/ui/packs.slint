@@ -111,6 +111,91 @@ component PackCardView inherits Rectangle {
     }
 }
 
+/// Fenêtre modale : couvre toute la fenêtre de l'application (posée par main.slint).
+export component PackCreateOverlay inherits Rectangle {
+
+        background: @linear-gradient(180deg, #14203A73 0%, #14203AA6 100%);
+        TouchArea {
+            clicked => {
+                if (PacksState.create-enabled) {
+                    PacksState.cancel-create();
+                }
+            }
+        }
+        Rectangle {
+            width: 460px;
+            height: form.preferred-height;
+            border-radius: 24px;
+            background: #F6FAFFF2;
+            border-width: 2px;
+            border-color: white;
+            drop-shadow-blur: 30px;
+            drop-shadow-color: #1C233560;
+            TouchArea { }
+            form := VerticalLayout {
+                padding-left: 28px;
+                padding-right: 28px;
+                padding-top: 26px;
+                padding-bottom: 26px;
+                spacing: 6px;
+                SectionTitle {
+                    text: Tr.t("Pack_Nouveau");
+                    height: 36px;
+                    vertical-alignment: top;
+                }
+                PixelLabel { text: Tr.t("Pack_Nom"); font-size: 10px; x: 4px; }
+                GlassInput {
+                    text <=> PacksState.create-name;
+                    init => { self.focus-input(); }
+                    accepted => {
+                        if (PacksState.create-enabled) {
+                            PacksState.validate();
+                        }
+                    }
+                }
+                Rectangle { height: 8px; }
+                PixelLabel { text: Tr.t("Pack_Description"); font-size: 10px; x: 4px; }
+                GlassInput {
+                    text <=> PacksState.create-desc;
+                    accepted => {
+                        if (PacksState.create-enabled) {
+                            PacksState.validate();
+                        }
+                    }
+                }
+                Rectangle { height: 8px; }
+                PixelLabel { text: Tr.t("Pack_Version"); font-size: 10px; x: 4px; }
+                GlassCombo {
+                    model: PacksState.versions;
+                    current-index <=> PacksState.version-index;
+                    enabled: PacksState.create-enabled;
+                }
+                BodyText {
+                    text: PacksState.create-info;
+                    x: 2px;
+                    min-height: 36px;
+                    vertical-alignment: center;
+                }
+                HorizontalLayout {
+                    alignment: end;
+                    spacing: 10px;
+                    padding-top: 12px;
+                    MButton {
+                        text: Tr.t("Commun_Annuler");
+                        enabled: PacksState.create-enabled;
+                        clicked => { PacksState.cancel-create(); }
+                    }
+                    MButton {
+                        kind: 1;
+                        text: Tr.t("Pack_Creer");
+                        enabled: PacksState.create-enabled;
+                        clicked => { PacksState.validate(); }
+                    }
+                }
+            }
+        }
+}
+
 export component PacksPage inherits Rectangle {
     VerticalLayout {
         padding-left: 26px;
@@ -198,86 +283,5 @@ export component PacksPage inherits Rectangle {
     }
 
     // ═══ Création d'un pack ═══
-    if PacksState.creating: Rectangle {
-        background: #1C233566;
-        TouchArea {
-            clicked => {
-                if (PacksState.create-enabled) {
-                    PacksState.cancel-create();
-                }
-            }
-        }
-        Rectangle {
-            width: 460px;
-            height: form.preferred-height;
-            border-radius: 24px;
-            background: #F6FAFFF2;
-            border-width: 2px;
-            border-color: white;
-            drop-shadow-blur: 30px;
-            drop-shadow-color: #1C233560;
-            TouchArea { }
-            form := VerticalLayout {
-                padding-left: 28px;
-                padding-right: 28px;
-                padding-top: 26px;
-                padding-bottom: 26px;
-                spacing: 6px;
-                SectionTitle {
-                    text: Tr.t("Pack_Nouveau");
-                    height: 36px;
-                    vertical-alignment: top;
-                }
-                PixelLabel { text: Tr.t("Pack_Nom"); font-size: 10px; x: 4px; }
-                GlassInput {
-                    text <=> PacksState.create-name;
-                    init => { self.focus-input(); }
-                    accepted => {
-                        if (PacksState.create-enabled) {
-                            PacksState.validate();
-                        }
-                    }
-                }
-                Rectangle { height: 8px; }
-                PixelLabel { text: Tr.t("Pack_Description"); font-size: 10px; x: 4px; }
-                GlassInput {
-                    text <=> PacksState.create-desc;
-                    accepted => {
-                        if (PacksState.create-enabled) {
-                            PacksState.validate();
-                        }
-                    }
-                }
-                Rectangle { height: 8px; }
-                PixelLabel { text: Tr.t("Pack_Version"); font-size: 10px; x: 4px; }
-                GlassCombo {
-                    model: PacksState.versions;
-                    current-index <=> PacksState.version-index;
-                    enabled: PacksState.create-enabled;
-                }
-                BodyText {
-                    text: PacksState.create-info;
-                    x: 2px;
-                    min-height: 36px;
-                    vertical-alignment: center;
-                }
-                HorizontalLayout {
-                    alignment: end;
-                    spacing: 10px;
-                    padding-top: 12px;
-                    MButton {
-                        text: Tr.t("Commun_Annuler");
-                        enabled: PacksState.create-enabled;
-                        clicked => { PacksState.cancel-create(); }
-                    }
-                    MButton {
-                        kind: 1;
-                        text: Tr.t("Pack_Creer");
-                        enabled: PacksState.create-enabled;
-                        clicked => { PacksState.validate(); }
-                    }
-                }
-            }
-        }
-    }
+    
 }

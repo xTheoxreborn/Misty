@@ -95,6 +95,117 @@ component ProfileCardView inherits Rectangle {
     }
 }
 
+/// Fenêtre modale : couvre toute la fenêtre de l'application (posée par main.slint).
+export component ProfileCreateOverlay inherits Rectangle {
+
+        background: @linear-gradient(180deg, #14203A73 0%, #14203AA6 100%);
+        TouchArea {
+            clicked => { ProfilesState.cancel-create(); }
+        }
+        Rectangle {
+            width: 460px;
+            height: form.preferred-height;
+            border-radius: 24px;
+            background: #F6FAFFF2;
+            border-width: 2px;
+            border-color: white;
+            drop-shadow-blur: 30px;
+            drop-shadow-color: #1C233560;
+            TouchArea { }
+            form := VerticalLayout {
+                padding-left: 28px;
+                padding-right: 28px;
+                padding-top: 26px;
+                padding-bottom: 26px;
+                spacing: 6px;
+                SectionTitle {
+                    text: Tr.t("Profil_NouveauTitre");
+                    height: 36px;
+                    vertical-alignment: top;
+                }
+                PixelLabel { text: Tr.t("Commun_Nom"); font-size: 10px; x: 4px; }
+                nom := GlassInput {
+                    text <=> ProfilesState.create-name;
+                    init => { self.focus-input(); }
+                }
+                Rectangle { height: 8px; }
+                HorizontalLayout {
+                    spacing: 12px;
+                    VerticalLayout {
+                        spacing: 6px;
+                        PixelLabel { text: Tr.t("Commun_Version"); font-size: 10px; x: 4px; }
+                        GlassCombo {
+                            model: ProfilesState.create-versions;
+                            current-index <=> ProfilesState.create-version-index;
+                            selected(i) => { ProfilesState.create-version-selected(i); }
+                        }
+                    }
+                    VerticalLayout {
+                        spacing: 6px;
+                        PixelLabel { text: Tr.t("Commun_ModLoader"); font-size: 10px; x: 4px; }
+                        GlassCombo {
+                            model: ProfilesState.create-loaders;
+                            current-index <=> ProfilesState.create-loader-index;
+                            enabled: ProfilesState.create-loader-enabled;
+                        }
+                    }
+                }
+                BodyText {
+                    text: ProfilesState.create-info;
+                    x: 2px;
+                    min-height: 30px;
+                    vertical-alignment: center;
+                }
+                HorizontalLayout {
+                    alignment: end;
+                    spacing: 10px;
+                    padding-top: 12px;
+                    MButton {
+                        text: Tr.t("Commun_Annuler");
+                        clicked => { ProfilesState.cancel-create(); }
+                    }
+                    MButton {
+                        kind: 1;
+                        text: Tr.t("Profil_Creer");
+                        enabled: ProfilesState.create-enabled;
+                        clicked => { ProfilesState.create(); }
+                    }
+                }
+            }
+        }
+}
+
+/// Fenêtre modale : couvre toute la fenêtre de l'application (posée par main.slint).
+export component ProfileWaitOverlay inherits Rectangle {
+
+        background: @linear-gradient(180deg, #14203A73 0%, #14203AA6 100%);
+        TouchArea { }
+        Rectangle {
+            width: 420px;
+            height: attente.preferred-height;
+            border-radius: 24px;
+            background: #F6FAFFF2;
+            border-width: 2px;
+            border-color: white;
+            drop-shadow-blur: 30px;
+            drop-shadow-color: #1C233560;
+            attente := VerticalLayout {
+                padding: 28px;
+                spacing: 6px;
+                Spinner { height: 48px; }
+                SectionTitle {
+                    text: ProfilesState.wait-title;
+                    horizontal-alignment: center;
+                    wrap: word-wrap;
+                }
+                BodyText {
+                    text: ProfilesState.wait-text;
+                    horizontal-alignment: center;
+                }
+            }
+        }
+}
+
 export component ProfilesPage inherits Rectangle {
     // ═══════════ Liste des profils ═══════════
     if ProfilesState.view == 0: VerticalLayout {
@@ -197,111 +308,8 @@ export component ProfilesPage inherits Rectangle {
     }
 
     // ═══════════ Création d'un profil ═══════════
-    if ProfilesState.creating: Rectangle {
-        background: #1C233566;
-        TouchArea {
-            clicked => { ProfilesState.cancel-create(); }
-        }
-        Rectangle {
-            width: 460px;
-            height: form.preferred-height;
-            border-radius: 24px;
-            background: #F6FAFFF2;
-            border-width: 2px;
-            border-color: white;
-            drop-shadow-blur: 30px;
-            drop-shadow-color: #1C233560;
-            TouchArea { }
-            form := VerticalLayout {
-                padding-left: 28px;
-                padding-right: 28px;
-                padding-top: 26px;
-                padding-bottom: 26px;
-                spacing: 6px;
-                SectionTitle {
-                    text: Tr.t("Profil_NouveauTitre");
-                    height: 36px;
-                    vertical-alignment: top;
-                }
-                PixelLabel { text: Tr.t("Commun_Nom"); font-size: 10px; x: 4px; }
-                nom := GlassInput {
-                    text <=> ProfilesState.create-name;
-                    init => { self.focus-input(); }
-                }
-                Rectangle { height: 8px; }
-                HorizontalLayout {
-                    spacing: 12px;
-                    VerticalLayout {
-                        spacing: 6px;
-                        PixelLabel { text: Tr.t("Commun_Version"); font-size: 10px; x: 4px; }
-                        GlassCombo {
-                            model: ProfilesState.create-versions;
-                            current-index <=> ProfilesState.create-version-index;
-                            selected(i) => { ProfilesState.create-version-selected(i); }
-                        }
-                    }
-                    VerticalLayout {
-                        spacing: 6px;
-                        PixelLabel { text: Tr.t("Commun_ModLoader"); font-size: 10px; x: 4px; }
-                        GlassCombo {
-                            model: ProfilesState.create-loaders;
-                            current-index <=> ProfilesState.create-loader-index;
-                            enabled: ProfilesState.create-loader-enabled;
-                        }
-                    }
-                }
-                BodyText {
-                    text: ProfilesState.create-info;
-                    x: 2px;
-                    min-height: 30px;
-                    vertical-alignment: center;
-                }
-                HorizontalLayout {
-                    alignment: end;
-                    spacing: 10px;
-                    padding-top: 12px;
-                    MButton {
-                        text: Tr.t("Commun_Annuler");
-                        clicked => { ProfilesState.cancel-create(); }
-                    }
-                    MButton {
-                        kind: 1;
-                        text: Tr.t("Profil_Creer");
-                        enabled: ProfilesState.create-enabled;
-                        clicked => { ProfilesState.create(); }
-                    }
-                }
-            }
-        }
-    }
+    
 
     // ═══════════ Installation d'un modpack en cours ═══════════
-    if ProfilesState.waiting: Rectangle {
-        background: #1C23358C;
-        TouchArea { }
-        Rectangle {
-            width: 420px;
-            height: attente.preferred-height;
-            border-radius: 24px;
-            background: #F6FAFFF2;
-            border-width: 2px;
-            border-color: white;
-            drop-shadow-blur: 30px;
-            drop-shadow-color: #1C233560;
-            attente := VerticalLayout {
-                padding: 28px;
-                spacing: 6px;
-                Spinner { height: 48px; }
-                SectionTitle {
-                    text: ProfilesState.wait-title;
-                    horizontal-alignment: center;
-                    wrap: word-wrap;
-                }
-                BodyText {
-                    text: ProfilesState.wait-text;
-                    horizontal-alignment: center;
-                }
-            }
-        }
-    }
+    
 }

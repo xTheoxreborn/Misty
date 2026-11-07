@@ -4,12 +4,12 @@ import { Theme, Tr, Assets, Bulle } from "theme.slint";
 import { AppState, DialogState, HomeState, ProfilesState, InstanceState, BrowserState, SettingsState, ChangelogState, PacksState, EditorState } from "state.slint";
 import { Icon, PixelLabel, BodyText, SectionTitle, IconButton, ChromeButton, MButton } from "widgets.slint";
 import { HomePage } from "home.slint";
-import { ProfilesPage } from "profiles.slint";
+import { ProfilesPage, ProfileCreateOverlay, ProfileWaitOverlay } from "profiles.slint";
 import { InstancePage } from "instance.slint";
 import { SettingsPage } from "settings.slint";
 import { ChangelogPage } from "changelog.slint";
 import { SkinState } from "skin.slint";
-import { PacksPage } from "packs.slint";
+import { PacksPage, PackCreateOverlay } from "packs.slint";
 import { EditorPage } from "editor.slint";
 import { ScrollView } from "std-widgets.slint";
 
@@ -334,6 +334,11 @@ export component MainWindow inherits Window {
                 vertical-alignment: center;
             }
         }
+
+        // ═══ Fenêtres modales des pages (sur toute la fenêtre, barre latérale comprise) ═══
+        if ProfilesState.creating: ProfileCreateOverlay { }
+        if ProfilesState.waiting: ProfileWaitOverlay { }
+        if PacksState.creating: PackCreateOverlay { }
 
         // ═══ Boîte de dialogue ═══
         if DialogState.visible: Rectangle {

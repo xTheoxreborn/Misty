@@ -1,4 +1,20 @@
 # Changelog
+## 0.3.3
+- Misty now uses the new GitHub repository (Misty-MC/Misty) to look for updates: this version keeps your updates going without reinstalling
+- New "Check for updates" button in the settings (About card)
+- Several Microsoft accounts: add as many as you want, switch from the home page or from the settings, and forget one without losing the others
+- Modpacks: Misty now lets you pick the version to install (Modrinth and CurseForge) and asks for a confirmation before creating the profile
+- English is now the default language of the launcher (you can change it in the settings: English, French, Spanish, Italian, Russian)
+- New cloud logo, used for the app icon and the sidebar
+- The settings button moved to the bottom of the sidebar
+- Skin tab: a full 3D Steve is shown when you are not signed in, instead of just a head
+- The account head on the home page now uses your real skin when you are signed in with Microsoft
+- Fix: dropdown lists no longer open on top of their own button when there is no room below, they open above it
+- Fix: the dark background behind the new profile, new texture pack and modpack loading dialogs now covers the whole window
+- The empty profile list is now centered, without an icon
+- Removed the "experimental" popup when opening texture packs
+- The installer license now shows the correct year and name
+
 ## 0.3.2
 - New SKIN tab on the home page, next to PLAY (vertical text on the far right): change your skin and your cape from the launcher
 - The character preview is now a real 3D model: drag it to turn it around and see your cape from behind
